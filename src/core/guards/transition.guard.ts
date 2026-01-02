@@ -1,14 +1,41 @@
 import { EventType } from "@/core/events/types";
+import { AgreementState } from "@/core/agreements/state";
 
-const agreementStateTransitions: Record<string, EventType[]> = {
-  DRAFT: ["AGREEMENT_SHARED"],
-  NEGOTIATING: ["AGREEMENT_UPDATED", "AGREEMENT_ACKNOWLEDGED"],
-  ACTIVE: ["EXECUTION_STARTED", "AGREEMENT_CANCELLED"],
+const agreementStateTransitions: Record<AgreementState, EventType[]> = {
+  DRAFT: [
+    "AGREEMENT_SHARED",
+    "AGREEMENT_UPDATED",
+    "AGREEMENT_ACKNOWLEDGED",
+  ],
+
+  NEGOTIATING: [
+    "AGREEMENT_UPDATED",
+    "AGREEMENT_ACKNOWLEDGED",
+  ],
+
+  ACTIVE: [
+    "EXECUTION_STARTED",
+    "AGREEMENT_CANCELLED",
+  ],
+
   EXECUTING: [
     "AGREEMENT_COMPLETED",
     "AGREEMENT_PARTIALLY_COMPLETED",
     "AGREEMENT_CANCELLED",
+    "AGREEMENT_AUTO_COMPLETED",
   ],
+
+  PARTIALLY_COMPLETED: [
+    // business decision:
+    // allow final completion or cancellation
+    "AGREEMENT_COMPLETED",
+    "AGREEMENT_CANCELLED",
+    "AGREEMENT_AUTO_COMPLETED",
+  ],
+
+  COMPLETED: [],
+
+  CANCELLED: [],
 };
 
 // Events that do NOT change agreement state
@@ -19,16 +46,20 @@ const executionEvents: EventType[] = [
   "DELIVERABLE_ACCEPTED",
   "DELIVERABLE_REJECTED",
   "DELIVERABLE_PARTIALLY_ACCEPTED",
+  "DELIVERABLE_AUTO_RELEASED",
 
   // Milestones
   "MILESTONE_CREATED",
+  "MILESTONE_COMPLETED",
   "MILESTONE_RELEASED",
   "MILESTONE_BLOCKED",
+
+  // System
+  "AGREEMENT_AUTO_COMPLETED",
 ];
 
-
 export function canEmitEvent(
-  currentState: string,
+  currentState: AgreementState,
   eventType: EventType
 ): boolean {
   if (eventType === "AGREEMENT_CREATED") return true;
@@ -37,9 +68,5 @@ export function canEmitEvent(
 
   if (executionEvents.includes(eventType)) return true;
 
-  return (
-    agreementStateTransitions[currentState]?.includes(eventType) ??
-    false
-  );
+  return agreementStateTransitions[currentState]?.includes(eventType) ?? false;
 }
-

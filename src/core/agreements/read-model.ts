@@ -28,6 +28,12 @@ export function projectAgreement(events: any[]): AgreementSummary {
           ...(event.payload?.invitedUserIds ?? []),
         ];
         break;
+
+      // 🔹 Auto-complete event
+      // No local projection needed here.
+      // State transition is handled by deriveAgreementState.
+      case "AGREEMENT_AUTO_COMPLETED":
+        break;
     }
   }
 

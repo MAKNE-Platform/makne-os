@@ -16,24 +16,27 @@ export function deriveAgreementState(
 
   for (const event of events) {
     switch (event.type) {
+      case "AGREEMENT_CREATED":
+        state = "DRAFT";
+        break;
+
       case "AGREEMENT_SHARED":
         state = "NEGOTIATING";
         break;
-      case "AGREEMENT_ACTIVATED":
+
+      case "AGREEMENT_ACKNOWLEDGED":
         state = "ACTIVE";
         break;
+
       case "EXECUTION_STARTED":
         state = "EXECUTING";
         break;
+
+      case "AGREEMENT_AUTO_COMPLETED":
       case "AGREEMENT_COMPLETED":
         state = "COMPLETED";
         break;
-      case "AGREEMENT_PARTIALLY_COMPLETED":
-        state = "PARTIALLY_COMPLETED";
-        break;
-      case "AGREEMENT_CANCELLED":
-        state = "CANCELLED";
-        break;
+
     }
   }
 

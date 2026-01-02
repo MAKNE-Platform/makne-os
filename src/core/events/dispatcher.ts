@@ -2,6 +2,10 @@ import { getDb } from "@/lib/db";
 import { BaseEventSchema, BaseEvent } from "./types";
 import { deriveAgreementState } from "@/core/agreements/state";
 import { canEmitEvent } from "@/core/guards/transition.guard";
+// import { runAutoCompleteAgreementAgent } from "@/core/agents/auto-complete-agreement";
+import { runAutoCompleteAgreementAgent } from "@/core/agents/auto-complete-agreement/handler";
+
+
 
 export async function dispatchEvent(event: BaseEvent) {
   // 1. Validate event structure
@@ -34,15 +38,32 @@ export async function dispatchEvent(event: BaseEvent) {
   // 6. Persist event (IMMUTABLE WRITE)
   await db.collection("events").insertOne(event);
 
-  console.log("EVENT WRITTEN");
-
+  // 6.5 Trigger system agents (fire-and-forget)
+  runAutoCompleteAgreementAgent(event.agreementId).catch((err) => {
+    console.error(
+      "[AUTO-COMPLETE AGENT ERROR]",
+      err
+    );
+  });
 
   // 7. Return derived state
+  const newState = deriveAgreementState([
+    ...pastEvents.map((e) => ({ type: e.type })),
+    { type: event.type },
+  ]);
+
+  // 8. Trigger system agents (POST-COMMIT)
+  switch (event.type) {
+    case "DELIVERABLE_ACCEPTED":
+    case "DELIVERABLE_AUTO_RELEASED":
+    case "MILESTONE_COMPLETED":
+      await runAutoCompleteAgreementAgent(event.agreementId);
+      break;
+  }
+
   return {
     success: true,
-    state: deriveAgreementState([
-      ...pastEvents.map((e) => ({ type: e.type })),
-      { type: event.type },
-    ]),
+    state: newState,
   };
+
 }
