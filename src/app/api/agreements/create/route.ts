@@ -1,25 +1,28 @@
 import { NextResponse } from "next/server";
-import { dispatchEvent } from "@/core/events/dispatcher";
 import { v4 as uuid } from "uuid";
+import { dispatchEvent } from "@/core/events/dispatcher";
 
 export async function POST() {
+  // TODO: replace with real auth
+  const actorId = "user_123";
+  const actorRole = "BRAND";
+
   const agreementId = uuid();
 
-  const event = {
+  await dispatchEvent({
     eventId: uuid(),
     agreementId,
     type: "AGREEMENT_CREATED",
-    actorId: "user_123",
-    actorRole: "OWNER",
+    actorId,
+    actorRole,
     payload: {
-      title: "Test Agreement",
-      collaborationType: "INDIVIDUAL",
+      agreementId,
+      brandId: actorId,
+      createdBy: "BRAND",
     },
     timestamp: new Date().toISOString(),
     version: 1,
-  };
-
-  await dispatchEvent(event);
+  });
 
   return NextResponse.json({
     agreementId,
