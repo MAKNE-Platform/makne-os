@@ -20,6 +20,9 @@ export const EventTypeEnum = z.enum([
     "AGREEMENT_REJECTED_BY_CREATOR",
     "AGREEMENT_ACCEPTED_BY_CREATOR",
 
+    "EXECUTION_STARTED",
+
+
     // DELIVERABLE EVENTS
     "DELIVERABLE_CREATED",
     "DELIVERABLE_SUBMITTED",
@@ -72,6 +75,17 @@ const AgreementAcceptedPayloadSchema = z.object({
 const AgreementRejectedPayloadSchema = z.object({
     reason: z.string().min(3),
     rejectedAt: z.string(),
+});
+
+
+const AgreementCreatedPayloadSchema = z.object({
+    agreementId: z.string(),
+    brandId: z.string(),
+    createdBy: z.literal("BRAND"),
+
+    
+    collaborationType: z.enum(["INDIVIDUAL", "GROUP"]),
+    acceptanceRule: z.enum(["ALL_CREATORS"]),
 });
 
 
@@ -157,6 +171,10 @@ export const BaseEventSchema = z
             }
         }
 
+
+        if (event.type === "AGREEMENT_CREATED") {
+            AgreementCreatedPayloadSchema.parse(event.payload);
+        }
 
 
     });

@@ -3,7 +3,7 @@ import { acceptAgreement } from "@/core/agreements/handlers/acceptAgreement";
 
 export async function POST(req: Request) {
   // TODO: real auth
-  const actorId = "creator_456";
+  const actorId = "creator_2";
 
   const { agreementId } = await req.json();
 

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { assignCreator } from "@/core/agreements/handlers/assignCreator";
 
 export async function POST(req: Request) {
-  // TODO: replace with real auth
-  const actorId = "user_123";
+  // TODO: real auth
+  const actorId = "brand_123";
 
   const { agreementId, creatorId } = await req.json();
 
@@ -13,7 +13,5 @@ export async function POST(req: Request) {
     actorId,
   });
 
-  return NextResponse.json({
-    success: true,
-  });
+  return NextResponse.json({ success: true });
 }

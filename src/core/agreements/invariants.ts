@@ -7,13 +7,14 @@ export function isAgreementComplete(state: AgreementState): boolean {
   return (
     !!state.agreementId &&
     !!state.brandId &&
-    !!state.creatorId &&
+    state.creatorIds.length > 0 &&
     Object.keys(state.deliverables).length > 0 &&
     Object.keys(state.milestones).length > 0 &&
     !!state.payment &&
     isPaymentFullySplit(state) &&
     !!state.policy
   );
+
 }
 
 /**
@@ -49,7 +50,7 @@ export function assertAgreementNotLocked(
 export function assertCreatorAssigned(
   state: AgreementState
 ) {
-  if (!state.creatorId) {
+  if (!state.creatorIds) {
     throw new Error("CREATOR_NOT_ASSIGNED");
   }
 }
@@ -66,24 +67,45 @@ export function assertDeliverableExists(
   }
 }
 
+
 /**
  * Guard: milestone must exist
  */
-export function assertMilestoneExists(
-  state: AgreementState,
-  milestoneId: string
-) {
-  if (!state.milestones[milestoneId]) {
-    throw new Error("MILESTONE_NOT_FOUND");
-  }
-}
+// export function assertMilestoneExists(
+//   state: AgreementState,
+//   milestoneId: string
+// ) {
+//   if (!state.milestones[milestoneId]) {
+//     throw new Error("MILESTONE_NOT_FOUND");
+//   }
+// }
 
-/**
- * Guard: before sending agreement
- */
-export function assertCanSendAgreement(
-  state: AgreementState
-) {
+// /**
+//  * Guard: before sending agreement
+//  */
+// export function assertCanSendAgreement(
+//   state: AgreementState
+// ) {
+//   if (!isAgreementComplete(state)) {
+//     throw new Error("AGREEMENT_INCOMPLETE");
+//   }
+// }
+
+
+export function assertCanSendAgreement(state: AgreementState) {
+  const debug = {
+    agreementId: !!state.agreementId,
+    brandId: !!state.brandId,
+    creators: state.creatorIds.length,
+    deliverables: Object.keys(state.deliverables).length,
+    milestones: Object.keys(state.milestones).length,
+    payment: !!state.payment,
+    paymentSplitOk: isPaymentFullySplit(state),
+    policy: !!state.policy,
+  };
+
+  console.log("SEND_INVARIANT_DEBUG:", debug);
+
   if (!isAgreementComplete(state)) {
     throw new Error("AGREEMENT_INCOMPLETE");
   }

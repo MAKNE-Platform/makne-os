@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
-import { v4 as uuid } from "uuid";
 import { dispatchEvent } from "@/core/events/dispatcher";
+import { v4 as uuid } from "uuid";
 
-export async function POST() {
-  // TODO: replace with real auth
-  const actorId = "user_123";
+export async function POST(req: Request) {
+  // TEMP auth
+  const actorId = "brand_1";
   const actorRole = "BRAND";
+
+  const body = await req.json();
 
   const agreementId = uuid();
 
-  await dispatchEvent({
+  const event = {
     eventId: uuid(),
     agreementId,
     type: "AGREEMENT_CREATED",
@@ -18,11 +20,20 @@ export async function POST() {
     payload: {
       agreementId,
       brandId: actorId,
+
       createdBy: "BRAND",
+      
+      collaborationType: body.collaborationType ?? "INDIVIDUAL",
+      acceptanceRule: body.acceptanceRule ?? "ALL_CREATORS",
     },
     timestamp: new Date().toISOString(),
     version: 1,
-  });
+  };
+
+  console.log("CREATE_EVENT_PAYLOAD", event.payload);
+
+
+  await dispatchEvent(event);
 
   return NextResponse.json({
     agreementId,

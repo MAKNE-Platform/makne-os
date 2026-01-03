@@ -4,7 +4,7 @@ import { reduceAgreement } from "../aggregate";
 import { assertAgreementNotLocked } from "../invariants";
 
 /**
- * Assigns a creator to an agreement
+ * Assigns a creator to an agreement (supports group collab)
  */
 export async function assignCreator({
   agreementId,
@@ -15,16 +15,16 @@ export async function assignCreator({
   creatorId: string;
   actorId: string;
 }) {
-  // 1️⃣ Load all past events
+  // 1️⃣ Load past events
   const events = await loadEvents(agreementId);
 
-  // 2️⃣ Derive current agreement state
+  // 2️⃣ Reduce state
   const state = reduceAgreement(events);
 
-  // 3️⃣ Enforce invariants
+  // 3️⃣ Invariants
   assertAgreementNotLocked(state);
 
-  if (state.creatorId) {
+  if (state.creatorIds.includes(creatorId)) {
     throw new Error("CREATOR_ALREADY_ASSIGNED");
   }
 

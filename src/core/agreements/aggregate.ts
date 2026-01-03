@@ -8,8 +8,14 @@ export type AgreementStatus =
 export interface AgreementState {
   agreementId: string | null;
   brandId: string | null;
-  creatorId: string | null;
+
+  creatorIds: string[];
   status: AgreementStatus;
+
+  collaborationType: "INDIVIDUAL" | "GROUP";
+  acceptanceRule: "ALL_CREATORS";
+  acceptedByCreators: string[];
+
 
   meta?: {
     title: string;
@@ -40,7 +46,12 @@ export interface AgreementState {
 const initialState: AgreementState = {
   agreementId: null,
   brandId: null,
-  creatorId: null,
+  creatorIds: [],
+
+  collaborationType: "INDIVIDUAL",
+  acceptanceRule: "ALL_CREATORS",
+  acceptedByCreators: [],
+
   status: "DRAFT",
 
   deliverables: {},
@@ -58,16 +69,23 @@ export function reduceAgreement(events: any[]): AgreementState {
       case "AGREEMENT_CREATED": {
         state.agreementId = event.payload.agreementId;
         state.brandId = event.payload.brandId;
+
+        state.collaborationType = event.payload.collaborationType;
+        state.acceptanceRule = event.payload.acceptanceRule;
+
         state.status = "DRAFT";
         break;
       }
 
       case "AGREEMENT_PARTY_ASSIGNED": {
         if (event.payload.role === "CREATOR") {
-          state.creatorId = event.payload.creatorId;
+          if (!state.creatorIds.includes(event.payload.creatorId)) {
+            state.creatorIds.push(event.payload.creatorId);
+          }
         }
         break;
       }
+
 
       case "AGREEMENT_META_DEFINED": {
         state.meta = {
@@ -126,9 +144,23 @@ export function reduceAgreement(events: any[]): AgreementState {
       }
 
       case "AGREEMENT_ACCEPTED_BY_CREATOR": {
-        state.status = "ACTIVE";
+        if (!state.acceptedByCreators.includes(event.actorId)) {
+          state.acceptedByCreators.push(event.actorId);
+        }
+
+        if (
+          state.acceptanceRule === "ALL_CREATORS" &&
+          state.acceptedByCreators.length ===
+          (state.collaborationType === "GROUP"
+            ? state.creatorIds.length
+            : 1)
+        ) {
+          state.status = "ACTIVE";
+        }
+
         break;
       }
+
 
       case "AGREEMENT_REJECTED_BY_CREATOR": {
         state.status = "REJECTED";
