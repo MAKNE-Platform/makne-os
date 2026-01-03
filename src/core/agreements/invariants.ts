@@ -110,3 +110,14 @@ export function assertCanSendAgreement(state: AgreementState) {
     throw new Error("AGREEMENT_INCOMPLETE");
   }
 }
+
+
+export function assertCanStartExecution(state: AgreementState) {
+  if (state.status !== "ACTIVE") {
+    throw new Error("EXECUTION_NOT_ALLOWED");
+  }
+
+  if ((state as any).executionStarted) {
+    throw new Error("EXECUTION_ALREADY_STARTED");
+  }
+}

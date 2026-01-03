@@ -167,6 +167,14 @@ export function reduceAgreement(events: any[]): AgreementState {
         break;
       }
 
+      case "EXECUTION_STARTED": {
+        // execution phase begins
+        state.status = "ACTIVE"; // stays ACTIVE
+        (state as any).executionStarted = true;
+        break;
+      }
+
+
 
       default:
         break;
