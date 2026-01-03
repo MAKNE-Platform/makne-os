@@ -34,6 +34,9 @@ export async function runAutoCompleteAgreementAgent(
         deliverables,
     });
 
+    console.log("AGREEMENT STATE:", agreement.state);
+
+
     if (!shouldComplete) return;
 
     // Idempotency guard — Do not auto-complete twice
@@ -49,6 +52,7 @@ export async function runAutoCompleteAgreementAgent(
         return;
     }
 
+    
     // 4. Emit system event via dispatcher
     await dispatchEvent({
         eventId: uuid(),

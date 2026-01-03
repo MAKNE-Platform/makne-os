@@ -56,3 +56,17 @@ export function projectDeliverables(events: any[]): DeliverableView[] {
 
   return Array.from(map.values());
 }
+
+
+export function projectDeliverablesById(
+  events: any[]
+): Record<string, DeliverableView> {
+  const list = projectDeliverables(events);
+  const byId: Record<string, DeliverableView> = {};
+
+  for (const d of list) {
+    byId[d.deliverableId] = d;
+  }
+
+  return byId;
+}

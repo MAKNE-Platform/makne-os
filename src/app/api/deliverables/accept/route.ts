@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import { submitDeliverable } from "@/core/agreements/handlers/submitDeliverable";
+import { acceptDeliverable } from "@/core/agreements/handlers/acceptDeliverable";
 
 export async function POST(req: Request) {
   const body = await req.json();
 
-  await submitDeliverable({
+  await acceptDeliverable({
     agreementId: body.agreementId,
     deliverableId: body.deliverableId,
-    submissionUrl: body.submissionUrl,
-    actorId: body.actorId, // TEMP auth
+    actorId: body.actorId, // brand
   });
 
   return NextResponse.json({ success: true });

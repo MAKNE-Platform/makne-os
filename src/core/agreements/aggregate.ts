@@ -3,6 +3,7 @@ export type AgreementStatus =
   | "DEFINED"
   | "SENT"
   | "ACTIVE"
+  | "PENDING"
   | "REJECTED";
 
 export interface AgreementState {
@@ -41,6 +42,10 @@ export interface AgreementState {
     revisionLimit: number;
     disputeResolution: string;
   };
+
+
+  releasedPayments: Record<string, number>;
+
 }
 
 const initialState: AgreementState = {
@@ -57,6 +62,10 @@ const initialState: AgreementState = {
   deliverables: {},
   milestones: {},
   paymentSplits: {},
+
+
+  releasedPayments: {},
+
 };
 
 // REDUCER 
@@ -100,6 +109,7 @@ export function reduceAgreement(events: any[]): AgreementState {
       case "DELIVERABLE_CREATED": {
         state.deliverables[event.payload.deliverableId] = {
           ...event.payload,
+          status: "PENDING",
         };
         break;
       }
@@ -171,6 +181,48 @@ export function reduceAgreement(events: any[]): AgreementState {
         // execution phase begins
         state.status = "ACTIVE"; // stays ACTIVE
         (state as any).executionStarted = true;
+        break;
+      }
+
+
+      case "DELIVERABLE_SUBMITTED": {
+        const d = state.deliverables[event.payload.deliverableId];
+        if (d) {
+          d.status = "SUBMITTED";
+          d.submissionUrl = event.payload.submissionUrl;
+          d.submittedAt = event.timestamp;
+          d.submittedBy = event.actorId;
+        }
+        break;
+      }
+
+      case "DELIVERABLE_ACCEPTED": {
+        const d = state.deliverables[event.payload.deliverableId];
+        if (d) {
+          d.status = "ACCEPTED";
+          d.acceptedAt = event.timestamp;
+        }
+        break;
+      }
+
+      case "DELIVERABLE_REJECTED": {
+        const d = state.deliverables[event.payload.deliverableId];
+        if (d) {
+          d.status = "REJECTED";
+          d.rejectionReason = event.payload.reason;
+        }
+        break;
+      }
+
+
+      case "PAYMENT_RELEASED":
+        
+      case "PAYMENT_AUTO_RELEASED": {
+        const { milestoneId, amount } = event.payload;
+
+        state.releasedPayments[milestoneId] =
+          (state.releasedPayments[milestoneId] || 0) + amount;
+
         break;
       }
 

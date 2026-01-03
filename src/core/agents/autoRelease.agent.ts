@@ -4,14 +4,16 @@ import { EventType } from "@/core/events/types";
 import { projectMilestones } from "@/core/milestones/read-model";
 import { v4 as uuid } from "uuid";
 
+// ✅ ADD THIS IMPORT
+import { runAutoCompleteAgreementAgent } 
+  from "@/core/agents/auto-complete-agreement";
+
 /**
  * Auto Release Agent
  * ------------------
- * Emits MILESTONE_RELEASED when conditions are met
+ * Emits PAYMENT_RELEASED when a milestone is COMPLETED
  */
-export async function runAutoReleaseAgent(
-  agreementId: string
-) {
+export async function runAutoReleaseAgent(agreementId: string) {
   const db = await getDb();
 
   // 1. Load all events for agreement
@@ -25,24 +27,24 @@ export async function runAutoReleaseAgent(
   const milestones = projectMilestones(events);
 
   for (const milestone of milestones) {
-    // Already released → skip (idempotent)
-    const alreadyReleased = events.some(
+    // Only act on completed milestones
+    if (milestone.status !== "COMPLETED") continue;
+
+    // Idempotency: skip if payment already released
+    const paymentAlreadyReleased = events.some(
       (e) =>
-        e.type === "MILESTONE_RELEASED" &&
+        e.type === "PAYMENT_RELEASED" &&
         e.payload?.milestoneId === milestone.milestoneId
     );
 
-    if (alreadyReleased) continue;
+    if (paymentAlreadyReleased) continue;
 
-    // Only release when derived state is RELEASED
-    if (milestone.state !== "RELEASED") continue;
-
-    // 3. Emit system event
+    // 3. Emit PAYMENT_RELEASED
     await dispatchEvent({
       eventId: uuid(),
       agreementId,
-      type: "MILESTONE_RELEASED" as EventType,
-      actorId: "system",
+      type: "PAYMENT_RELEASED" as EventType,
+      actorId: "system:auto-release",
       actorRole: "SYSTEM",
       payload: {
         milestoneId: milestone.milestoneId,
@@ -52,4 +54,6 @@ export async function runAutoReleaseAgent(
       version: 1,
     });
   }
+
+  
 }

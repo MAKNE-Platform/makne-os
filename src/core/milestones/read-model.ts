@@ -4,7 +4,12 @@ export interface MilestoneView {
   milestoneId: string;
   title: string;
   amount: number;
+  status: "PENDING" | "COMPLETED";
+
   state: "PENDING" | "RELEASED" | "BLOCKED";
+
+  payoutState: "NOT_RECEIVED" | "RECEIVED";
+
   deliverableIds: string[];
 }
 
@@ -25,8 +30,16 @@ export function projectMilestones(events: any[]): MilestoneView[] {
         );
       }
     }
+    // ✅ React to PAYMENT_RECEIVED (payout confirmation)
+    if (event.type === "PAYMENT_RECEIVED") {
+      const milestone = map.get(event.payload?.milestoneId);
+      if (milestone) {
+        milestone.payoutState = "RECEIVED";
+      }
+    }
 
-    // Create milestone safely
+
+    // Create milestone
     if (event.type === "MILESTONE_CREATED") {
       const payload = event.payload ?? {};
 
@@ -37,12 +50,26 @@ export function projectMilestones(events: any[]): MilestoneView[] {
         deliverableIds: Array.isArray(payload.deliverableIds)
           ? payload.deliverableIds
           : [],
+
+        // ✅ new
+        status: "PENDING",
+
+        // ✅ existing behavior preserved
         state: "PENDING",
+        payoutState: "NOT_RECEIVED",
       });
+    }
+
+    // ✅ milestone completion is event-driven
+    if (event.type === "MILESTONE_COMPLETED") {
+      const milestone = map.get(event.payload?.milestoneId);
+      if (milestone) {
+        milestone.status = "COMPLETED";
+      }
     }
   }
 
-  // Derive milestone state
+  // Derive PAYMENT readiness (unchanged logic)
   for (const milestone of map.values()) {
     if (milestone.deliverableIds.length === 0) {
       milestone.state = "PENDING";
@@ -62,3 +89,18 @@ export function projectMilestones(events: any[]): MilestoneView[] {
 
   return Array.from(map.values());
 }
+
+
+export function projectMilestonesById(
+  events: any[]
+): Record<string, MilestoneView> {
+  const list = projectMilestones(events);
+  const byId: Record<string, MilestoneView> = {};
+
+  for (const m of list) {
+    byId[m.milestoneId] = m;
+  }
+
+  return byId;
+}
+

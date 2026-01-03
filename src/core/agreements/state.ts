@@ -20,10 +20,6 @@ export function deriveAgreementState(
         state = "DRAFT";
         break;
 
-      case "AGREEMENT_SHARED":
-        state = "NEGOTIATING";
-        break;
-
       case "AGREEMENT_ACKNOWLEDGED":
         state = "ACTIVE";
         break;
@@ -33,6 +29,8 @@ export function deriveAgreementState(
         break;
 
       case "AGREEMENT_AUTO_COMPLETED":
+        return "COMPLETED";
+        
       case "AGREEMENT_COMPLETED":
         state = "COMPLETED";
         break;

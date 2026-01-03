@@ -121,3 +121,62 @@ export function assertCanStartExecution(state: AgreementState) {
     throw new Error("EXECUTION_ALREADY_STARTED");
   }
 }
+
+
+export function assertCanSubmitDeliverable(
+  state: AgreementState,
+  deliverableId: string
+) {
+  if (state.status !== "ACTIVE") {
+    throw new Error("AGREEMENT_NOT_ACTIVE");
+  }
+
+  if (!(state as any).executionStarted) {
+    throw new Error("EXECUTION_NOT_STARTED");
+  }
+
+  const d = state.deliverables[deliverableId];
+  if (!d) throw new Error("DELIVERABLE_NOT_FOUND");
+
+  if (d.status !== "PENDING") {
+    throw new Error("DELIVERABLE_ALREADY_SUBMITTED");
+  }
+}
+
+export function assertCanAcceptDeliverable(
+  state: AgreementState,
+  deliverableId: string
+) {
+  const d = state.deliverables[deliverableId];
+  if (!d) throw new Error("DELIVERABLE_NOT_FOUND");
+
+  if (d.status !== "SUBMITTED") {
+    throw new Error("DELIVERABLE_NOT_SUBMITTED");
+  }
+}
+
+
+export function assertCanReleasePayment(
+  state: AgreementState,
+  milestoneId: string,
+  amount: number
+) {
+  const milestone = state.milestones[milestoneId];
+  if (!milestone) throw new Error("MILESTONE_NOT_FOUND");
+
+  if (milestone.status !== "COMPLETED") {
+    throw new Error("MILESTONE_NOT_COMPLETED");
+  }
+
+  const allocated = state.paymentSplits[milestoneId];
+  if (!allocated) {
+    throw new Error("PAYMENT_SPLIT_NOT_DEFINED");
+  }
+
+  const alreadyReleased =
+    state.releasedPayments[milestoneId] || 0;
+
+  if (alreadyReleased + amount > allocated) {
+    throw new Error("PAYMENT_RELEASE_EXCEEDS_ALLOCATED");
+  }
+}

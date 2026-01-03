@@ -40,6 +40,12 @@ export const EventTypeEnum = z.enum([
     // PAYMENT EVENTS
     "PAYMENT_DEFINED",
     "PAYMENT_SPLIT_DEFINED",
+
+    "PAYMENT_RELEASED",
+    "PAYMENT_AUTO_RELEASED",
+
+    "PAYMENT_RECEIVED",
+
     "POLICY_DEFINED",
 ]);
 
@@ -83,7 +89,7 @@ const AgreementCreatedPayloadSchema = z.object({
     brandId: z.string(),
     createdBy: z.literal("BRAND"),
 
-    
+
     collaborationType: z.enum(["INDIVIDUAL", "GROUP"]),
     acceptanceRule: z.enum(["ALL_CREATORS"]),
 });
