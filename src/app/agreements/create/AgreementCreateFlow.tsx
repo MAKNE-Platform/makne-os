@@ -1,5 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
+
 import { useState } from "react";
 import { createAndDefineAgreement } from "@/services/agreements/agreementOrchestrator";
 import { AGREEMENT_ERROR_MESSAGES } from "@/services/agreements/agreementErrors";
@@ -30,6 +33,9 @@ export default function AgreementCreateFlow() {
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const router = useRouter();
+
 
     // TODO: replace with real auth later
     const brandId = "brand_1";
@@ -78,99 +84,110 @@ export default function AgreementCreateFlow() {
         }
     }
 
+    function resetForm() {
+        setStep(0);
+        setMeta(null);
+        setCreators([]);
+        setDeliverables([]);
+        setMilestones([]);
+        setPolicy(null);
+        setPayment(null);
+        setPaymentSplits([]);
+    }
+
+
     async function handleSubmit() {
         setLoading(true);
         setError(null);
 
-        const result = await createAndDefineAgreement({
-            brandId,
-            meta,
-            creators,
-            deliverables,
-            milestones,
-            policy,
-            payment,
-            paymentSplits,
-        });
+        try {
+            const result = await createAndDefineAgreement({
+                brandId,
+                meta,
+                creators,
+                deliverables,
+                milestones,
+                policy,
+                payment,
+                paymentSplits,
+            });
 
-        setLoading(false);
+            // ✅ reset local state BEFORE navigation
+            resetForm();
 
-        if (!result.success) {
+            // ✅ redirect to agreement details
+            router.replace("/dashboard/agreements");
+
+        } catch (err: any) {
             setError(
-                AGREEMENT_ERROR_MESSAGES[result.errorCode]
+                AGREEMENT_ERROR_MESSAGES[err?.errorCode] ??
+                "Something went wrong. Please try again."
             );
-            return;
+        } finally {
+            setLoading(false);
         }
-
-        // future: redirect to agreement detail page
-        console.log("Agreement created:", result.agreementId);
     }
 
+
     return (
-        <div className="max-w-[900px] mx-auto my-10 px-4">
+        <div className="min-h-screen max-w-[900px] mx-auto my-6 sm:my-10 px-4">
             {/* Header */}
-            <h1 className="text-[28px] font-semibold mb-2">
+            <h1 className="text-2xl sm:text-[28px] font-semibold mb-2">
                 Create Agreement
             </h1>
 
-            <p className="text-neutral-600 mb-8">
+            <p className="text-sm sm:text-base text-neutral-600 mb-6 sm:mb-8">
                 Follow the steps below to define and send an agreement.
             </p>
 
-            {/* Horizontal Stepper */}
-            <div className="flex gap-6 mb-8 border-b border-neutral-200 pb-2">
-                {STEPS.map((label, index) => {
-                    const isActive = index === step;
-                    const isCompleted = index < step;
+            {/* Horizontal Stepper (scrollable on mobile) */}
+            <div className="mb-6 sm:mb-8 overflow-x-auto">
+                <div className="flex gap-6 min-w-max border-b border-neutral-200 pb-2">
+                    {STEPS.map((label, index) => {
+                        const isActive = index === step;
+                        const isCompleted = index < step;
 
-                    return (
-                        <div
-                            key={label}
-                            className={[
-                                "pb-1 cursor-default",
-                                isActive
-                                    ? "border-b-2 border-neutral-900 text-neutral-900 font-semibold"
-                                    : "border-b-2 border-transparent",
-                                !isActive && isCompleted
-                                    ? "text-neutral-600"
-                                    : !isActive
-                                        ? "text-neutral-400"
-                                        : "",
-                            ].join(" ")}
-                        >
-                            {label}
-                        </div>
-                    );
-                })}
+                        return (
+                            <div
+                                key={label}
+                                className={[
+                                    "pb-1 whitespace-nowrap cursor-default text-sm sm:text-base",
+                                    isActive
+                                        ? "border-b-2 border-neutral-900 text-neutral-900 font-semibold"
+                                        : "border-b-2 border-transparent",
+                                    !isActive && isCompleted
+                                        ? "text-neutral-600"
+                                        : !isActive
+                                            ? "text-neutral-400"
+                                            : "",
+                                ].join(" ")}
+                            >
+                                {label}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Error */}
             {error && (
-                <p className="text-red-600 mb-4">
+                <p className="text-sm text-red-600 mb-4">
                     {error}
                 </p>
             )}
 
             {/* Step Content */}
-            <div className="mb-8">
-                {step === 0 && (
-                    <MetaStep value={meta} onChange={setMeta} />
-                )}
-
+            <div className="mb-24 sm:mb-8">
+                {step === 0 && <MetaStep value={meta} onChange={setMeta} />}
                 {step === 1 && (
-                    <CreatorsStep
-                        value={creators}
-                        onChange={setCreators}
-                    />
+                    <CreatorsStep value={creators} onChange={setCreators} />
                 )}
-
                 {step === 2 && (
                     <DeliverablesStep
                         value={deliverables}
                         onChange={setDeliverables}
                     />
                 )}
-
                 {step === 3 && (
                     <MilestonesStep
                         deliverables={deliverables}
@@ -178,14 +195,9 @@ export default function AgreementCreateFlow() {
                         onChange={setMilestones}
                     />
                 )}
-
                 {step === 4 && (
-                    <PolicyStep
-                        value={policy}
-                        onChange={setPolicy}
-                    />
+                    <PolicyStep value={policy} onChange={setPolicy} />
                 )}
-
                 {step === 5 && (
                     <PaymentStep
                         payment={payment}
@@ -195,7 +207,6 @@ export default function AgreementCreateFlow() {
                         onSplitsChange={setPaymentSplits}
                     />
                 )}
-
                 {step === 6 && (
                     <ReviewStep
                         meta={meta}
@@ -210,45 +221,48 @@ export default function AgreementCreateFlow() {
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between">
-                {step > 0 ? (
-                    <button
-                        onClick={goBack}
-                        disabled={loading}
-                        className="px-4 py-2 rounded-md border border-neutral-300 bg-transparent text-sm"
-                    >
-                        Back
-                    </button>
-                ) : (
-                    <div />
-                )}
+            <div className="fixed sm:static bottom-0 left-0 right-0 sm:bottom-auto bg-black sm:bg-transparent border-t sm:border-0 border-neutral-200 z-10 px-4 py-3 sm:p-0">
+                <div className="max-w-[900px] mx-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-0 sm:justify-between">
+                    {step > 0 ? (
+                        <button
+                            onClick={goBack}
+                            disabled={loading}
+                            className="w-full sm:w-auto px-4 py-2 rounded-md border border-neutral-300 bg-transparent text-sm"
+                        >
+                            Back
+                        </button>
+                    ) : (
+                        <div className="hidden sm:block" />
+                    )}
 
-                {step < STEPS.length - 1 && (
-                    <button
-                        onClick={goNext}
-                        disabled={!canGoNext() || loading}
-                        className={[
-                            "px-5 py-2 rounded-md text-sm text-white",
-                            canGoNext()
-                                ? "bg-neutral-900"
-                                : "bg-neutral-400 cursor-not-allowed",
-                        ].join(" ")}
-                    >
-                        Next
-                    </button>
-                )}
+                    {step < STEPS.length - 1 && (
+                        <button
+                            onClick={goNext}
+                            disabled={!canGoNext() || loading}
+                            className={[
+                                "w-full sm:w-auto px-5 py-2 rounded-md text-sm text-white",
+                                canGoNext()
+                                    ? "bg-neutral-900"
+                                    : "bg-neutral-400 cursor-not-allowed",
+                            ].join(" ")}
+                        >
+                            Next
+                        </button>
+                    )}
 
-                {step === STEPS.length - 1 && (
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="px-5 py-2 rounded-md text-sm text-white bg-neutral-900"
-                    >
-                        {loading ? "Creating..." : "Create Agreement"}
-                    </button>
-                )}
+                    {step === STEPS.length - 1 && (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className="w-full sm:w-auto px-5 py-2 rounded-md text-sm text-white bg-neutral-900"
+                        >
+                            {loading ? "Creating..." : "Create Agreement"}
+                        </button>
+                    )}
+                </div>
             </div>
-        </div>
 
+        </div>
     );
+
 }
