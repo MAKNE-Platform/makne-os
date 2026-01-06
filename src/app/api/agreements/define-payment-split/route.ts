@@ -3,7 +3,7 @@ import { definePaymentSplit } from "@/core/agreements/handlers/definePaymentSpli
 
 export async function POST(req: Request) {
   // TODO: replace with real auth
-  const actorId = "user_123";
+  const actorId = "brand_1";
 
   const { agreementId, milestoneId, amount } =
     await req.json();

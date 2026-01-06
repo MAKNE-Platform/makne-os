@@ -1,32 +1,22 @@
 import { NextResponse } from "next/server";
-import { addDeliverable } from "@/core/agreements/handlers/addDeliverables";
+import { addDeliverable } from "@/core/agreements/handlers/addDeliverable";
 
 export async function POST(req: Request) {
-  // TODO: replace with real auth
-  const actorId = "user_123";
+  const actorId = "brand_1"; 
+  const body = await req.json();
 
-  const {
-    agreementId,
-    name,
-    platform,
-    format,
-    quantity,
-    dueInDays,
-    requiresApproval,
-  } = await req.json();
-
-  await addDeliverable({
-    agreementId,
-    name,
-    platform,
-    format,
-    quantity,
-    dueInDays,
-    requiresApproval,
+  const deliverableId = await addDeliverable({
+    agreementId: body.agreementId,
+    name: body.name,
+    platform: body.platform,
+    format: body.format,
+    quantity: body.quantity,
+    dueInDays: body.dueInDays,
+    requiresApproval: body.requiresApproval,
     actorId,
   });
 
   return NextResponse.json({
-    success: true,
+    deliverableId,
   });
 }

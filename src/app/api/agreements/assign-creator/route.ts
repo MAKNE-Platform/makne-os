@@ -3,7 +3,7 @@ import { assignCreator } from "@/core/agreements/handlers/assignCreator";
 
 export async function POST(req: Request) {
   // TODO: real auth
-  const actorId = "brand_123";
+  const actorId = "brand_1";
 
   const { agreementId, creatorId } = await req.json();
 

@@ -2,25 +2,21 @@ import { NextResponse } from "next/server";
 import { addMilestone } from "@/core/agreements/handlers/addMilestone";
 
 export async function POST(req: Request) {
-  // TODO: replace with real auth
-  const actorId = "user_123";
+  const actorId = "brand_1";
+  const body = await req.json();
 
-  const {
-    agreementId,
-    name,
-    deliverableIds,
-    unlockRule,
-  } = await req.json();
+  // HARD NORMALIZATION (keep this)
+  const deliverableIds: string[] = body.deliverableIds.map(
+    (d: any) => (typeof d === "string" ? d : d.deliverableId)
+  );
 
-  await addMilestone({
-    agreementId,
-    name,
+  const { milestoneId } = await addMilestone({
+    agreementId: body.agreementId,
+    name: body.name,
+    unlockRule: body.unlockRule,
     deliverableIds,
-    unlockRule,
     actorId,
   });
 
-  return NextResponse.json({
-    success: true,
-  });
+  return NextResponse.json({ milestoneId });
 }

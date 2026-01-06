@@ -67,4 +67,7 @@ export async function addDeliverable({
     timestamp: new Date().toISOString(),
     version: events.length + 1,
   });
+
+  return { deliverableId };
+
 }

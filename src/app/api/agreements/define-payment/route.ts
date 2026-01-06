@@ -3,7 +3,7 @@ import { definePayment } from "@/core/agreements/handlers/definePayment";
 
 export async function POST(req: Request) {
   // TODO: replace with real auth
-  const actorId = "user_123";
+  const actorId = "brand_1";
 
   const {
     agreementId,

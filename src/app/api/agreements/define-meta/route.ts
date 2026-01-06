@@ -3,7 +3,7 @@ import { defineMeta } from "@/core/agreements/handlers/defineMeta";
 
 export async function POST(req: Request) {
   // TODO: replace with real auth
-  const actorId = "user_123";
+  const actorId = "brand_1";
 
   const { agreementId, title, description, category } =
     await req.json();

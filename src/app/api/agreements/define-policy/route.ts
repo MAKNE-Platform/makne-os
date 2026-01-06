@@ -3,7 +3,7 @@ import { definePolicy } from "@/core/agreements/handlers/definePolicy";
 
 export async function POST(req: Request) {
   // TODO: replace with real auth
-  const actorId = "user_123";
+  const actorId = "brand_1";
 
   const {
     agreementId,

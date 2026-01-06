@@ -49,7 +49,7 @@ export async function addMilestone({
 
   const milestoneId = uuid();
 
-  // 4️⃣ Emit event
+  // emit event
   await dispatchEvent({
     eventId: uuid(),
     agreementId,
@@ -65,4 +65,8 @@ export async function addMilestone({
     timestamp: new Date().toISOString(),
     version: events.length + 1,
   });
+
+  // ✅ ADD THIS
+  return { milestoneId };
+
 }

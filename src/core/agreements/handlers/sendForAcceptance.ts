@@ -22,6 +22,16 @@ export async function sendForAcceptance({
   // 2️⃣ Derive full agreement state
   const state = reduceAgreement(events);
 
+  // after reduceAgreement
+  console.log("[sendForAcceptance] state snapshot", {
+    hasMeta: !!state.meta,
+    creators: state.creatorIds.length,
+    deliverables: Object.keys(state.deliverables).length,
+    milestones: Object.keys(state.milestones).length,
+    paymentDefined: !!state.payment,
+    paymentSplits: Object.keys(state.paymentSplits).length,
+  });
+
   // 3️⃣ Enforce invariants
   assertAgreementNotLocked(state);
   assertCanSendAgreement(state);
@@ -39,4 +49,5 @@ export async function sendForAcceptance({
     timestamp: new Date().toISOString(),
     version: events.length + 1,
   });
+
 }
