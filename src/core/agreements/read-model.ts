@@ -18,20 +18,51 @@ export function projectAgreement(events: any[]): AgreementSummary {
 
   for (const event of events) {
     switch (event.type as EventType) {
+
+      /**
+       * Agreement creation
+       * (timestamp already handled)
+       */
       case "AGREEMENT_CREATED":
-        title = event.payload?.title ?? title;
         break;
 
-      case "AGREEMENT_SHARED":
-        participants = [
-          ...participants,
-          ...(event.payload?.invitedUserIds ?? []),
-        ];
+      /**
+       * ✅ Agreement metadata (title, description, etc.)
+       */
+      case "AGREEMENT_META_DEFINED":
+        if (event.payload?.title) {
+          title = event.payload.title;
+        }
         break;
 
-      // 🔹 Auto-complete event
-      // No local projection needed here.
-      // State transition is handled by deriveAgreementState.
+      /**
+       * ✅ Party assignment (creators added to agreement)
+       */
+      case "AGREEMENT_PARTY_ASSIGNED": {
+        const payload = event.payload;
+
+        if (payload?.userId) {
+          participants.push(payload.userId);
+        }
+
+        if (payload?.creatorId) {
+          participants.push(payload.creatorId);
+        }
+
+        if (Array.isArray(payload?.userIds)) {
+          participants.push(...payload.userIds);
+        }
+
+        if (Array.isArray(payload?.invitedUserIds)) {
+          participants.push(...payload.invitedUserIds);
+        }
+
+        break;
+      }
+
+      /**
+       * State handled centrally
+       */
       case "AGREEMENT_AUTO_COMPLETED":
         break;
     }

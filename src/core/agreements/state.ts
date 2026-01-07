@@ -20,6 +20,18 @@ export function deriveAgreementState(
         state = "DRAFT";
         break;
 
+      /**
+       * ✅ Creators are being added → negotiation phase
+       */
+      case "AGREEMENT_PARTY_ASSIGNED":
+        if (state === "DRAFT") {
+          state = "NEGOTIATING";
+        }
+        break;
+
+      /**
+       * Agreement fully acknowledged
+       */
       case "AGREEMENT_ACKNOWLEDGED":
         state = "ACTIVE";
         break;
@@ -30,11 +42,10 @@ export function deriveAgreementState(
 
       case "AGREEMENT_AUTO_COMPLETED":
         return "COMPLETED";
-        
+
       case "AGREEMENT_COMPLETED":
         state = "COMPLETED";
         break;
-
     }
   }
 
