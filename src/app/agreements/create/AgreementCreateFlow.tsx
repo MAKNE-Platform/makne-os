@@ -62,7 +62,7 @@ export default function AgreementCreateFlow() {
             case 0:
                 return meta && meta.title?.trim().length >= 3;
             case 1:
-                return creators.length > 0;
+                return true;
             case 2:
                 return deliverables.length > 0;
             case 3:

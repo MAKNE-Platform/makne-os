@@ -13,6 +13,7 @@ export function deriveAgreementState(
   events: { type: EventType }[]
 ): AgreementState {
   let state: AgreementState = "DRAFT";
+  let hasCreatorAssigned = false;
 
   for (const event of events) {
     switch (event.type) {
@@ -20,18 +21,11 @@ export function deriveAgreementState(
         state = "DRAFT";
         break;
 
-      /**
-       * ✅ Creators are being added → negotiation phase
-       */
       case "AGREEMENT_PARTY_ASSIGNED":
-        if (state === "DRAFT") {
-          state = "NEGOTIATING";
-        }
+        hasCreatorAssigned = true;
+        state = "NEGOTIATING";
         break;
 
-      /**
-       * Agreement fully acknowledged
-       */
       case "AGREEMENT_ACKNOWLEDGED":
         state = "ACTIVE";
         break;
@@ -46,8 +40,18 @@ export function deriveAgreementState(
       case "AGREEMENT_COMPLETED":
         state = "COMPLETED";
         break;
+
+      case "AGREEMENT_CANCELLED":
+        state = "CANCELLED";
+        break;
     }
+  }
+
+  // 🔒 Safety: if no creator was ever assigned, remain DRAFT
+  if (!hasCreatorAssigned) {
+    return "DRAFT";
   }
 
   return state;
 }
+

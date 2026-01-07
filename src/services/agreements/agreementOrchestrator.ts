@@ -158,13 +158,6 @@ export async function createAndDefineAgreement(params: {
     });
   }
 
-  /**
-   * 9. Send agreement for acceptance
-   */
-  await sendForAcceptance({
-    agreementId: String(agreementId),
-  });
-
 
   return { agreementId };
 }

@@ -1,6 +1,13 @@
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
+
 import { loadEvents } from "@/core/events/dispatcher";
 import { projectAgreement } from "@/core/agreements/read-model";
 import EventTimeline from "./EventTimeline";
+import ReleasePaymentButton from "./ReleasePaymentButton";
+import AssignCreatorForm from "./AssignCreatorForm";
+
 
 type ParticipantStatus =
     | "ASSIGNED"
@@ -231,6 +238,11 @@ export default async function AgreementDetailsPage({
         milestones.map((m) => [m.id, m.title])
     );
 
+    const milestoneStatusMap = new Map(
+        milestones.map((m) => [m.id, m.status])
+    );
+
+
     payments.splits = payments.splits.map((s) => ({
         ...s,
         milestoneTitle: milestoneTitleMap.get(s.milestoneId),
@@ -264,6 +276,8 @@ export default async function AgreementDetailsPage({
                     Status: <span className="font-medium">{summary.state}</span>
                 </div>
             </div>
+
+            <AssignCreatorForm agreementId={agreementId} />
 
 
             {/* participants */}
@@ -336,6 +350,7 @@ export default async function AgreementDetailsPage({
                     </div>
                 ) : (
                     <div className="space-y-3 border rounded-lg p-4 text-sm">
+                        {/* Summary */}
                         <div className="grid grid-cols-2 gap-2">
                             <div>Total Amount</div>
                             <div>
@@ -356,32 +371,60 @@ export default async function AgreementDetailsPage({
                             <div>{payments.releaseMode}</div>
                         </div>
 
+                        {/* Milestone splits */}
                         {payments.splits.length > 0 && (
                             <div className="pt-3 space-y-2">
-                                <div className="font-medium">Milestone Split</div>
+                                <div className="font-medium">Milestone Payments</div>
 
-                                <ul className="space-y-1">
-                                    {payments.splits.map((s) => (
-                                        <li
-                                            key={s.milestoneId}
-                                            className="flex justify-between text-xs border rounded px-2 py-1"
-                                        >
-                                            <span>
-                                                {s.milestoneTitle ?? "Untitled milestone"}
-                                            </span>
+                                <ul className="space-y-2">
+                                    {payments.splits.map((s) => {
+                                        const milestoneStatus =
+                                            milestoneStatusMap.get(s.milestoneId);
 
-                                            <span>
-                                                {payments.currency} {s.amount}{" "}
-                                                {s.released ? "(released)" : "(pending)"}
-                                            </span>
-                                        </li>
-                                    ))}
+
+                                        const canShowReleaseButton =
+                                            payments.releaseMode === "MANUAL" &&
+                                            !s.released &&
+                                            milestoneStatus === "COMPLETED";
+
+                                        return (
+                                            <li
+                                                key={s.milestoneId}
+                                                className="flex items-center justify-between gap-3 border rounded-md px-3 py-2 text-xs"
+                                            >
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">
+                                                        {s.milestoneTitle ?? "Untitled milestone"}
+                                                    </span>
+                                                    <span className="text-muted-foreground">
+                                                        {payments.currency} {s.amount}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-2 py-1 rounded-full bg-muted">
+                                                        {s.released ? "RELEASED" : "PENDING"}
+                                                    </span>
+
+                                                    {canShowReleaseButton && (
+                                                        <ReleasePaymentButton
+                                                            agreementId={agreementId}
+                                                            milestoneId={s.milestoneId}
+                                                            amount={s.amount}
+                                                        />
+                                                    )}
+
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </div>
                         )}
                     </div>
                 )}
             </div>
+
 
 
             {/* event timeline */}

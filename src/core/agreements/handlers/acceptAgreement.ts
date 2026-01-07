@@ -1,36 +1,47 @@
 import { v4 as uuid } from "uuid";
 import { dispatchEvent, loadEvents } from "@/core/events/dispatcher";
 import { reduceAgreement } from "../aggregate";
+import { deriveAgreementState } from "../state";
+import { assertAgreementNotLocked } from "../invariants";
 
 export async function acceptAgreement({
-    agreementId,
-    actorId,
+  agreementId,
+  actorId,
 }: {
-    agreementId: string;
-    actorId: string;
+  agreementId: string;
+  actorId: string;
 }) {
-    const events = await loadEvents(agreementId);
-    const state = reduceAgreement(events);
+  const events = await loadEvents(agreementId);
+  const state = reduceAgreement(events);
 
-    if (state.status !== "SENT") {
-        throw new Error("AGREEMENT_NOT_PENDING_ACCEPTANCE");
-    }
+  const agreementState = deriveAgreementState(
+    events.map(e => ({ type: e.type }))
+  );
 
-    if (!state.creatorIds.includes(actorId)) {
-        throw new Error("ONLY_CREATOR_CAN_ACCEPT");
-    }
+  assertAgreementNotLocked(state);
 
+  if (agreementState !== "NEGOTIATING") {
+    throw new Error("AGREEMENT_NOT_NEGOTIATING");
+  }
 
-    await dispatchEvent({
-        eventId: uuid(),
-        agreementId,
-        type: "AGREEMENT_ACCEPTED_BY_CREATOR",
-        actorId,
-        actorRole: "CREATOR",
-        payload: {
-            acceptedAt: new Date().toISOString(),
-        },
-        timestamp: new Date().toISOString(),
-        version: events.length + 1,
-    });
+  if (!state.creatorIds.includes(actorId)) {
+    throw new Error("CREATOR_NOT_ASSIGNED");
+  }
+
+  if (state.acceptedByCreators.includes(actorId)) {
+    throw new Error("CREATOR_ALREADY_ACCEPTED");
+  }
+
+  await dispatchEvent({
+    eventId: uuid(),
+    agreementId,
+    type: "AGREEMENT_ACCEPTED_BY_CREATOR",
+    actorId,
+    actorRole: "CREATOR",
+    payload: {
+      acceptedAt: new Date().toISOString(),
+    },
+    timestamp: new Date().toISOString(),
+    version: events.length + 1,
+  });
 }

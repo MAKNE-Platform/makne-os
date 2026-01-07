@@ -38,6 +38,11 @@ export async function definePaymentSplit({
     throw new Error("INVALID_SPLIT_AMOUNT");
   }
 
+  // ❗ Prevent duplicate split for the same milestone
+  if (state.paymentSplits[milestoneId]) {
+    throw new Error("PAYMENT_SPLIT_ALREADY_DEFINED");
+  }
+
   const existingTotal = Object.values(
     state.paymentSplits
   ).reduce((sum, v) => sum + v, 0);

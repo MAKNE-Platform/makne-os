@@ -21,6 +21,19 @@ export async function releasePayment({
     throw new Error("ONLY_BRAND_CAN_RELEASE_PAYMENT");
   }
 
+  // ✅ Defensive idempotency guard
+  const alreadyReleased = events.some(
+    (e) =>
+      (e.type === "PAYMENT_RELEASED" ||
+        e.type === "PAYMENT_AUTO_RELEASED") &&
+      e.payload?.milestoneId === milestoneId
+  );
+
+  if (alreadyReleased) {
+    throw new Error("PAYMENT_ALREADY_RELEASED");
+  }
+
+  // ✅ Domain invariants
   assertCanReleasePayment(state, milestoneId, amount);
 
   await dispatchEvent({
@@ -34,6 +47,7 @@ export async function releasePayment({
       amount,
     },
     timestamp: new Date().toISOString(),
-    version: 1,
+
+    version: events.length + 1,
   });
 }

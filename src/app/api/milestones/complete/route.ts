@@ -5,26 +5,20 @@ import { reduceAgreement } from "@/core/agreements/aggregate";
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { agreementId, creatorId } = body;
 
-  // TEMP auth
+  const { agreementId, milestoneId } = body;
+
+  // TEMP auth (same pattern you already use)
   const actorId = "brand_1";
   const actorRole = "BRAND";
 
   const events = await loadEvents(agreementId);
   const state = reduceAgreement(events);
 
-  // Prevent duplicate assignment
-  const alreadyAssigned = events.some(
-    (e) =>
-      e.type === "AGREEMENT_PARTY_ASSIGNED" &&
-      (e.payload?.creatorId === creatorId ||
-        e.payload?.userId === creatorId)
-  );
-
-  if (alreadyAssigned) {
+  // (Optional safety check)
+  if (!state.milestones?.[milestoneId]) {
     return NextResponse.json(
-      { error: "CREATOR_ALREADY_ASSIGNED" },
+      { error: "MILESTONE_NOT_FOUND" },
       { status: 400 }
     );
   }
@@ -32,11 +26,11 @@ export async function POST(req: Request) {
   await dispatchEvent({
     eventId: uuid(),
     agreementId,
-    type: "AGREEMENT_PARTY_ASSIGNED",
+    type: "MILESTONE_COMPLETED",
     actorId,
     actorRole,
     payload: {
-      creatorId,
+      milestoneId,
     },
     timestamp: new Date().toISOString(),
     version: events.length + 1,
