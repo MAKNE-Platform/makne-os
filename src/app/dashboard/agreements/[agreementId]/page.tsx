@@ -60,6 +60,72 @@ function deriveParticipantStatuses(events: any[]) {
     );
 }
 
+type MilestoneStatus =
+    | "CREATED"
+    | "COMPLETED"
+    | "RELEASED"
+    | "BLOCKED";
+
+type MilestoneView = {
+    id: string;
+    title?: string;
+    amount?: number;
+    status: MilestoneStatus;
+};
+
+function deriveMilestones(events: any[]): MilestoneView[] {
+    const milestones = new Map<string, MilestoneView>();
+
+    for (const event of events) {
+        switch (event.type) {
+            case "MILESTONE_CREATED": {
+                const payload = event.payload ?? {};
+                const milestoneId = payload.milestoneId;
+
+                if (milestoneId) {
+                    milestones.set(milestoneId, {
+                        id: milestoneId,
+                        title:
+                            payload.title ??
+                            payload.name ??
+                            payload.label ??
+                            undefined,
+                        amount: payload.amount,
+                        status: "CREATED",
+                    });
+                }
+                break;
+            }
+
+            case "MILESTONE_COMPLETED": {
+                const { milestoneId } = event.payload ?? {};
+                if (milestoneId && milestones.has(milestoneId)) {
+                    milestones.get(milestoneId)!.status = "COMPLETED";
+                }
+                break;
+            }
+
+            case "MILESTONE_RELEASED": {
+                const { milestoneId } = event.payload ?? {};
+                if (milestoneId && milestones.has(milestoneId)) {
+                    milestones.get(milestoneId)!.status = "RELEASED";
+                }
+                break;
+            }
+
+            case "MILESTONE_BLOCKED": {
+                const { milestoneId } = event.payload ?? {};
+                if (milestoneId && milestones.has(milestoneId)) {
+                    milestones.get(milestoneId)!.status = "BLOCKED";
+                }
+                break;
+            }
+        }
+    }
+
+    return Array.from(milestones.values());
+}
+
 
 export default async function AgreementDetailsPage({
     params,
@@ -71,6 +137,7 @@ export default async function AgreementDetailsPage({
     const events = await loadEvents(agreementId);
 
     const participantStatuses = deriveParticipantStatuses(events);
+    const milestones = deriveMilestones(events);
 
 
     if (!events || events.length === 0) {
@@ -101,6 +168,7 @@ export default async function AgreementDetailsPage({
             </div>
 
 
+            {/* participants */}
             <div className="space-y-2">
                 <h2 className="text-lg font-medium">Participants</h2>
 
@@ -125,7 +193,42 @@ export default async function AgreementDetailsPage({
                 )}
             </div>
 
+            <div className="space-y-2">
+                <h2 className="text-lg font-medium">Milestones</h2>
 
+                {milestones.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">
+                        No milestones defined yet.
+                    </div>
+                ) : (
+                    <ul className="space-y-2">
+                        {milestones.map((m) => (
+                            <li
+                                key={m.id}
+                                className="flex items-center justify-between border rounded-md px-3 py-2 text-sm"
+                            >
+                                <div>
+                                    <div className="font-medium">
+                                        {m.title ?? "Untitled milestone"}
+                                    </div>
+                                    {m.amount !== undefined && (
+                                        <div className="text-xs text-muted-foreground">
+                                            Amount: {m.amount}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <span className="text-xs px-2 py-1 rounded-full bg-muted">
+                                    {m.status}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+
+
+            {/* event timeline */}
             <div>
                 <h2 className="text-lg font-medium">Event Timeline</h2>
                 <EventTimeline events={events} />
