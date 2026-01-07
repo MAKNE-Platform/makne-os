@@ -10,10 +10,11 @@ export async function loadEvents(agreementId: string) {
 
   return db
     .collection("events")
-    .find({ agreementId })
-    .sort({ timestamp: 1 })
+    .find({ agreementId })  
+    .sort({ version: 1 })    
     .toArray();
 }
+
 
 
 export async function dispatchEvent(event: BaseEvent) {

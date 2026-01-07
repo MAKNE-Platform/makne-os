@@ -10,6 +10,10 @@ export interface AgreementSummary {
 }
 
 export function projectAgreement(events: any[]): AgreementSummary {
+  if (!events || events.length === 0) {
+    throw new Error("NO_EVENTS_FOR_AGREEMENT");
+  }
+
   const agreementId = events[0].agreementId;
 
   let title = "Untitled Agreement";
