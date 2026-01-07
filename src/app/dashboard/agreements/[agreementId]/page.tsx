@@ -127,6 +127,93 @@ function deriveMilestones(events: any[]): MilestoneView[] {
 }
 
 
+type PaymentSummary = {
+    currency?: "INR" | "USD";
+    totalAmount?: number;
+    releaseMode?: "MANUAL" | "AUTO";
+    escrowRequired?: boolean;
+
+    releasedAmount: number;
+    pendingAmount: number;
+
+    splits: {
+        milestoneId: string;
+        milestoneTitle?: string;
+        amount: number;
+        released: boolean;
+    }[];
+
+};
+
+function derivePayments(events: any[]): PaymentSummary {
+    let currency: PaymentSummary["currency"];
+    let totalAmount: number | undefined;
+    let releaseMode: PaymentSummary["releaseMode"];
+    let escrowRequired: boolean | undefined;
+
+    const splits = new Map<
+        string,
+        { milestoneId: string; amount: number; released: boolean }
+    >();
+
+    let releasedAmount = 0;
+
+    for (const event of events) {
+        switch (event.type) {
+            case "PAYMENT_DEFINED": {
+                const p = event.payload ?? {};
+                currency = p.currency;
+                totalAmount = p.totalAmount;
+                releaseMode = p.releaseMode;
+                escrowRequired = p.escrowRequired;
+                break;
+            }
+
+            case "PAYMENT_SPLIT_DEFINED": {
+                const { milestoneId, amount } = event.payload ?? {};
+                if (milestoneId && amount) {
+                    splits.set(milestoneId, {
+                        milestoneId,
+                        amount,
+                        released: false,
+                    });
+                }
+                break;
+            }
+
+            case "PAYMENT_RELEASED":
+            case "PAYMENT_AUTO_RELEASED": {
+                const { milestoneId, amount } = event.payload ?? {};
+
+                if (milestoneId && splits.has(milestoneId)) {
+                    splits.get(milestoneId)!.released = true;
+                }
+
+                if (amount) {
+                    releasedAmount += amount;
+                }
+                break;
+            }
+        }
+    }
+
+    const pendingAmount =
+        typeof totalAmount === "number"
+            ? totalAmount - releasedAmount
+            : 0;
+
+    return {
+        currency,
+        totalAmount,
+        releaseMode,
+        escrowRequired,
+        releasedAmount,
+        pendingAmount,
+        splits: Array.from(splits.values()),
+    };
+}
+
+
 export default async function AgreementDetailsPage({
     params,
 }: {
@@ -138,6 +225,17 @@ export default async function AgreementDetailsPage({
 
     const participantStatuses = deriveParticipantStatuses(events);
     const milestones = deriveMilestones(events);
+    const payments = derivePayments(events);
+
+    const milestoneTitleMap = new Map(
+        milestones.map((m) => [m.id, m.title])
+    );
+
+    payments.splits = payments.splits.map((s) => ({
+        ...s,
+        milestoneTitle: milestoneTitleMap.get(s.milestoneId),
+    }));
+
 
 
     if (!events || events.length === 0) {
@@ -193,6 +291,7 @@ export default async function AgreementDetailsPage({
                 )}
             </div>
 
+            {/* MILESTONES */}
             <div className="space-y-2">
                 <h2 className="text-lg font-medium">Milestones</h2>
 
@@ -224,6 +323,63 @@ export default async function AgreementDetailsPage({
                             </li>
                         ))}
                     </ul>
+                )}
+            </div>
+
+            {/* payments */}
+            <div className="space-y-3">
+                <h2 className="text-lg font-medium">Payments</h2>
+
+                {!payments.totalAmount ? (
+                    <div className="text-sm text-muted-foreground">
+                        No payment terms defined yet.
+                    </div>
+                ) : (
+                    <div className="space-y-3 border rounded-lg p-4 text-sm">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>Total Amount</div>
+                            <div>
+                                {payments.currency} {payments.totalAmount}
+                            </div>
+
+                            <div>Released</div>
+                            <div>
+                                {payments.currency} {payments.releasedAmount}
+                            </div>
+
+                            <div>Pending</div>
+                            <div>
+                                {payments.currency} {payments.pendingAmount}
+                            </div>
+
+                            <div>Release Mode</div>
+                            <div>{payments.releaseMode}</div>
+                        </div>
+
+                        {payments.splits.length > 0 && (
+                            <div className="pt-3 space-y-2">
+                                <div className="font-medium">Milestone Split</div>
+
+                                <ul className="space-y-1">
+                                    {payments.splits.map((s) => (
+                                        <li
+                                            key={s.milestoneId}
+                                            className="flex justify-between text-xs border rounded px-2 py-1"
+                                        >
+                                            <span>
+                                                {s.milestoneTitle ?? "Untitled milestone"}
+                                            </span>
+
+                                            <span>
+                                                {payments.currency} {s.amount}{" "}
+                                                {s.released ? "(released)" : "(pending)"}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
 
