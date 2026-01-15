@@ -8,6 +8,11 @@
  */
 
 export type AgreementErrorCode =
+
+  | "INVALID_STATE"
+  | "MISSING_DELIVERABLES"
+  | "PAYMENT_MISMATCH"
+
   // Agreement lifecycle
   | "AGREEMENT_LOCKED"
   | "AGREEMENT_NOT_READY"
@@ -56,6 +61,17 @@ export const AGREEMENT_ERROR_MESSAGES: Record<
   AgreementErrorCode,
   string
 > = {
+  // ✅ ADD THESE (currently missing)
+  INVALID_STATE:
+    "This action is not allowed in the current agreement state.",
+
+  MISSING_DELIVERABLES:
+    "At least one deliverable must be added before continuing.",
+
+  PAYMENT_MISMATCH:
+    "Payment details do not align with milestones or splits.",
+
+  // Agreement lifecycle
   AGREEMENT_LOCKED:
     "This agreement can no longer be modified.",
 
@@ -65,12 +81,15 @@ export const AGREEMENT_ERROR_MESSAGES: Record<
   AGREEMENT_ALREADY_SENT:
     "This agreement has already been sent for acceptance.",
 
+  // Meta
   INVALID_TITLE:
     "Title must be at least 3 characters long.",
 
+  // Creators
   CREATOR_ALREADY_ASSIGNED:
     "This creator is already part of the agreement.",
 
+  // Deliverables
   INVALID_DELIVERABLE_NAME:
     "Deliverable name must be at least 3 characters long.",
 
@@ -83,6 +102,7 @@ export const AGREEMENT_ERROR_MESSAGES: Record<
   DELIVERABLE_NOT_FOUND:
     "One or more referenced deliverables do not exist.",
 
+  // Milestones
   INVALID_MILESTONE_NAME:
     "Milestone name must be at least 3 characters long.",
 
@@ -92,12 +112,14 @@ export const AGREEMENT_ERROR_MESSAGES: Record<
   INVALID_UNLOCK_RULE:
     "Invalid milestone unlock rule selected.",
 
+  // Policy
   INVALID_REVISION_LIMIT:
     "Revision limit cannot be negative.",
 
   INVALID_CANCELLATION_WINDOW:
     "Cancellation window is invalid.",
 
+  // Payment
   INVALID_PAYMENT_AMOUNT:
     "Payment amount must be greater than zero.",
 
@@ -110,6 +132,7 @@ export const AGREEMENT_ERROR_MESSAGES: Record<
   PAYMENT_NOT_DEFINED:
     "Payment must be defined before splitting amounts.",
 
+  // Payment split
   INVALID_SPLIT_AMOUNT:
     "Split amount must be greater than zero.",
 
@@ -119,9 +142,11 @@ export const AGREEMENT_ERROR_MESSAGES: Record<
   MILESTONE_NOT_FOUND:
     "Referenced milestone does not exist.",
 
+  // Fallback
   UNKNOWN_ERROR:
     "Something went wrong. Please try again.",
 };
+
 
 /**
  * Helper to normalize backend errors.

@@ -21,6 +21,9 @@ function deriveParticipantStatuses(events: any[]) {
         { status: ParticipantStatus }
     >();
 
+    let agreementRejected = false;
+    let rejectedBy: string | null = null;
+
     for (const event of events) {
         switch (event.type) {
             case "AGREEMENT_PARTY_ASSIGNED": {
@@ -50,11 +53,28 @@ function deriveParticipantStatuses(events: any[]) {
             }
 
             case "AGREEMENT_REJECTED_BY_CREATOR": {
-                const id = event.actorId;
-                if (participants.has(id)) {
-                    participants.set(id, { status: "REJECTED" });
+                agreementRejected = true;
+                rejectedBy = event.actorId;
+
+                if (participants.has(event.actorId)) {
+                    participants.set(event.actorId, {
+                        status: "REJECTED",
+                    });
                 }
                 break;
+            }
+        }
+    }
+
+    /**
+     * 🔒 If agreement is rejected,
+     * all non-accepted creators are effectively blocked.
+     * We keep ACCEPTED as-is, mark others as REJECTED.
+     */
+    if (agreementRejected) {
+        for (const [id, data] of participants.entries()) {
+            if (data.status === "PENDING") {
+                participants.set(id, { status: "REJECTED" });
             }
         }
     }
@@ -66,6 +86,7 @@ function deriveParticipantStatuses(events: any[]) {
         })
     );
 }
+
 
 type MilestoneStatus =
     | "CREATED"
@@ -273,8 +294,16 @@ export default async function AgreementDetailsPage({
                 </h1>
 
                 <div className="text-sm text-muted-foreground">
-                    Status: <span className="font-medium">{summary.state}</span>
+                    Status:{" "}
+                    <span className="font-medium">
+                        {participantStatuses.some(
+                            (p) => p.status === "REJECTED"
+                        )
+                            ? "REJECTED"
+                            : summary.state}
+                    </span>
                 </div>
+
             </div>
 
             <AssignCreatorForm agreementId={agreementId} />

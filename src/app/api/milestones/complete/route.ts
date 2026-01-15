@@ -3,14 +3,23 @@ import { v4 as uuid } from "uuid";
 import { loadEvents, dispatchEvent } from "@/core/events/dispatcher";
 import { reduceAgreement } from "@/core/agreements/aggregate";
 
+import {
+  getCurrentUser,
+  requireAuth,
+  requireRole,
+} from "@/core/auth/contract";
+
 export async function POST(req: Request) {
   const body = await req.json();
 
   const { agreementId, milestoneId } = body;
 
-  // TEMP auth (same pattern you already use)
-  const actorId = "brand_1";
-  const actorRole = "BRAND";
+  const user = await getCurrentUser();
+  requireAuth(user);
+  requireRole(user, "BRAND");
+
+  const actorId = user.userId;
+  const actorRole = user.role;
 
   const events = await loadEvents(agreementId);
   const state = reduceAgreement(events);

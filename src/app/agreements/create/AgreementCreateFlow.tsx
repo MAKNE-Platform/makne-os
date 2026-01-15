@@ -2,10 +2,15 @@
 
 import { useRouter } from "next/navigation";
 
+import { createAgreementAction } from "@/app/(protected)/dashboard/agreements/actions";
 
 import { useState } from "react";
-import { createAndDefineAgreement } from "@/services/agreements/agreementOrchestrator";
-import { AGREEMENT_ERROR_MESSAGES } from "@/services/agreements/agreementErrors";
+import {
+    AGREEMENT_ERROR_MESSAGES,
+    AgreementErrorCode,
+} from "@/services/agreements/agreementErrors";
+import { isAgreementErrorCode } from "@/services/agreements/isAgreementErrorCode";
+
 
 import MetaStep from "./steps/MetaStep";
 import CreatorsStep from "./steps/CreatorsStep";
@@ -36,9 +41,6 @@ export default function AgreementCreateFlow() {
 
     const router = useRouter();
 
-
-    // TODO: replace with real auth later
-    const brandId = "brand_1";
 
     // Collected data
     const [meta, setMeta] = useState<any>(null);
@@ -95,14 +97,12 @@ export default function AgreementCreateFlow() {
         setPaymentSplits([]);
     }
 
-
     async function handleSubmit() {
         setLoading(true);
         setError(null);
 
         try {
-            const result = await createAndDefineAgreement({
-                brandId,
+            await createAgreementAction({
                 meta,
                 creators,
                 deliverables,
@@ -112,21 +112,29 @@ export default function AgreementCreateFlow() {
                 paymentSplits,
             });
 
-            // ✅ reset local state BEFORE navigation
             resetForm();
-
-            // ✅ redirect to agreement details
             router.replace("/dashboard/agreements");
 
-        } catch (err: any) {
-            setError(
-                AGREEMENT_ERROR_MESSAGES[err?.errorCode] ??
-                "Something went wrong. Please try again."
-            );
-        } finally {
+        } catch (err: unknown) {
+            const code =
+                typeof err === "object" &&
+                    err !== null &&
+                    "errorCode" in err &&
+                    typeof (err as any).errorCode === "string"
+                    ? (err as any).errorCode
+                    : null;
+
+            if (code && code in AGREEMENT_ERROR_MESSAGES) {
+                setError(AGREEMENT_ERROR_MESSAGES[code as AgreementErrorCode]);
+            } else {
+                setError("Something went wrong. Please try again.");
+            }
+        }
+        finally {
             setLoading(false);
         }
     }
+
 
 
     return (

@@ -3,9 +3,18 @@ import { getDb } from "@/lib/db";
 import { projectAgreement } from "@/core/agreements/read-model";
 import { EventType } from "@/core/events/types";
 
+import {
+  getCurrentUser,
+  requireAuth,
+  requireRole,
+} from "@/core/auth/contract";
+
 export async function GET() {
-  // TEMP auth (consistent with creation API)
-  const brandId = "brand_1";
+  const user = await getCurrentUser();
+  requireAuth(user);
+  requireRole(user, "BRAND");
+
+  const brandId = user.userId;
 
   const db = await getDb();
   const eventsCollection = db.collection("events");

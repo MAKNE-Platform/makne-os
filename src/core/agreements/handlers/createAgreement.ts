@@ -19,27 +19,13 @@ export async function createAgreement({
     payload: {
       agreementId,
       brandId,
-      createdBy: "BRAND",
+
+      // ✅ FIX: identity, not role
+      createdBy: actorId,
     },
     timestamp: new Date().toISOString(),
     version: 1,
-  };
+  } as const; // ✅ CRITICAL
 
   await dispatchEvent(event);
-}
-
-
-import { reduceAgreement } from "../aggregate";
-import {
-  assertAgreementNotLocked,
-  assertCanSendAgreement,
-} from "../invariants";
-
-export async function sendForAcceptance(events: any[]) {
-  const state = reduceAgreement(events);
-
-  assertAgreementNotLocked(state);
-  assertCanSendAgreement(state);
-
-  // emit AGREEMENT_SENT_FOR_ACCEPTANCE
 }

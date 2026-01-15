@@ -36,13 +36,20 @@ export function isPaymentFullySplit(
 /**
  * Guard: agreement must NOT be sent
  */
-export function assertAgreementNotLocked(
-  state: AgreementState
-) {
-  if (state.status === "SENT") {
+export function assertAgreementNotLocked(state: any) {
+  const lockedStates = [
+    "ACTIVE",
+    "EXECUTING",
+    "COMPLETED",
+    "PARTIALLY_COMPLETED",
+    "CANCELLED",
+  ];
+
+  if (lockedStates.includes(state.status)) {
     throw new Error("AGREEMENT_LOCKED");
   }
 }
+
 
 /**
  * Guard: creator must exist

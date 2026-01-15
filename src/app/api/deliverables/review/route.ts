@@ -5,42 +5,66 @@ import { dispatchEvent } from "@/core/events/dispatcher";
 import { v4 as uuid } from "uuid";
 import { runAutoReleaseAgent } from "@/core/agents/autoRelease.agent";
 
+import {
+  getCurrentUser,
+  requireAuth,
+} from "@/core/auth/contract";
+
+/**
+ * Reviewer intent (INPUT)
+ */
+type DeliverableDecision =
+  | "ACCEPT"
+  | "REJECT"
+  | "PARTIAL";
 
 export async function POST(req: Request) {
-    const body = await req.json();
+  const user = await getCurrentUser();
+  requireAuth(user);
 
-    const decision = body.decision as EventType;
+  const body = await req.json();
 
-    if (
-        ![
-            "DELIVERABLE_ACCEPTED",
-            "DELIVERABLE_REJECTED",
-            "DELIVERABLE_PARTIALLY_ACCEPTED",
-        ].includes(decision)
-    ) {
-        throw new Error("Invalid deliverable decision");
-    }
+  const decision = body.decision as DeliverableDecision;
 
+  if (
+    decision !== "ACCEPT" &&
+    decision !== "REJECT" &&
+    decision !== "PARTIAL"
+  ) {
+    return NextResponse.json(
+      { error: "Invalid deliverable decision" },
+      { status: 400 }
+    );
+  }
 
-    const event = {
-        eventId: uuid(),
-        agreementId: body.agreementId,
-        type: body.decision, // ACCEPTED | REJECTED | PARTIALLY_ACCEPTED
-        actorId: "reviewer_123",
-        actorRole: "REVIEWER",
-        payload: {
-            deliverableId: body.deliverableId,
-            reason: body.reason ?? null,
-        },
-        timestamp: new Date().toISOString(),
-        version: 1,
-    };
+  /**
+   * Map decision → domain event (FACT)
+   */
+  const eventType =
+    decision === "ACCEPT"
+      ? "DELIVERABLE_ACCEPTED"
+      : decision === "REJECT"
+      ? "DELIVERABLE_REJECTED"
+      : "DELIVERABLE_PARTIALLY_ACCEPTED";
 
-    await dispatchEvent(event);
-    
-    // SYSTEM AGENT TRIGGER
-    await runAutoReleaseAgent(body.agreementId);
+  const event = {
+    eventId: uuid(),
+    agreementId: body.agreementId,
+    type: eventType,
+    actorId: user.userId,
+    actorRole: user.role,
+    payload: {
+      deliverableId: body.deliverableId,
+      reason: body.reason ?? null,
+    },
+    timestamp: new Date().toISOString(),
+    version: 1,
+  } as const; // ✅ CRITICAL
 
+  await dispatchEvent(event);
 
-    return NextResponse.json({ success: true });
+  // 🔁 SYSTEM AGENT TRIGGER
+  await runAutoReleaseAgent(body.agreementId);
+
+  return NextResponse.json({ success: true });
 }

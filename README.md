@@ -39,3 +39,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## 📘 Documentation
 
 - [Agreement Lifecycle Verification](./docs/agreement-lifecycle-verification.md)
+
+⚠️ Hydration warnings may appear in dev due to browser extensions (Grammarly, etc.)

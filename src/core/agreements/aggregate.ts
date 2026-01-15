@@ -48,30 +48,31 @@ export interface AgreementState {
 
 }
 
-const initialState: AgreementState = {
-  agreementId: null,
-  brandId: null,
-  creatorIds: [],
+function createInitialState(): AgreementState {
+  return {
+    agreementId: null,
+    brandId: null,
 
-  collaborationType: "INDIVIDUAL",
-  acceptanceRule: "ALL_CREATORS",
-  acceptedByCreators: [],
+    creatorIds: [],
+    acceptedByCreators: [],
 
-  status: "DRAFT",
+    collaborationType: "INDIVIDUAL",
+    acceptanceRule: "ALL_CREATORS",
 
-  deliverables: {},
-  milestones: {},
-  paymentSplits: {},
+    status: "DRAFT",
 
-
-  releasedPayments: {},
-
-};
+    deliverables: {},
+    milestones: {},
+    paymentSplits: {},
+    releasedPayments: {},
+  };
+}
 
 // REDUCER 
 
 export function reduceAgreement(events: any[]): AgreementState {
-  let state: AgreementState = { ...initialState };
+  let state: AgreementState = createInitialState();
+
 
   for (const event of events) {
     switch (event.type) {
@@ -154,16 +155,23 @@ export function reduceAgreement(events: any[]): AgreementState {
       }
 
       case "AGREEMENT_ACCEPTED_BY_CREATOR": {
+        // Only allow acceptance in SENT state
+        if (state.status !== "SENT") {
+          break;
+        }
+
         if (!state.acceptedByCreators.includes(event.actorId)) {
           state.acceptedByCreators.push(event.actorId);
         }
 
+        const requiredAcceptances =
+          state.collaborationType === "GROUP"
+            ? state.creatorIds.length
+            : 1;
+
         if (
           state.acceptanceRule === "ALL_CREATORS" &&
-          state.acceptedByCreators.length ===
-          (state.collaborationType === "GROUP"
-            ? state.creatorIds.length
-            : 1)
+          state.acceptedByCreators.length === requiredAcceptances
         ) {
           state.status = "ACTIVE";
         }
@@ -216,7 +224,7 @@ export function reduceAgreement(events: any[]): AgreementState {
 
 
       case "PAYMENT_RELEASED":
-        
+
       case "PAYMENT_AUTO_RELEASED": {
         const { milestoneId, amount } = event.payload;
 

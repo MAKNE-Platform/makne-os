@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { acceptAgreement } from "@/core/agreements/handlers/acceptAgreement";
 
+import {
+  getCurrentUser,
+  requireAuth,
+  requireRole,
+} from "@/core/auth/contract";
+
 export async function POST(req: Request) {
-  // TODO: real auth
-  const actorId = "creator_1";
+  const user = await getCurrentUser();
+  requireAuth(user);
+  requireRole(user, "CREATOR");
+
+  const actorId = user.userId;
 
   const { agreementId } = await req.json();
 

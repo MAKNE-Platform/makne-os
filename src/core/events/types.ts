@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+export const UserEventSchema = z.object({
+  type: z.literal("USER_ROLE_SELECTED"),
+  userId: z.string(),
+  payload: z.object({
+    role: z.enum(["BRAND", "CREATOR"]),
+  }),
+  metadata: z.object({
+    occurredAt: z.string(),
+  }),
+});
+
+export type UserEvent = z.infer<typeof UserEventSchema>;
+
 /**
  * All supported event types
  */

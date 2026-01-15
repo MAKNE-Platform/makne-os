@@ -2,13 +2,21 @@ import { NextResponse } from "next/server";
 import { dispatchEvent } from "@/core/events/dispatcher";
 import { v4 as uuid } from "uuid";
 
+import {
+  getCurrentUser,
+  requireAuth,
+  requireRole,
+} from "@/core/auth/contract";
+
 export async function POST(req: Request) {
-  // TEMP auth (as discussed)
-  const actorId = "brand_1";
-  const actorRole = "BRAND";
+  const user = await getCurrentUser();
+  requireAuth(user);
+  requireRole(user, "BRAND");
+
+  const actorId = user.userId;
+  const actorRole = user.role;
 
   const body = await req.json();
-
   const agreementId = uuid();
 
   const event = {
@@ -20,13 +28,18 @@ export async function POST(req: Request) {
     payload: {
       agreementId,
       brandId: actorId,
-      createdBy: "BRAND",
-      collaborationType: body.collaborationType ?? "INDIVIDUAL",
-      acceptanceRule: body.acceptanceRule ?? "ALL_CREATORS",
+
+      // ✅ FIX: identity, not role
+      createdBy: actorId,
+
+      collaborationType:
+        body.collaborationType ?? "INDIVIDUAL",
+      acceptanceRule:
+        body.acceptanceRule ?? "ALL_CREATORS",
     },
     timestamp: new Date().toISOString(),
     version: 1,
-  };
+  } as const; // ✅ CRITICAL
 
   await dispatchEvent(event);
 

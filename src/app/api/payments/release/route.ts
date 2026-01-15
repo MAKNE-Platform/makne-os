@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { releasePayment } from "@/core/agreements/handlers/releasePayment";
 
+import {
+  getCurrentUser,
+  requireAuth,
+  requireRole,
+} from "@/core/auth/contract";
+
 export async function POST(req: Request) {
   const body = await req.json();
 
-  // TEMP auth (consistent with your setup)
-  const actorId = "brand_1";
+  const user = await getCurrentUser();
+  requireAuth(user);
+  requireRole(user, "BRAND");
+  const actorId = user.userId;
 
   try {
     await releasePayment({

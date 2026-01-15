@@ -1,9 +1,11 @@
 import { EventType } from "@/core/events/types";
 import { AgreementState } from "@/core/agreements/state";
 
-const agreementStateTransitions: Record<AgreementState, EventType[]> = {
+const agreementStateTransitions: Record<
+  AgreementState,
+  EventType[]
+> = {
   DRAFT: [
-    "AGREEMENT_SHARED",
     "AGREEMENT_UPDATED",
     "AGREEMENT_ACKNOWLEDGED",
   ],
@@ -26,8 +28,6 @@ const agreementStateTransitions: Record<AgreementState, EventType[]> = {
   ],
 
   PARTIALLY_COMPLETED: [
-    // business decision:
-    // allow final completion or cancellation
     "AGREEMENT_COMPLETED",
     "AGREEMENT_CANCELLED",
     "AGREEMENT_AUTO_COMPLETED",
@@ -36,6 +36,9 @@ const agreementStateTransitions: Record<AgreementState, EventType[]> = {
   COMPLETED: [],
 
   CANCELLED: [],
+
+  // ✅ ADD THIS
+  REJECTED: [],
 };
 
 // Events that do NOT change agreement state
@@ -68,5 +71,8 @@ export function canEmitEvent(
 
   if (executionEvents.includes(eventType)) return true;
 
-  return agreementStateTransitions[currentState]?.includes(eventType) ?? false;
+  return (
+    agreementStateTransitions[currentState]?.includes(eventType) ??
+    false
+  );
 }

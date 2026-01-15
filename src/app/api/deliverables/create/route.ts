@@ -5,6 +5,11 @@ import { dispatchEvent } from "@/core/events/dispatcher";
 import { v4 as uuid } from "uuid";
 import { EventType } from "@/core/events/types";
 
+import {
+    getCurrentUser,
+    requireAuth,
+} from "@/core/auth/contract";
+
 export async function POST(req: Request) {
     let body;
 
@@ -17,13 +22,15 @@ export async function POST(req: Request) {
         );
     }
 
+    const user = await getCurrentUser();
+    requireAuth(user);
 
     const event = {
         eventId: uuid(),
         agreementId: body.agreementId,
-        type: "DELIVERABLE_CREATED" as EventType,
-        actorId: "user_123",
-        actorRole: "OWNER",
+        type: "DELIVERABLE_CREATED",
+        actorId: user.userId,
+        actorRole: user.role,
         payload: {
             deliverableId: uuid(),
             title: body.title,
@@ -34,7 +41,7 @@ export async function POST(req: Request) {
         },
         timestamp: new Date().toISOString(),
         version: 1,
-    };
+    } as const; 
 
     await dispatchEvent(event);
 

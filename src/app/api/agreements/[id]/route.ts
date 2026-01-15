@@ -38,12 +38,6 @@ export async function GET(
       case "AGREEMENT_CREATED":
         title = event.payload?.title ?? title;
         break;
-
-      case "AGREEMENT_SHARED":
-        participants.push(
-          ...(event.payload?.invitedUserIds ?? [])
-        );
-        break;
     }
   }
 

@@ -17,21 +17,21 @@ export function projectAgreement(events: any[]): AgreementSummary {
   const agreementId = events[0].agreementId;
 
   let title = "Untitled Agreement";
-  let participants: string[] = [];
-  let createdAt = events[0].timestamp;
+  const createdAt = events[0].timestamp;
+
+  // Use Set to avoid duplicate participants
+  const participants = new Set<string>();
 
   for (const event of events) {
     switch (event.type as EventType) {
-
       /**
        * Agreement creation
-       * (timestamp already handled)
        */
       case "AGREEMENT_CREATED":
         break;
 
       /**
-       * ✅ Agreement metadata (title, description, etc.)
+       * Agreement metadata
        */
       case "AGREEMENT_META_DEFINED":
         if (event.payload?.title) {
@@ -40,25 +40,29 @@ export function projectAgreement(events: any[]): AgreementSummary {
         break;
 
       /**
-       * ✅ Party assignment (creators added to agreement)
+       * Party assignment
        */
       case "AGREEMENT_PARTY_ASSIGNED": {
         const payload = event.payload;
 
-        if (payload?.userId) {
-          participants.push(payload.userId);
+        if (payload?.creatorId) {
+          participants.add(payload.creatorId);
         }
 
-        if (payload?.creatorId) {
-          participants.push(payload.creatorId);
+        if (payload?.userId) {
+          participants.add(payload.userId);
         }
 
         if (Array.isArray(payload?.userIds)) {
-          participants.push(...payload.userIds);
+          payload.userIds.forEach((id: string) =>
+            participants.add(id)
+          );
         }
 
         if (Array.isArray(payload?.invitedUserIds)) {
-          participants.push(...payload.invitedUserIds);
+          payload.invitedUserIds.forEach((id: string) =>
+            participants.add(id)
+          );
         }
 
         break;
@@ -79,6 +83,8 @@ export function projectAgreement(events: any[]): AgreementSummary {
       events.map((e) => ({ type: e.type }))
     ),
     createdAt,
-    participants,
+    participants: Array.from(participants),
   };
 }
+
+

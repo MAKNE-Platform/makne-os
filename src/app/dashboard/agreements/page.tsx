@@ -1,9 +1,21 @@
+import { redirect } from "next/navigation";
 import { getBrandAgreements } from "@/core/agreements/read/getBrandAgreements";
 import AgreementsGrid from "./AgreementsGrid";
+import { getCurrentUser } from "@/core/auth/contract";
 
 export default async function AgreementsPage() {
-  const brandId = "brand_1"; // TEMP auth
-  const agreements = await getBrandAgreements(brandId);
+  const user = await getCurrentUser();
+
+  // ✅ build-safe auth gate
+  if (!user) {
+    redirect("/login");
+  }
+
+  if (user.role !== "BRAND") {
+    redirect("/dashboard");
+  }
+
+  const agreements = await getBrandAgreements(user.userId);
 
   return (
     <div className="p-6 space-y-6">
