@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db";
 import { hashValue, compareHash } from "@/lib/crypto";
 import { OtpToken } from "./models";
 import { getPendingOtpUserId } from "./otp-session";
+import { sendOtpEmail } from "@/lib/email";
 
 const OTP_TTL_MINUTES = 5;
 const MAX_ATTEMPTS = 5;
@@ -39,8 +40,7 @@ export async function requestOtp(
     ),
   });
 
-  // 🔔 SEND OTP (mock for now)
-  console.log(`OTP for ${email}: ${code}`);
+  await sendOtpEmail(email, code);
 }
 
 
