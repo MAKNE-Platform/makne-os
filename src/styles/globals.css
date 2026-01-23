@@ -1,0 +1,7 @@
+/* styles/globals.css */
+@import 'tailwindcss';
+
+html,
+body {
+  background-color: black;
+}
