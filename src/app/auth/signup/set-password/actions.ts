@@ -14,7 +14,6 @@ export async function setPasswordAction(formData: FormData) {
     throw new Error("Passwords do not match");
   }
 
-  // ✅ CORRECT: await cookies()
   const cookieStore = await cookies();
   const email = cookieStore.get("verified_email")?.value;
 
@@ -26,13 +25,21 @@ export async function setPasswordAction(formData: FormData) {
 
   const hash = await bcrypt.hash(password, 10);
 
-  await User.create({
+  // 🔑 CREATE USER
+  const user = await User.create({
     email,
     passwordHash: hash,
     isEmailVerified: true,
   });
 
-  // cleanup cookie
+  // CREATE SESSION 
+  cookieStore.set("auth_session", user._id.toString(), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+  });
+
+  // cleanup temp cookie
   cookieStore.delete("verified_email");
 
   redirect("/auth/role");

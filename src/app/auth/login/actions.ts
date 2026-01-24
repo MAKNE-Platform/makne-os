@@ -1,9 +1,9 @@
-// src/app/auth/login/actions.ts
 "use server";
 
 import bcrypt from "bcrypt";
 import { connectDB } from "@/lib/db/connect";
 import { User } from "@/lib/db/models/User";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function loginUserAction(formData: FormData) {
@@ -23,7 +23,7 @@ export async function loginUserAction(formData: FormData) {
   }
 
   if (!user.passwordHash) {
-    throw new Error("Password not set for this account");
+    throw new Error("Password not set");
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
@@ -32,6 +32,24 @@ export async function loginUserAction(formData: FormData) {
     throw new Error("Invalid credentials");
   }
 
-  // TODO: issue JWT + set cookie
-  redirect(`/dashboard/${user.role?.toLowerCase()}`);
+  const cookieStore = await cookies();
+
+  cookieStore.set("auth_session", user._id.toString(), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+  });
+
+  // ⚠️ ROLE-AWARE REDIRECT
+  if (!user.role) {
+    redirect("/auth/role");
+  }
+
+  cookieStore.set("user_role", user.role, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+  });
+
+  redirect(`/dashboard/${user.role.toLowerCase()}`);
 }
