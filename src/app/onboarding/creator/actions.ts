@@ -6,6 +6,9 @@ import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import mongoose from "mongoose";
+
+
 export async function onboardCreatorAction(formData: FormData) {
   const niche = formData.get("niche") as string;
   const platforms = formData.get("platforms") as string;
@@ -25,12 +28,15 @@ export async function onboardCreatorAction(formData: FormData) {
   await connectDB();
 
   // 1️⃣ Save creator profile
-  await CreatorProfile.create({
-    userId,
+  const profile = await CreatorProfile.create({
+    userId: new mongoose.Types.ObjectId(userId),
     niche,
     platforms,
     portfolio,
   });
+
+  console.log("CREATOR PROFILE SAVED:", profile._id);
+
 
   // 2️⃣ Update user lifecycle
   await User.findByIdAndUpdate(userId, {
