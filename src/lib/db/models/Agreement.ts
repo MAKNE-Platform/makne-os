@@ -30,7 +30,7 @@ const AgreementSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: ["DRAFT", "SENT", "ACCEPTED", "ACTIVE", "COMPLETED"],
+            enum: ["DRAFT", "SENT", "ACCEPTED", "REJECTED", "ACTIVE", "COMPLETED"],
             default: "DRAFT",
         },
 
