@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db/connect";
 import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
 
+import { Agreement } from "@/lib/db/models/Agreement";
+
+
 type CreatorProfileType = {
     niche: string;
     platforms: string;
@@ -23,6 +26,12 @@ export default async function CreatorDashboard() {
     const profile = (await CreatorProfile.findOne({
         userId,
     }).lean()) as CreatorProfileType | null;
+
+
+    const agreements = await Agreement.find({
+  creatorId: userId,
+}).lean();
+
 
 
     if (!profile) {
@@ -69,6 +78,45 @@ export default async function CreatorDashboard() {
                     )}
                 </div>
             </div>
+
+
+            <div className="rounded-xl border border-white/10 p-6 bg-white/5">
+  <h2 className="text-sm font-medium text-white">
+    Agreements
+  </h2>
+
+  {agreements.length === 0 && (
+    <p className="mt-3 text-sm text-zinc-400">
+      No agreements received yet.
+    </p>
+  )}
+
+  <div className="mt-4 space-y-3">
+    {agreements.map((agreement: any) => (
+      <div
+        key={agreement._id}
+        className="rounded-lg border border-white/10 p-4"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium">
+            {agreement.title}
+          </h3>
+
+          <span className="text-xs rounded-full px-2 py-1 bg-white/10">
+            {agreement.status}
+          </span>
+        </div>
+
+        {agreement.amount && (
+          <p className="mt-2 text-sm text-zinc-400">
+            Amount: ₹{agreement.amount}
+          </p>
+        )}
+      </div>
+    ))}
+  </div>
+</div>
+
         </div>
     );
 }
