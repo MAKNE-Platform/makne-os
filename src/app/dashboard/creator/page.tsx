@@ -29,8 +29,8 @@ export default async function CreatorDashboard() {
 
 
     const agreements = await Agreement.find({
-  creatorId: userId,
-}).lean();
+        creatorId: userId,
+    }).lean();
 
 
 
@@ -81,41 +81,66 @@ export default async function CreatorDashboard() {
 
 
             <div className="rounded-xl border border-white/10 p-6 bg-white/5">
-  <h2 className="text-sm font-medium text-white">
-    Agreements
-  </h2>
+                <h2 className="text-sm font-medium text-white">
+                    Agreements
+                </h2>
 
-  {agreements.length === 0 && (
-    <p className="mt-3 text-sm text-zinc-400">
-      No agreements received yet.
-    </p>
-  )}
+                {agreements.length === 0 && (
+                    <p className="mt-3 text-sm text-zinc-400">
+                        No agreements received yet.
+                    </p>
+                )}
 
-  <div className="mt-4 space-y-3">
-    {agreements.map((agreement: any) => (
-      <div
-        key={agreement._id}
-        className="rounded-lg border border-white/10 p-4"
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium">
-            {agreement.title}
-          </h3>
+                <div className="mt-4 space-y-3">
+                    {agreements.map((agreement: any) => (
+                        <div
+                            key={agreement._id}
+                            className="rounded-lg border border-white/10 p-4"
+                        >
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-medium">
+                                    {agreement.title}
+                                </h3>
 
-          <span className="text-xs rounded-full px-2 py-1 bg-white/10">
-            {agreement.status}
-          </span>
-        </div>
+                                <span className="text-xs rounded-full px-2 py-1 bg-white/10">
+                                    {agreement.status}
+                                </span>
+                            </div>
 
-        {agreement.amount && (
-          <p className="mt-2 text-sm text-zinc-400">
-            Amount: ₹{agreement.amount}
-          </p>
-        )}
-      </div>
-    ))}
-  </div>
-</div>
+                            {agreement.status === "SENT" && (
+                                <form
+                                    action={`/agreements/${agreement._id}/respond`}
+                                    method="POST"
+                                    className="mt-3 flex gap-2"
+                                >
+                                    <button
+                                        name="action"
+                                        value="ACCEPT"
+                                        className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white"
+                                    >
+                                        Accept
+                                    </button>
+
+                                    <button
+                                        name="action"
+                                        value="REJECT"
+                                        className="rounded-lg border border-white/20 px-4 py-2 text-sm text-white"
+                                    >
+                                        Reject
+                                    </button>
+                                </form>
+                            )}
+
+
+                            {agreement.amount && (
+                                <p className="mt-2 text-sm text-zinc-400">
+                                    Amount: ₹{agreement.amount}
+                                </p>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
 
         </div>
     );
