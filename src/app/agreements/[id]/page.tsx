@@ -5,118 +5,125 @@ import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { User } from "@/lib/db/models/User";
 
+
+type BrandUserType = {
+    email: string;
+};
+
 type AgreementType = {
-  title: string;
-  description?: string;
-  deliverables?: string;
-  amount?: number;
-  status: string;
-  brandId: mongoose.Types.ObjectId;
-  creatorId?: mongoose.Types.ObjectId;
-  creatorEmail?: string;
+    title: string;
+    description?: string;
+    deliverables?: string;
+    amount?: number;
+    status: string;
+    brandId: mongoose.Types.ObjectId;
+    creatorId?: mongoose.Types.ObjectId;
+    creatorEmail?: string;
 };
 
 export default async function AgreementDetailPage({
-  params,
+    params,
 }: {
-  params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("auth_session")?.value;
+    const { id } = await params; // ✅ FIX
 
-  if (!userId) {
-    redirect("/auth/login");
-  }
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("auth_session")?.value;
 
-  await connectDB();
+    if (!userId) {
+        redirect("/auth/login");
+    }
 
-  const agreement = (await Agreement.findById(
-    params.id
-  ).lean()) as AgreementType | null;
+    await connectDB();
 
-  if (!agreement) {
-    redirect("/agreements");
-  }
+    const agreement = (await Agreement.findById(
+        id
+    ).lean()) as AgreementType | null;
 
-  const isBrand =
-    agreement.brandId.toString() === userId;
-  const isCreator =
-    agreement.creatorId?.toString() === userId;
+    if (!agreement) {
+        redirect("/agreements");
+    }
 
-  if (!isBrand && !isCreator) {
-    redirect("/dashboard");
-  }
+    const isBrand =
+        agreement.brandId.toString() === userId;
+    const isCreator =
+        agreement.creatorId?.toString() === userId;
 
-  // Optional: fetch brand email for display
-  const brandUser = await User.findById(
-    agreement.brandId
-  ).lean();
+    if (!isBrand && !isCreator) {
+        redirect("/dashboard");
+    }
 
-  return (
-    <div className="max-w-2xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-medium">
-          {agreement.title}
-        </h1>
+    const brandUser = (await User.findById(
+        agreement.brandId
+    ).lean()) as BrandUserType | null;
 
-        <p className="mt-2 text-sm text-zinc-400">
-          Status:{" "}
-          <span className="text-white">
-            {agreement.status}
-          </span>
-        </p>
-      </div>
 
-      <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-4">
-        {agreement.description && (
-          <div>
-            <h3 className="text-sm font-medium text-white">
-              Description
-            </h3>
-            <p className="mt-1 text-sm text-zinc-300">
-              {agreement.description}
-            </p>
-          </div>
-        )}
+    return (
+        <div className="max-w-2xl space-y-8">
+            <div>
+                <h1 className="text-2xl font-medium">
+                    {agreement.title}
+                </h1>
 
-        {agreement.deliverables && (
-          <div>
-            <h3 className="text-sm font-medium text-white">
-              Deliverables
-            </h3>
-            <p className="mt-1 text-sm text-zinc-300">
-              {agreement.deliverables}
-            </p>
-          </div>
-        )}
+                <p className="mt-2 text-sm text-zinc-400">
+                    Status:{" "}
+                    <span className="text-white">
+                        {agreement.status}
+                    </span>
+                </p>
+            </div>
 
-        {agreement.amount && (
-          <div>
-            <h3 className="text-sm font-medium text-white">
-              Amount
-            </h3>
-            <p className="mt-1 text-sm text-zinc-300">
-              ₹{agreement.amount}
-            </p>
-          </div>
-        )}
-      </div>
+            <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-4">
+                {agreement.description && (
+                    <div>
+                        <h3 className="text-sm font-medium text-white">
+                            Description
+                        </h3>
+                        <p className="mt-1 text-sm text-zinc-300">
+                            {agreement.description}
+                        </p>
+                    </div>
+                )}
 
-      <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-2 text-sm text-zinc-300">
-        <p>
-          <span className="text-zinc-400">Brand:</span>{" "}
-          {brandUser?.email}
-        </p>
+                {agreement.deliverables && (
+                    <div>
+                        <h3 className="text-sm font-medium text-white">
+                            Deliverables
+                        </h3>
+                        <p className="mt-1 text-sm text-zinc-300">
+                            {agreement.deliverables}
+                        </p>
+                    </div>
+                )}
 
-        {agreement.creatorEmail && (
-          <p>
-            <span className="text-zinc-400">
-              Creator:
-            </span>{" "}
-            {agreement.creatorEmail}
-          </p>
-        )}
-      </div>
-    </div>
-  );
+                {agreement.amount && (
+                    <div>
+                        <h3 className="text-sm font-medium text-white">
+                            Amount
+                        </h3>
+                        <p className="mt-1 text-sm text-zinc-300">
+                            ₹{agreement.amount}
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-2 text-sm text-zinc-300">
+                <p>
+                    <span className="text-zinc-400">Brand:</span>{" "}
+                    {brandUser?.email}
+                </p>
+
+                {agreement.creatorEmail && (
+                    <p>
+                        <span className="text-zinc-400">
+                            Creator:
+                        </span>{" "}
+                        {agreement.creatorEmail}
+                    </p>
+                )}
+            </div>
+        </div>
+    );
 }
