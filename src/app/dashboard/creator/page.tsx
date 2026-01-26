@@ -98,9 +98,13 @@ export default async function CreatorDashboard() {
                             className="rounded-lg border border-white/10 p-4"
                         >
                             <div className="flex items-center justify-between">
-                                <h3 className="font-medium">
-                                    {agreement.title}
-                                </h3>
+                                <a
+  href={`/agreements/${agreement._id}`}
+  className="hover:underline"
+>
+  {agreement.title}
+</a>
+
 
                                 <span className="text-xs rounded-full px-2 py-1 bg-white/10">
                                     {agreement.status}

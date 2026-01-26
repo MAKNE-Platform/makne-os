@@ -31,7 +31,13 @@ export default async function AgreementsPage() {
                         className="rounded-xl border border-white/10 p-4 bg-white/5 space-y-3"
                     >
                         <div>
-                            <h2 className="font-medium">{agreement.title}</h2>
+                            <a
+                                href={`/agreements/${agreement._id}`}
+                                className="hover:underline"
+                            >
+                                {agreement.title}
+                            </a>
+
                             <p className="text-sm text-zinc-400">
                                 Status: {agreement.status}
                             </p>
