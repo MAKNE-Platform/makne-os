@@ -97,7 +97,8 @@ export default async function BrandDashboard() {
           </h2>
 
           <Link
-            href="/agreements/create"
+            href="/agreements/create/meta"
+            // href="/agreements/create"
             className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white"
           >
             Create Agreement
