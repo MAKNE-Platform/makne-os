@@ -50,6 +50,21 @@ const AgreementSchema = new mongoose.Schema(
             ],
             default: [],
         },
+        policies: {
+            paymentTerms: {
+                type: String,
+            },
+            cancellationPolicy: {
+                type: String,
+            },
+            revisionPolicy: {
+                type: String,
+            },
+            usageRights: {
+                type: String,
+            },
+        },
+
 
     },
     { timestamps: true }

@@ -42,15 +42,34 @@ export async function POST(
   }
 
   const milestones = await Milestone.find({
-  agreementId: new mongoose.Types.ObjectId(id),
-});
+    agreementId: new mongoose.Types.ObjectId(id),
+  });
 
-if (milestones.length === 0) {
-  return NextResponse.json(
-    { error: "Add at least one milestone before sending" },
-    { status: 400 }
+  const agreement = await Agreement.findById(
+    new mongoose.Types.ObjectId(id)
   );
-}
+
+  if (!agreement) {
+    return NextResponse.json(
+      { error: "Agreement not found" },
+      { status: 404 }
+    );
+  }
+
+  if (!agreement.policies?.paymentTerms) {
+    return NextResponse.json(
+      { error: "Define policies before sending agreement" },
+      { status: 400 }
+    );
+  }
+
+
+  if (milestones.length === 0) {
+    return NextResponse.json(
+      { error: "Add at least one milestone before sending" },
+      { status: 400 }
+    );
+  }
 
   await Agreement.findByIdAndUpdate(id, {
     creatorId: new mongoose.Types.ObjectId(creator._id),
