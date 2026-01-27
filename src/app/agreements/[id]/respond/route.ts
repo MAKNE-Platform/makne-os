@@ -39,6 +39,11 @@ export async function POST(
     );
   }
 
+  // ✅ ensure activity array exists
+  if (!agreement.activity) {
+    agreement.activity = [];
+  }
+
   if (action === "ACCEPT") {
     agreement.status = "ACTIVE";
     agreement.activity.push({
@@ -52,6 +57,7 @@ export async function POST(
   }
 
   await agreement.save();
+
 
 
   return NextResponse.redirect(
