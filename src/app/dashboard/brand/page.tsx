@@ -20,6 +20,7 @@ type AgreementType = {
   createdAt: Date;
 };
 
+
 export default async function BrandDashboard() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("auth_session")?.value;
@@ -39,11 +40,18 @@ export default async function BrandDashboard() {
     redirect("/onboarding/brand");
   }
 
-  const agreements = (await Agreement.find({
-    brandId: new mongoose.Types.ObjectId(userId),
-  })
+  const agreements = (await Agreement.find(
+    { brandId: new mongoose.Types.ObjectId(userId) },
+    {
+      title: 1,
+      status: 1,
+      creatorEmail: 1,
+      createdAt: 1,
+    }
+  )
     .sort({ createdAt: -1 })
-    .lean()) as AgreementType[];
+    .lean()) as unknown as AgreementType[];
+
 
   return (
     <div className="space-y-8">
