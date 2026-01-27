@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { User } from "@/lib/db/models/User";
+import { Milestone } from "@/lib/db/models/Milestone";
 
 
 type BrandUserType = {
@@ -11,6 +12,7 @@ type BrandUserType = {
 };
 
 type AgreementType = {
+    _id: mongoose.Types.ObjectId;
     title: string;
     description?: string;
     deliverables?: string;
@@ -66,6 +68,11 @@ export default async function AgreementDetailPage({
     const brandUser = (await User.findById(
         agreement.brandId
     ).lean()) as BrandUserType | null;
+
+
+    const milestones = await Milestone.find({
+        agreementId: agreement._id,
+    }).lean();
 
 
     return (
@@ -133,6 +140,45 @@ export default async function AgreementDetailPage({
                     </p>
                 )}
             </div>
+
+            <div className="rounded-xl border border-white/10 p-6 bg-white/5">
+                <h3 className="text-sm font-medium text-white">
+                    Milestones
+                </h3>
+
+                {milestones.length === 0 && (
+                    <p className="mt-2 text-sm text-zinc-400">
+                        No milestones yet.
+                    </p>
+                )}
+
+                <div className="mt-4 space-y-3">
+                    {milestones.map((m: any) => (
+                        <div
+                            key={m._id}
+                            className="rounded-lg border border-white/10 p-4"
+                        >
+                            <div className="flex justify-between">
+                                <h4 className="font-medium">{m.title}</h4>
+                                <span className="text-xs text-zinc-400">
+                                    ₹{m.amount}
+                                </span>
+                            </div>
+
+                            {m.description && (
+                                <p className="mt-1 text-sm text-zinc-400">
+                                    {m.description}
+                                </p>
+                            )}
+
+                            <p className="mt-2 text-xs text-zinc-500">
+                                Status: {m.status}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
 
             <div className="rounded-xl border border-white/10 p-6 bg-white/5">
                 <h3 className="text-sm font-medium text-white">

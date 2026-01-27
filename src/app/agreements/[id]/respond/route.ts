@@ -39,7 +39,6 @@ export async function POST(
     );
   }
 
-  // ✅ ensure activity array exists
   if (!agreement.activity) {
     agreement.activity = [];
   }
