@@ -286,6 +286,16 @@ export default async function AgreementDetailPage({
                     </button>
                 </form>
             )}
+
+            <a
+                href={`/agreements/${agreement._id}/print`}
+                target="_blank"
+                className="inline-block rounded-lg border border-white/20 px-4 py-2 text-sm text-white"
+            >
+                Export / Print Agreement
+            </a>
+
+
         </div>
     );
 }
