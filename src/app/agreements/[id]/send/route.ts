@@ -44,7 +44,13 @@ export async function POST(
     creatorId: new mongoose.Types.ObjectId(creator._id),
     creatorEmail,
     status: "SENT",
+    $push: {
+      activity: {
+        message: "Agreement sent to creator",
+      },
+    },
   });
+
 
   return NextResponse.redirect(new URL("/agreements", request.url));
 }

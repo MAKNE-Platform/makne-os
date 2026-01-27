@@ -39,8 +39,20 @@ export async function POST(
     );
   }
 
-  agreement.status = action === "ACCEPT" ? "ACCEPTED" : "REJECTED";
+  if (action === "ACCEPT") {
+    agreement.status = "ACTIVE";
+    agreement.activity.push({
+      message: "Agreement accepted by creator",
+    });
+  } else {
+    agreement.status = "REJECTED";
+    agreement.activity.push({
+      message: "Agreement rejected by creator",
+    });
+  }
+
   await agreement.save();
+
 
   return NextResponse.redirect(
     new URL("/dashboard/creator", request.url)

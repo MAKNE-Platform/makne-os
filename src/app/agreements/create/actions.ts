@@ -33,7 +33,13 @@ export async function createAgreementAction(formData: FormData) {
     deliverables,
     amount,
     status: "DRAFT",
+    activity: [
+      {
+        message: "Agreement created by brand",
+      },
+    ],
   });
+
 
   redirect("/agreements");
 }

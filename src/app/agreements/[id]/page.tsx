@@ -19,14 +19,20 @@ type AgreementType = {
     brandId: mongoose.Types.ObjectId;
     creatorId?: mongoose.Types.ObjectId;
     creatorEmail?: string;
+
+    activity?: {
+        message: string;
+        createdAt: Date;
+    }[];
 };
+
 
 export default async function AgreementDetailPage({
     params,
 }: {
     params: Promise<{ id: string }>;
 }) {
-    const { id } = await params; // ✅ FIX
+    const { id } = await params;
 
     const cookieStore = await cookies();
     const userId = cookieStore.get("auth_session")?.value;
@@ -127,6 +133,31 @@ export default async function AgreementDetailPage({
                     </p>
                 )}
             </div>
+
+            <div className="rounded-xl border border-white/10 p-6 bg-white/5">
+                <h3 className="text-sm font-medium text-white">
+                    Activity
+                </h3>
+
+                <div className="mt-4 space-y-3 text-sm text-zinc-300">
+                    {(!agreement.activity || agreement.activity.length === 0) && (
+                        <p className="text-zinc-400">No activity yet.</p>
+                    )}
+
+                    {agreement.activity?.map((item, index) => (
+                        <div key={index} className="flex gap-2">
+                            <span className="text-zinc-500">•</span>
+                            <div>
+                                <p>{item.message}</p>
+                                <p className="text-xs text-zinc-500">
+                                    {new Date(item.createdAt).toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
 
             {canRespond && (
                 <div className="rounded-xl border border-white/10 p-6 bg-white/5">
