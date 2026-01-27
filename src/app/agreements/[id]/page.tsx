@@ -49,6 +49,9 @@ export default async function AgreementDetailPage({
         agreement.brandId.toString() === userId;
     const isCreator =
         agreement.creatorId?.toString() === userId;
+    const canRespond =
+        isCreator && agreement.status === "SENT";
+
 
     if (!isBrand && !isCreator) {
         redirect("/dashboard");
@@ -124,6 +127,37 @@ export default async function AgreementDetailPage({
                     </p>
                 )}
             </div>
+
+            {canRespond && (
+                <div className="rounded-xl border border-white/10 p-6 bg-white/5">
+                    <h3 className="text-sm font-medium text-white">
+                        Respond to Agreement
+                    </h3>
+
+                    <form
+                        action={`/agreements/${id}/respond`}
+                        method="POST"
+                        className="mt-4 flex gap-3"
+                    >
+                        <button
+                            name="action"
+                            value="ACCEPT"
+                            className="rounded-lg bg-[#636EE1] px-5 py-2 text-sm text-white"
+                        >
+                            Accept
+                        </button>
+
+                        <button
+                            name="action"
+                            value="REJECT"
+                            className="rounded-lg border border-white/20 px-5 py-2 text-sm text-white"
+                        >
+                            Reject
+                        </button>
+                    </form>
+                </div>
+            )}
+
         </div>
     );
 }
