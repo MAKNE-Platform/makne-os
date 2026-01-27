@@ -20,9 +20,22 @@ const AgreementSchema = new mongoose.Schema(
             type: String,
         },
 
-        deliverables: {
-            type: String,
-        },
+        deliverables: [
+            {
+                _id: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    required: true,
+                },
+                title: {
+                    type: String,
+                    required: true,
+                },
+                description: {
+                    type: String,
+                },
+            },
+        ],
+
 
         amount: {
             type: Number,
