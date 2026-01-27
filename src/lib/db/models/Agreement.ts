@@ -37,6 +37,20 @@ const AgreementSchema = new mongoose.Schema(
         creatorEmail: {
             type: String,
         },
+
+        activity: {
+            type: [
+                {
+                    message: String,
+                    createdAt: {
+                        type: Date,
+                        default: Date.now,
+                    },
+                },
+            ],
+            default: [],
+        },
+
     },
     { timestamps: true }
 );
