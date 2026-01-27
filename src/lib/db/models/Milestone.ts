@@ -31,6 +31,12 @@ const MilestoneSchema = new mongoose.Schema(
     dueDate: {
       type: Date,
     },
+
+    deliverableIds: {
+      type: [mongoose.Schema.Types.ObjectId],
+      required: true,
+    }
+
   },
   { timestamps: true }
 );
