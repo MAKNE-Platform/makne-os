@@ -32,7 +32,8 @@ export async function createMilestoneAction(
   const agreement = await Agreement.findOne({
     _id: new mongoose.Types.ObjectId(agreementId),
     brandId: new mongoose.Types.ObjectId(userId),
-    status: "ACTIVE",
+    status: "DRAFT",
+
   });
 
   if (!agreement) {

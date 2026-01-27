@@ -4,6 +4,7 @@ import { Agreement } from "@/lib/db/models/Agreement";
 import { User } from "@/lib/db/models/User";
 import { cookies } from "next/headers";
 import mongoose from "mongoose";
+import { Milestone } from "@/lib/db/models/Milestone";
 
 export async function POST(
   request: Request,
@@ -39,6 +40,17 @@ export async function POST(
       { status: 404 }
     );
   }
+
+  const milestones = await Milestone.find({
+  agreementId: new mongoose.Types.ObjectId(id),
+});
+
+if (milestones.length === 0) {
+  return NextResponse.json(
+    { error: "Add at least one milestone before sending" },
+    { status: 400 }
+  );
+}
 
   await Agreement.findByIdAndUpdate(id, {
     creatorId: new mongoose.Types.ObjectId(creator._id),

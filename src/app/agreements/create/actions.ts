@@ -26,7 +26,7 @@ export async function createAgreementAction(formData: FormData) {
 
   await connectDB();
 
-  await Agreement.create({
+  const agreement = await Agreement.create({
     brandId: new mongoose.Types.ObjectId(brandId),
     title,
     description,
@@ -34,13 +34,10 @@ export async function createAgreementAction(formData: FormData) {
     amount,
     status: "DRAFT",
     activity: [
-      {
-        message: "Agreement created by brand",
-      },
+      { message: "Agreement created by brand" },
     ],
   });
 
+  redirect(`/agreements/${agreement._id}`);
 
-
-  redirect("/agreements");
 }
