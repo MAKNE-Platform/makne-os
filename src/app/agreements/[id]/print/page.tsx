@@ -27,7 +27,6 @@ type BrandUserType = {
     email: string;
 };
 
-
 export default async function AgreementPrintPage({
     params,
 }: {
@@ -63,50 +62,94 @@ export default async function AgreementPrintPage({
 
     return (
         <div className="print-root">
-            {/* PRINT STYLES */}
+            {/* PRINT + LAYOUT STYLES */}
             <style>{`
-  @media print {
-    body {
-      background: white !important;
-      color: black !important;
-    }
-  }
+        @media print {
+          body {
+            background: white !important;
+            color: black !important;
+          }
 
-  .print-root {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px;
-    background: white;
-    color: black;
-    font-family: Arial, sans-serif;
-  }
+          .no-print {
+            display: none !important;
+          }
+        }
 
-  h1 {
-    font-size: 24px;
-    margin-bottom: 8px;
-  }
+        .print-root {
+          min-height: 100vh;          /* ✅ FULL HEIGHT */
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 40px;
+          background: white;
+          color: black;
+          font-family: Arial, sans-serif;
+          box-sizing: border-box;
+        }
 
-  h2 {
-    font-size: 18px;
-    margin-top: 24px;
-    margin-bottom: 8px;
-  }
+        h1 {
+          font-size: 24px;
+          margin-bottom: 8px;
+        }
 
-  p {
-    margin: 4px 0;
-    font-size: 14px;
-  }
+        h2 {
+          font-size: 18px;
+          margin-top: 24px;
+          margin-bottom: 8px;
+        }
 
-  .section {
-    margin-top: 20px;
-  }
+        p {
+          margin: 4px 0;
+          font-size: 14px;
+        }
 
-  .milestone {
-    margin-bottom: 12px;
-  }
-`}</style>
+        .section {
+          margin-top: 20px;
+        }
 
+        .milestone {
+          margin-bottom: 12px;
+        }
 
+        .download-btn {
+          padding: 8px 14px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          background: #f5f5f5;
+          cursor: pointer;
+          font-size: 14px;
+        }
+      `}</style>
+
+            {/* DOWNLOAD BUTTON */}
+            <div
+                className="no-print"
+                style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginBottom: "20px",
+                }}
+            >
+                <a
+                    href={`/agreements/${agreement._id}/print?print=1`}
+                    className="download-btn"
+                >
+                    Download / Save as PDF
+                </a>
+
+            </div>
+
+            {typeof window !== "undefined" && false}
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `
+      if (new URLSearchParams(window.location.search).get("print") === "1") {
+        window.onload = () => window.print();
+      }
+    `,
+                }}
+            />
+
+            {/* AGREEMENT CONTENT */}
             <h1>{agreement.title}</h1>
             <p><b>Status:</b> {agreement.status}</p>
 
