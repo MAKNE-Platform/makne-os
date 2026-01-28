@@ -258,38 +258,41 @@ export default async function AgreementDetailPage({
 
 
                             {/* 🔽 CREATOR ACTION */}
-                            {isCreator && m.status === "PENDING" && (
-                                <form
-                                    action={`/milestones/${m._id}/deliver`}
-                                    method="POST"
-                                    encType="multipart/form-data"
-                                    className="pt-2 space-y-3"
-                                >
-                                    <textarea
-                                        name="note"
-                                        placeholder="Delivery note (optional)"
-                                        className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
-                                    />
+                            {isCreator &&
+                                agreement.status === "ACTIVE" &&
+                                m.status === "PENDING" && (
 
-                                    <input
-                                        type="file"
-                                        name="files"
-                                        multiple
-                                        className="w-full text-sm text-zinc-400"
-                                    />
+                                    <form
+                                        action={`/milestones/${m._id}/deliver`}
+                                        method="POST"
+                                        encType="multipart/form-data"
+                                        className="pt-2 space-y-3"
+                                    >
+                                        <textarea
+                                            name="note"
+                                            placeholder="Delivery note (optional)"
+                                            className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                        />
 
-                                    <input
-                                        type="text"
-                                        name="links"
-                                        placeholder="External links (comma separated)"
-                                        className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
-                                    />
+                                        <input
+                                            type="file"
+                                            name="files"
+                                            multiple
+                                            className="w-full text-sm text-zinc-400"
+                                        />
 
-                                    <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
-                                        Submit Work
-                                    </button>
-                                </form>
-                            )}
+                                        <input
+                                            type="text"
+                                            name="links"
+                                            placeholder="External links (comma separated)"
+                                            className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                        />
+
+                                        <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                            Submit Work
+                                        </button>
+                                    </form>
+                                )}
 
 
                             {/* 🔽 BRAND ACTION */}

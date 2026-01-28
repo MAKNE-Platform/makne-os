@@ -1,10 +1,31 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createAgreementMetaAction } from "./actions";
+import { connectDB } from "@/lib/db/connect";
+import { Agreement } from "@/lib/db/models/Agreement";
+import mongoose from "mongoose";
+
+/* ✅ Minimal type for this page */
+type DraftAgreementMeta = {
+  _id: mongoose.Types.ObjectId;
+  title: string;
+  description?: string;
+  creatorEmail?: string;
+};
 
 export default async function AgreementMetaPage() {
   const cookieStore = await cookies();
   const role = cookieStore.get("user_role")?.value;
+  const agreementId = cookieStore.get("draft_agreement_id")?.value;
+
+  let agreement: DraftAgreementMeta | null = null;
+
+  if (agreementId) {
+    await connectDB();
+    agreement = (await Agreement.findById(
+      agreementId
+    ).lean()) as unknown as DraftAgreementMeta | null;
+  }
 
   if (role !== "BRAND") {
     redirect("/auth/login");
@@ -32,6 +53,7 @@ export default async function AgreementMetaPage() {
           <input
             name="title"
             required
+            defaultValue={agreement?.title || ""}
             placeholder="e.g. Instagram Campaign – July"
             className="w-full rounded-lg bg-[#161618] px-4 py-3 text-sm text-white"
           />
@@ -43,6 +65,7 @@ export default async function AgreementMetaPage() {
           </label>
           <textarea
             name="description"
+            defaultValue={agreement?.description || ""}
             placeholder="Brief overview of the collaboration"
             className="w-full rounded-lg bg-[#161618] px-4 py-3 text-sm text-white"
           />
@@ -55,6 +78,7 @@ export default async function AgreementMetaPage() {
           <input
             name="creatorEmail"
             type="email"
+            defaultValue={agreement?.creatorEmail || ""}
             placeholder="creator@email.com"
             className="w-full rounded-lg bg-[#161618] px-4 py-3 text-sm text-white"
           />

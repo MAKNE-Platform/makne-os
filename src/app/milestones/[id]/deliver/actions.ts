@@ -11,7 +11,7 @@ export async function POST(
   request: Request,
   context: { params: { id: string } }
 ) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const userId = cookieStore.get("auth_session")?.value;
   const role = cookieStore.get("user_role")?.value;
 
@@ -34,6 +34,23 @@ export async function POST(
     _id: new mongoose.Types.ObjectId(context.params.id),
     status: "PENDING",
   });
+
+  if (!milestone) {
+    return NextResponse.json({ error: "Invalid milestone" }, { status: 400 });
+  }
+
+  const agreement = await Agreement.findOne({
+    _id: milestone.agreementId,
+    status: "ACTIVE",
+  });
+
+  if (!agreement) {
+    return NextResponse.json(
+      { error: "Agreement not accepted yet" },
+      { status: 403 }
+    );
+  }
+
 
   if (!milestone) {
     return NextResponse.json({ error: "Invalid milestone" }, { status: 400 });
