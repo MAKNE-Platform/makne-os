@@ -5,7 +5,6 @@ import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { User } from "@/lib/db/models/User";
 import { Milestone } from "@/lib/db/models/Milestone";
-import { createMilestoneAction } from "./milestones/create/actions";
 
 type BrandUserType = {
     email: string;
@@ -317,12 +316,12 @@ export default async function AgreementDetailPage({
                     <h3 className="text-sm font-medium text-white">Add Milestone</h3>
 
                     <form
-                        action={async (formData) => {
-                            "use server";
-                            await createMilestoneAction(id, formData);
-                        }}
+                        action={`/agreements/${agreement._id}/milestones/create`}
+                        method="POST"
                         className="mt-4 space-y-3"
                     >
+
+
                         <input
                             name="title"
                             placeholder="Milestone title"
