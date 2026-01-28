@@ -125,13 +125,6 @@ export default async function ReviewAgreementPage() {
 
             {/* ACTIONS */}
             <div className="flex justify-between">
-                <a
-                    href="/dashboard/brand"
-                    className="text-sm text-zinc-400"
-                >
-                    ← Cancel
-                </a>
-
                 <div className="flex gap-3">
                     <form action={createAgreementAction}>
                         <button className="rounded-lg border border-white/20 px-5 py-2 text-sm text-white">

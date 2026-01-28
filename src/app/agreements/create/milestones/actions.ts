@@ -26,46 +26,55 @@ export async function saveMilestonesAction(formData: FormData) {
 
   await connectDB();
 
-  const agreement = await Agreement.findOne({
+  const agreement = (await Agreement.findOne({
     _id: new mongoose.Types.ObjectId(agreementId),
     brandId: new mongoose.Types.ObjectId(brandId),
     status: "DRAFT",
-  }).lean();
+  }).lean()) as unknown as { deliverables?: unknown[] } | null;
 
-  if (!agreement || !agreement.deliverables) {
-    throw new Error("Deliverables not found");
+  if (!agreement || !Array.isArray(agreement.deliverables)) {
+    redirect("/agreements/create/deliverables");
   }
 
-  // Remove old milestones (safe for draft)
+  // 🔁 Clear previous draft milestones
   await Milestone.deleteMany({
     agreementId: new mongoose.Types.ObjectId(agreementId),
   });
 
+  let createdCount = 0;
+
   for (let i = 0; i < titles.length; i++) {
-    if (!titles[i] || !amounts[i]) continue;
+    const title = titles[i]?.trim();
+    const amount = Number(amounts[i]);
+
+    if (!title || !amount || Number.isNaN(amount)) continue;
 
     const deliverableIds = formData
       .getAll(`milestone_${i}_deliverables`)
       .map((id) => new mongoose.Types.ObjectId(id as string));
 
-    if (deliverableIds.length === 0) {
-      throw new Error("Each milestone must be linked to at least one deliverable");
-    }
+    // ⛔ Do not crash draft flow — just skip invalid milestone
+    if (deliverableIds.length === 0) continue;
 
     await Milestone.create({
       agreementId: new mongoose.Types.ObjectId(agreementId),
-      title: titles[i],
-      amount: Number(amounts[i]),
+      title,
+      amount,
       deliverableIds,
       status: "PENDING",
     });
+
+    createdCount++;
   }
 
-  await Agreement.findByIdAndUpdate(agreementId, {
-    $push: {
-      activity: { message: "Milestones defined" },
-    },
-  });
+  // 📝 Log activity only once (avoid spam)
+  if (createdCount > 0) {
+    await Agreement.findByIdAndUpdate(agreementId, {
+      $push: {
+        activity: { message: "Milestones updated" },
+      },
+    });
+  }
 
   redirect("/agreements/create/policies");
 }

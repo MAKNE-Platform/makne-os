@@ -100,13 +100,6 @@ export default async function MilestonesPage() {
                 ))}
 
                 <div className="flex justify-between">
-                    <a
-                        href="/agreements/create/deliverables"
-                        className="text-sm text-zinc-400"
-                    >
-                        ← Back
-                    </a>
-
                     <button className="rounded-lg bg-[#636EE1] px-6 py-3 text-sm text-white">
                         Continue
                     </button>
