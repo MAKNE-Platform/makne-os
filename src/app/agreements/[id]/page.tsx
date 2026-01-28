@@ -88,41 +88,94 @@ export default async function AgreementDetailPage({
 
             {/* ================= DELIVERABLES ================= */}
             {isDraft && isBrand && (
-                <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-4">
-                    <h3 className="text-sm font-medium text-white">
-                        Deliverables
-                    </h3>
+                <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-6">
+                    <h3 className="text-sm font-medium text-white">Deliverables</h3>
 
-                    <form
-                        action={`/agreements/${agreement._id}/deliverables`}
-                        method="POST"
-                        className="space-y-4"
-                    >
-                        {deliverables.map((d: any) => (
-                            <div key={d._id} className="space-y-2">
+                    {/* EXISTING DELIVERABLES */}
+                    {deliverables.length === 0 && (
+                        <p className="text-sm text-zinc-400">
+                            No deliverables added yet.
+                        </p>
+                    )}
+
+                    {deliverables.map((d: any) => (
+                        <div
+                            key={d._id}
+                            className="rounded-lg border border-white/10 p-4 space-y-3"
+                        >
+                            {/* EDIT */}
+                            <form
+                                action={`/agreements/${agreement._id}/deliverables/update`}
+                                method="POST"
+                                className="space-y-2"
+                            >
+                                <input type="hidden" name="deliverableId" value={d._id.toString()}
+                                />
+
                                 <input
-                                    name="deliverable_title"
+                                    name="title"
                                     defaultValue={d.title}
                                     className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
                                 />
+
                                 <textarea
-                                    name="deliverable_description"
+                                    name="description"
                                     defaultValue={d.description}
                                     className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
                                 />
-                            </div>
-                        ))}
 
-                        <p className="text-xs text-zinc-400">
-                            Changes are saved immediately.
-                        </p>
+                                <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                    Update Deliverable
+                                </button>
+                            </form>
 
-                        <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
-                            Update Deliverables
-                        </button>
-                    </form>
+                            {/* DELETE */}
+                            <form
+                                action={`/agreements/${agreement._id}/deliverables/delete`}
+                                method="POST"
+                            >
+                                <input type="hidden" name="deliverableId" value={d._id.toString()}
+                                />
+                                <button className="text-xs text-red-400 hover:underline">
+                                    Delete deliverable
+                                </button>
+                            </form>
+                        </div>
+                    ))}
+
+                    {/* ADD NEW DELIVERABLE */}
+                    <div className="rounded-lg border border-dashed border-white/20 p-4 space-y-3">
+                        <h4 className="text-sm font-medium text-white">
+                            Add new deliverable
+                        </h4>
+
+                        <form
+                            action={`/agreements/${agreement._id}/deliverables/create`}
+                            method="POST"
+                            className="space-y-2"
+                        >
+                            <input
+                                name="title"
+                                placeholder="Deliverable title"
+                                required
+                                className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                            />
+
+                            <textarea
+                                name="description"
+                                placeholder="Description (optional)"
+                                className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                            />
+
+                            <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                Add Deliverable
+                            </button>
+                        </form>
+                    </div>
                 </div>
             )}
+
+
 
             {/* ================= MILESTONES ================= */}
             <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-4">
@@ -273,32 +326,33 @@ export default async function AgreementDetailPage({
             {isDraft && isBrand && (
                 <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-3">
                     <h3 className="text-sm font-medium text-white">
-                        Send Agreement
+                        Creator
                     </h3>
 
-                    {canSend ? (
-                        <form
-                            action={`/agreements/${agreement._id}/send`}
-                            method="POST"
-                            className="space-y-3"
-                        >
-                            <input
-                                name="creatorEmail"
-                                type="email"
-                                placeholder="Creator email"
-                                className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
-                            />
-                            <button className="rounded-lg bg-[#636EE1] px-6 py-2 text-sm text-white">
-                                Send to Creator
-                            </button>
-                        </form>
-                    ) : (
-                        <p className="text-sm text-zinc-400">
-                            Complete deliverables, milestones, and policies before sending.
+                    <form
+                        action={`/agreements`}
+                        method="POST"
+                        className="space-y-3"
+                    >
+                        <input
+                            name="creatorEmail"
+                            type="email"
+                            defaultValue={agreement.creatorEmail || ""}
+                            placeholder="Creator email (optional)"
+                            className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                        />
+
+                        <p className="text-xs text-zinc-400">
+                            You can add or change the creator anytime before sending the agreement.
                         </p>
-                    )}
+
+                        <button className="rounded-lg bg-[#636EE1] px-5 py-2 text-sm text-white">
+                            Save Creator
+                        </button>
+                    </form>
                 </div>
             )}
+
 
             {/* CREATOR RESPONSE */}
             {isSent && isCreator && (
