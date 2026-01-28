@@ -186,19 +186,128 @@ export default async function AgreementDetailPage({
 
                 <div className="mt-4 space-y-3">
                     {milestones.map((m: any) => (
-                        <div key={m._id} className="rounded-lg border border-white/10 p-4">
+                        <div
+                            key={m._id}
+                            className="rounded-lg border border-white/10 p-4 space-y-3"
+                        >
                             <div className="flex justify-between">
                                 <h4 className="font-medium">{m.title}</h4>
-                                <span className="text-xs text-zinc-400">₹{m.amount}</span>
+                                <span className="text-xs text-zinc-400">
+                                    ₹{m.amount}
+                                </span>
                             </div>
+
                             {m.description && (
-                                <p className="mt-1 text-sm text-zinc-400">{m.description}</p>
+                                <p className="text-sm text-zinc-400">
+                                    {m.description}
+                                </p>
                             )}
-                            <p className="mt-2 text-xs text-zinc-500">
+
+                            <p className="text-xs text-zinc-500">
                                 Status: {m.status}
                             </p>
+
+                            {/* 📎 SUBMITTED CONTENT (VISIBLE TO BRAND & CREATOR) */}
+                            {m.submission && (
+                                <div className="mt-3 space-y-2 text-sm text-zinc-300">
+                                    {m.submission.note && (
+                                        <p>
+                                            <span className="text-zinc-400">Note:</span>{" "}
+                                            {m.submission.note}
+                                        </p>
+                                    )}
+
+                                    {m.submission.files?.length > 0 && (
+                                        <div>
+                                            <p className="text-zinc-400">Files:</p>
+                                            <ul className="list-disc pl-5">
+                                                {m.submission.files.map((f: any, i: number) => (
+                                                    <li key={i}>
+                                                        <a
+                                                            href={f.url}
+                                                            target="_blank"
+                                                            className="text-[#636EE1] underline"
+                                                        >
+                                                            {f.name}
+                                                        </a>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {m.submission.links?.length > 0 && (
+                                        <div>
+                                            <p className="text-zinc-400">Links:</p>
+                                            <ul className="list-disc pl-5">
+                                                {m.submission.links.map((l: string, i: number) => (
+                                                    <li key={i}>
+                                                        <a
+                                                            href={l}
+                                                            target="_blank"
+                                                            className="text-[#636EE1] underline"
+                                                        >
+                                                            {l}
+                                                        </a>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+
+                            {/* 🔽 CREATOR ACTION */}
+                            {isCreator && m.status === "PENDING" && (
+                                <form
+                                    action={`/milestones/${m._id}/deliver`}
+                                    method="POST"
+                                    encType="multipart/form-data"
+                                    className="pt-2 space-y-3"
+                                >
+                                    <textarea
+                                        name="note"
+                                        placeholder="Delivery note (optional)"
+                                        className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                    />
+
+                                    <input
+                                        type="file"
+                                        name="files"
+                                        multiple
+                                        className="w-full text-sm text-zinc-400"
+                                    />
+
+                                    <input
+                                        type="text"
+                                        name="links"
+                                        placeholder="External links (comma separated)"
+                                        className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                    />
+
+                                    <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                        Submit Work
+                                    </button>
+                                </form>
+                            )}
+
+
+                            {/* 🔽 BRAND ACTION */}
+                            {isBrand && m.status === "IN_PROGRESS" && (
+                                <form
+                                    action={`/milestones/${m._id}/approve`}
+                                    method="POST"
+                                    className="pt-2"
+                                >
+                                    <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                        Approve Milestone
+                                    </button>
+                                </form>
+                            )}
                         </div>
                     ))}
+
                 </div>
             </div>
 

@@ -28,6 +28,18 @@ const MilestoneSchema = new mongoose.Schema(
       default: "PENDING",
     },
 
+    deliveryNote: {
+      type: String,
+    },
+
+    deliveredAt: {
+      type: Date,
+    },
+
+    approvedAt: {
+      type: Date,
+    },
+
     dueDate: {
       type: Date,
     },
@@ -35,7 +47,23 @@ const MilestoneSchema = new mongoose.Schema(
     deliverableIds: {
       type: [mongoose.Schema.Types.ObjectId],
       required: true,
-    }
+    },
+
+    submission: {
+  note: String,
+
+  files: [
+    {
+      name: String,
+      url: String,
+      type: String,
+      size: Number,
+    },
+  ],
+
+  links: [String],
+},
+
 
   },
   { timestamps: true }
