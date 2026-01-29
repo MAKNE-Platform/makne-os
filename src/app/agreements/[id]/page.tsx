@@ -260,11 +260,18 @@ export default async function AgreementDetailPage({
                                 </form>
                             )} */}
 
+                        {m.status === "REVISION" && (
+                            <p className="text-xs text-yellow-400">
+                                Changes requested - please resubmit
+                            </p>
+                        )}
+
                         {isCreator &&
                             agreement.status === "ACTIVE" &&
-                            m.status === "PENDING" && (
+                            (m.status === "PENDING" || m.status === "REVISION") && (
                                 <DeliverMilestoneForm milestoneId={m._id.toString()} />
                             )}
+
 
                         {/* ===== BRAND VIEW: SUBMITTED CONTENT ===== */}
                         {isBrand && m.submission && (
@@ -327,6 +334,38 @@ export default async function AgreementDetailPage({
                                         </ul>
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* ===== BRAND APPROVAL UI ===== */}
+                        {isBrand && agreement.status === "ACTIVE" && m.status === "IN_PROGRESS" && (
+                            <div className="mt-4 flex gap-2">
+                                {/* APPROVE */}
+                                <form
+                                    action={`/milestones/${m._id}/approve`}
+                                    method="POST"
+                                    className="mt-4 flex gap-2"
+                                >
+                                    <input type="hidden" name="action" value="APPROVE" />
+
+                                    <button
+                                        className="rounded-lg bg-green-600 px-4 py-2 text-sm text-white"
+                                    >
+                                        Approve
+                                    </button>
+                                </form>
+
+                                {/* REQUEST CHANGES */}
+                                <form
+                                    action={`/milestones/${m._id}/request-changes`}
+                                    method="POST"
+                                >
+                                    <button
+                                        className="rounded-lg border border-white/20 px-4 py-2 text-sm text-white"
+                                    >
+                                        Request Changes
+                                    </button>
+                                </form>
                             </div>
                         )}
 

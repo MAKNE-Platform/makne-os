@@ -5,6 +5,8 @@ import { connectDB } from "@/lib/db/connect";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
 
+import { revalidatePath } from "next/cache";
+
 import fs from "fs";
 import path from "path";
 
@@ -47,12 +49,13 @@ export async function POST(
     );
   }
 
-  if (milestone.status !== "PENDING") {
+  if (!["PENDING", "REVISION"].includes(milestone.status)) {
     return NextResponse.json(
-      { error: "Milestone already submitted" },
+      { error: "Milestone not open for submission" },
       { status: 400 }
     );
   }
+
 
   const agreement = await Agreement.findById(milestone.agreementId);
 
@@ -82,32 +85,32 @@ export async function POST(
 
   // 📎 Store file metadata (placeholder storage)
   // ✅ FILTER EMPTY FILE INPUTS
-const uploadDir = path.join(
-  process.cwd(),
-  "uploads",
-  milestone._id.toString()
-);
+  const uploadDir = path.join(
+    process.cwd(),
+    "uploads",
+    milestone._id.toString()
+  );
 
-// ensure folder exists
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+  // ensure folder exists
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
 
-const storedFiles = [];
+  const storedFiles = [];
 
-for (const file of files) {
-  if (!file || !file.name || file.size === 0) continue;
+  for (const file of files) {
+    if (!file || !file.name || file.size === 0) continue;
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const filePath = path.join(uploadDir, file.name);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const filePath = path.join(uploadDir, file.name);
 
-  fs.writeFileSync(filePath, buffer);
+    fs.writeFileSync(filePath, buffer);
 
-  storedFiles.push({
-    name: file.name,
-    url: `/api/files/${milestone._id}/${file.name}`,
-  });
-}
+    storedFiles.push({
+      name: file.name,
+      url: `/api/files/${milestone._id}/${file.name}`,
+    });
+  }
 
 
   // ✅ Save submission
@@ -134,13 +137,10 @@ for (const file of files) {
     }
   );
 
-  const response = NextResponse.redirect(
-    new URL(`/agreements/${milestone.agreementId}?refresh=${Date.now()}`, request.url)
-  );
+  // 🔥 FORCE AGREEMENT PAGE TO RE-RENDER
+  revalidatePath(`/agreements/${milestone.agreementId}`);
 
-  // Force fresh render
-  response.headers.set("Cache-Control", "no-store");
+  return NextResponse.json({ success: true });
 
-  return response;
 
 }
