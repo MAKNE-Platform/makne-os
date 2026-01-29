@@ -266,6 +266,69 @@ export default async function AgreementDetailPage({
                                 <DeliverMilestoneForm milestoneId={m._id.toString()} />
                             )}
 
+                        {/* ===== BRAND VIEW: SUBMITTED CONTENT ===== */}
+                        {isBrand && m.submission && (
+                            <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+                                {m.status === "PENDING" && (
+                                    <p className="text-xs text-zinc-400">
+                                        Not submitted yet
+                                    </p>
+                                )}
+
+                                {m.submission?.submittedAt && (
+                                    <p className="text-xs text-zinc-400">
+                                        Submitted on{" "}
+                                        {new Date(m.submission.submittedAt).toLocaleDateString()}
+                                    </p>
+                                )}
+
+
+                                {m.submission.note && (
+                                    <p className="text-sm text-zinc-300">
+                                        <span className="text-zinc-400">Note:</span>{" "}
+                                        {m.submission.note}
+                                    </p>
+                                )}
+
+                                {m.submission.files?.length > 0 && (
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-zinc-400">Files:</p>
+                                        <ul className="list-disc pl-5 text-sm">
+                                            {m.submission.files.map((file: any, i: number) => (
+                                                <li key={i}>
+                                                    <a
+                                                        href={file.url}
+                                                        target="_blank"
+                                                        className="text-[#636EE1] hover:underline"
+                                                    >
+                                                        {file.name}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {m.submission.links?.length > 0 && (
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-zinc-400">Links:</p>
+                                        <ul className="list-disc pl-5 text-sm">
+                                            {m.submission.links.map((link: string, i: number) => (
+                                                <li key={i}>
+                                                    <a
+                                                        href={link}
+                                                        target="_blank"
+                                                        className="text-[#636EE1] hover:underline"
+                                                    >
+                                                        {link}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                     </div>
                 ))}
