@@ -1,0 +1,122 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import mongoose from "mongoose";
+import { connectDB } from "@/lib/db/connect";
+import { Milestone } from "@/lib/db/models/Milestone";
+import { Agreement } from "@/lib/db/models/Agreement";
+
+export async function POST(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json(
+      { error: "Invalid milestone id" },
+      { status: 400 }
+    );
+  }
+
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("auth_session")?.value;
+  const role = cookieStore.get("user_role")?.value;
+
+  if (!userId || role !== "CREATOR") {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
+  const formData = await request.formData();
+  const note = formData.get("note") as string | null;
+  const linksRaw = formData.get("links") as string | null;
+  const files = formData.getAll("files") as File[];
+
+  await connectDB();
+
+  const milestone = await Milestone.findById(
+    new mongoose.Types.ObjectId(id)
+  );
+
+  if (!milestone) {
+    return NextResponse.json(
+      { error: "Milestone not found" },
+      { status: 404 }
+    );
+  }
+
+  if (milestone.status !== "PENDING") {
+    return NextResponse.json(
+      { error: "Milestone already submitted" },
+      { status: 400 }
+    );
+  }
+
+  const agreement = await Agreement.findById(milestone.agreementId);
+
+  if (
+    !agreement ||
+    agreement.creatorId?.toString() !== userId
+  ) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 403 }
+    );
+  }
+
+  if (agreement.status !== "ACTIVE") {
+    return NextResponse.json(
+      { error: "Agreement not active" },
+      { status: 400 }
+    );
+  }
+
+  // 🔗 Parse external links
+  const links =
+    linksRaw
+      ?.split(",")
+      .map((l) => l.trim())
+      .filter(Boolean) || [];
+
+  // 📎 Store file metadata (placeholder storage)
+  // ✅ FILTER EMPTY FILE INPUTS
+const storedFiles = files
+  .filter((file) => file && file.name && file.size > 0)
+  .map((file) => ({
+    name: file.name,
+    url: `/uploads/${file.name}`, // placeholder (S3 later)
+  }));
+
+  // ✅ Save submission
+  milestone.submission = {
+    note: note || undefined,
+    files: storedFiles,
+    links,
+    submittedAt: new Date(),
+  };
+
+  milestone.status = "IN_PROGRESS";
+  await milestone.save();
+
+  // 📝 Activity log
+  await Agreement.findByIdAndUpdate(
+    milestone.agreementId,
+    {
+      $push: {
+        activity: {
+          message: `Work submitted for milestone: ${milestone.title}`,
+          createdAt: new Date(),
+        },
+      },
+    }
+  );
+
+  const response = NextResponse.redirect(
+    new URL(`/agreements/${milestone.agreementId}?refresh=${Date.now()}`, request.url)
+  );
+
+  // Force fresh render
+  response.headers.set("Cache-Control", "no-store");
+
+  return response;
+
+}

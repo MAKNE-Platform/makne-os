@@ -83,5 +83,5 @@ export async function POST(
   });
 
 
-  return NextResponse.redirect(new URL("/agreements", request.url));
+  return NextResponse.redirect(new URL("/dashboard/brand", request.url));
 }

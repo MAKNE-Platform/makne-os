@@ -18,17 +18,24 @@ export default async function AgreementMetaPage() {
   const role = cookieStore.get("user_role")?.value;
   const agreementId = cookieStore.get("draft_agreement_id")?.value;
 
-  let agreement: DraftAgreementMeta | null = null;
-
-  if (agreementId) {
-    await connectDB();
-    agreement = (await Agreement.findById(
-      agreementId
-    ).lean()) as unknown as DraftAgreementMeta | null;
-  }
-
   if (role !== "BRAND") {
     redirect("/auth/login");
+  }
+
+  let agreement: DraftAgreementMeta | null = null;
+
+  // ✅ Only attempt fetch if ObjectId is valid
+  if (agreementId && mongoose.Types.ObjectId.isValid(agreementId)) {
+    await connectDB();
+
+    agreement = (await Agreement.findById(
+      agreementId
+    ).lean()) as DraftAgreementMeta | null;
+
+    // 🧹 Draft was deleted manually → reset cookie
+    if (!agreement) {
+      cookieStore.delete("draft_agreement_id");
+    }
   }
 
   return (
@@ -46,6 +53,7 @@ export default async function AgreementMetaPage() {
         action={createAgreementMetaAction}
         className="space-y-5"
       >
+        {/* TITLE */}
         <div>
           <label className="block text-sm text-zinc-400 mb-1">
             Agreement title *
@@ -53,24 +61,26 @@ export default async function AgreementMetaPage() {
           <input
             name="title"
             required
-            defaultValue={agreement?.title || ""}
+            defaultValue={agreement?.title ?? ""}
             placeholder="e.g. Instagram Campaign – July"
             className="w-full rounded-lg bg-[#161618] px-4 py-3 text-sm text-white"
           />
         </div>
 
+        {/* DESCRIPTION */}
         <div>
           <label className="block text-sm text-zinc-400 mb-1">
             Description
           </label>
           <textarea
             name="description"
-            defaultValue={agreement?.description || ""}
+            defaultValue={agreement?.description ?? ""}
             placeholder="Brief overview of the collaboration"
             className="w-full rounded-lg bg-[#161618] px-4 py-3 text-sm text-white"
           />
         </div>
 
+        {/* CREATOR (OPTIONAL) */}
         <div>
           <label className="block text-sm text-zinc-400 mb-1">
             Creator email (optional)
@@ -78,7 +88,7 @@ export default async function AgreementMetaPage() {
           <input
             name="creatorEmail"
             type="email"
-            defaultValue={agreement?.creatorEmail || ""}
+            defaultValue={agreement?.creatorEmail ?? ""}
             placeholder="creator@email.com"
             className="w-full rounded-lg bg-[#161618] px-4 py-3 text-sm text-white"
           />

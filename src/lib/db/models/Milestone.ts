@@ -50,19 +50,19 @@ const MilestoneSchema = new mongoose.Schema(
     },
 
     submission: {
-  note: String,
+      note: String,
 
-  files: [
-    {
-      name: String,
-      url: String,
-      type: String,
-      size: Number,
-    },
-  ],
+      files: [
+        {
+          name: { type: String, required: true },
+          url: { type: String, required: true },
+        }
+      ],
 
-  links: [String],
-},
+      links: [String],
+
+      submittedAt: Date,
+    }
 
 
   },

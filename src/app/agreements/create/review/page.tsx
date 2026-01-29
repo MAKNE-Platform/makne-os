@@ -29,6 +29,7 @@ type ReviewAgreementType = {
 };
 
 export default async function ReviewAgreementPage() {
+
     const cookieStore = await cookies();
     const role = cookieStore.get("user_role")?.value;
     const agreementId = cookieStore.get("draft_agreement_id")?.value;
@@ -44,6 +45,10 @@ export default async function ReviewAgreementPage() {
 
     if (!agreement) redirect("/dashboard/brand");
 
+    const missingCreator = !agreement.creatorEmail;
+    const missingPolicy = !agreement.policies;
+
+
     type ReviewMilestoneType = {
         _id: mongoose.Types.ObjectId;
         title: string;
@@ -54,6 +59,7 @@ export default async function ReviewAgreementPage() {
         agreementId: agreement._id,
     }).lean()) as unknown as ReviewMilestoneType[];
 
+    const missingMilestones = milestones.length === 0;
 
     return (
         <div className="max-w-2xl space-y-8">
@@ -123,6 +129,39 @@ export default async function ReviewAgreementPage() {
                 </section>
             )}
 
+            {missingCreator && (
+                <section className="rounded-xl border p-4 space-y-3">
+                    <p className="text-sm">
+                        No creator added yet. Add a creator to send this agreement.
+                    </p>
+
+                    <form
+                        action="/agreements/update-creator"
+                        method="POST"
+                        className="flex gap-2"
+                    >
+                        <input
+                            type="hidden"
+                            name="agreementId"
+                            value={agreement._id.toString()}
+                        />
+
+                        <input
+                            name="creatorEmail"
+                            type="email"
+                            required
+                            placeholder="creator@email.com"
+                            className="flex-1 rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                        />
+
+                        <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                            Add Creator
+                        </button>
+                    </form>
+                </section>
+            )}
+
+
             {/* ACTIONS */}
             <div className="flex justify-between">
                 <div className="flex gap-3">
@@ -132,11 +171,31 @@ export default async function ReviewAgreementPage() {
                         </button>
                     </form>
 
-                    <form action={createAndSendAgreementAction}>
-                        <button className="rounded-lg bg-[#636EE1] px-5 py-2 text-sm text-white">
-                            Create & Send
+                    {missingCreator && (
+                        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-300">
+                            Please add a creator before sending the agreement.
+                        </div>
+                    )}
+
+                    {missingPolicy && (
+                        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-300">
+                            Please define policies before sending the agreement.
+                        </div>
+                    )}
+
+                    <form action={createAndSendAgreementAction} className="space-y-3">
+                        <button
+                            type="submit"
+                            name="mode"
+                            value="SEND"
+                            disabled={missingCreator || missingPolicy || missingMilestones}
+
+                            className="rounded-lg bg-[#636EE1] px-6 py-3 text-sm text-white disabled:opacity-40"
+                        >
+                            Create & Send Agreement
                         </button>
                     </form>
+
 
                 </div>
             </div>

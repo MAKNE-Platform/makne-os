@@ -5,6 +5,8 @@ import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { User } from "@/lib/db/models/User";
 import { Milestone } from "@/lib/db/models/Milestone";
+import DeliverMilestoneForm from "./_components/DeliverMilestoneForm";
+
 
 export default async function AgreementDetailPage({
     params,
@@ -47,6 +49,10 @@ export default async function AgreementDetailPage({
     const isDraft = agreement.status === "DRAFT";
     const isSent = agreement.status === "SENT";
     const isActive = agreement.status === "ACTIVE";
+
+    const missingCreator = isDraft && !agreement.creatorEmail;
+    const missingPolicy = isDraft && !agreement.policies;
+
 
     const canSend =
         isDraft &&
@@ -121,6 +127,7 @@ export default async function AgreementDetailPage({
                                 <textarea
                                     name="description"
                                     defaultValue={d.description}
+                                    placeholder="Description (optional)"
                                     className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
                                 />
 
@@ -216,6 +223,50 @@ export default async function AgreementDetailPage({
                                 .map((d: any) => d.title)
                                 .join(", ")}
                         </p>
+
+                        {/* ===== CREATOR SUBMISSION UI ===== */}
+                        {/* {isCreator &&
+                            agreement.status === "ACTIVE" &&
+                            m.status === "PENDING" && (
+                                <form
+                                    action={`/milestones/${m._id}/deliver`}
+                                    method="POST"
+                                    encType="multipart/form-data"
+                                    className="mt-4 space-y-3"
+                                >
+                                    <textarea
+                                        name="note"
+                                        placeholder="Delivery note (optional)"
+                                        className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                    />
+
+                                    <input
+                                        type="file"
+                                        name="files"
+                                        multiple
+                                        className="w-full text-sm text-zinc-400"
+                                    />
+
+                                    <input
+                                        type="text"
+                                        name="links"
+                                        placeholder="External links (comma separated)"
+                                        className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                    />
+
+                                    <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                        Submit Work
+                                    </button>
+                                </form>
+                            )} */}
+
+                        {isCreator &&
+                            agreement.status === "ACTIVE" &&
+                            m.status === "PENDING" && (
+                                <DeliverMilestoneForm milestoneId={m._id.toString()} />
+                            )}
+
+
                     </div>
                 ))}
             </div>
@@ -330,26 +381,28 @@ export default async function AgreementDetailPage({
                     </h3>
 
                     <form
-                        action={`/agreements`}
+                        action={`/agreements/${agreement._id}/send`}
                         method="POST"
                         className="space-y-3"
                     >
                         <input
                             name="creatorEmail"
                             type="email"
+                            required
                             defaultValue={agreement.creatorEmail || ""}
-                            placeholder="Creator email (optional)"
+                            placeholder="Creator email"
                             className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
                         />
 
                         <p className="text-xs text-zinc-400">
-                            You can add or change the creator anytime before sending the agreement.
+                            Sending the agreement will lock deliverables, milestones, and policies.
                         </p>
 
                         <button className="rounded-lg bg-[#636EE1] px-5 py-2 text-sm text-white">
-                            Save Creator
+                            Send to Creator
                         </button>
                     </form>
+
                 </div>
             )}
 
@@ -359,8 +412,11 @@ export default async function AgreementDetailPage({
                 <form
                     action={`/agreements/${agreement._id}/respond`}
                     method="POST"
+                    target="_self"
                     className="flex gap-3"
                 >
+                    <input type="hidden" name="redirectTo" value="self" />
+
                     <button
                         name="action"
                         value="ACCEPT"
@@ -377,6 +433,7 @@ export default async function AgreementDetailPage({
                     </button>
                 </form>
             )}
+
 
             <a
                 href={`/agreements/${agreement._id}/print`}

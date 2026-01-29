@@ -167,19 +167,25 @@ export default async function AgreementPrintPage({
                 </div>
             )}
 
-            {agreement.deliverables && (
+            {Array.isArray(agreement.deliverables) && (
                 <div className="section">
                     <h2>Deliverables</h2>
-                    <p>{agreement.deliverables}</p>
+
+                    {agreement.deliverables.map((d: any) => (
+                        <p key={d._id.toString()}>
+                            • {d.title}
+                        </p>
+                    ))}
                 </div>
             )}
+
 
             <div className="section">
                 <h2>Milestones</h2>
                 {milestones.map((m: any) => (
                     <div key={m._id} className="milestone">
                         <p>
-                            <b>{m.title}</b> — ₹{m.amount} ({m.status})
+                            <b>{m.title}</b> — ₹{m.amount} 
                         </p>
                         {m.description && <p>{m.description}</p>}
                     </div>

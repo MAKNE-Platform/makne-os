@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db/connect";
 import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
 
 import { Agreement } from "@/lib/db/models/Agreement";
+import mongoose from "mongoose";
 
 
 type CreatorProfileType = {
@@ -29,9 +30,8 @@ export default async function CreatorDashboard() {
 
 
     const agreements = await Agreement.find({
-        creatorId: userId,
+        creatorId: new mongoose.Types.ObjectId(userId),
     }).lean();
-
 
 
     if (!profile) {
@@ -99,11 +99,11 @@ export default async function CreatorDashboard() {
                         >
                             <div className="flex items-center justify-between">
                                 <a
-  href={`/agreements/${agreement._id}`}
-  className="hover:underline"
->
-  {agreement.title}
-</a>
+                                    href={`/agreements/${agreement._id}`}
+                                    className="hover:underline"
+                                >
+                                    {agreement.title}
+                                </a>
 
 
                                 <span className="text-xs rounded-full px-2 py-1 bg-white/10">
