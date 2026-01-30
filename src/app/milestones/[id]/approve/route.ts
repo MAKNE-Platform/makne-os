@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
+import { Payment } from "@/lib/db/models/Payment";
 
 export async function POST(
   request: Request,
@@ -69,8 +70,25 @@ export async function POST(
 
   if (action === "APPROVE") {
     milestone.status = "COMPLETED";
-    milestone.approvedAt = new Date(); // optional but useful
+    milestone.approvedAt = new Date();
+
+    // 🔥 NEW: Auto-create payment (idempotent)
+    const existingPayment = await Payment.findOne({
+      milestoneId: milestone._id,
+    });
+
+    if (!existingPayment) {
+      await Payment.create({
+        agreementId: milestone.agreementId,
+        milestoneId: milestone._id,
+        brandId: agreement.brandId,
+        creatorId: agreement.creatorId,
+        amount: milestone.amount,
+        status: "PENDING",
+      });
+    }
   }
+
 
   if (action === "REVISION") {
     milestone.status = "REVISION";
