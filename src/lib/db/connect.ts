@@ -3,8 +3,16 @@ import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
-export async function connectDB() {
-  if (mongoose.connection.readyState >= 1) return;
+declare global {
+  var mongooseConn: Promise<typeof mongoose> | undefined;
+}
 
-  await mongoose.connect(MONGODB_URI);
+export async function connectDB() {
+  if (!global.mongooseConn) {
+    global.mongooseConn = mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
+    });
+  }
+
+  await global.mongooseConn;
 }
