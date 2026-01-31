@@ -414,12 +414,17 @@ export default async function AgreementDetailPage({
                                             Pay ₹{payment.amount}
                                         </button>
                                     </form>
-                                ) : (
+                                ) : payment.status === "INITIATED" ? (
+                                    <span className="text-yellow-600 font-medium">
+                                        ⏳ Payment processing
+                                    </span>
+                                ) : payment.status === "RELEASED" ? (
                                     <span className="text-green-600 font-medium">
                                         ✅ Paid
                                     </span>
-                                )
+                                ) : null
                             ) : null}
+
                         </div>
                     );
                 })}
