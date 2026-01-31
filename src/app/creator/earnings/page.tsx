@@ -6,6 +6,7 @@ import { Payment } from "@/lib/db/models/Payment";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { getCreatorBalance } from "@/lib/payments/getCreatorBalance";
+import type { PaymentDocument } from "@/lib/db/models/Payment";
 
 
 export default async function CreatorEarningsPage() {
@@ -22,15 +23,12 @@ export default async function CreatorEarningsPage() {
 
   const balance = await getCreatorBalance(creatorId);
 
-console.log("CREATOR BALANCE:", balance);
-
   // 1️⃣ Fetch released payments
-  const payments = await Payment.find({
-    creatorId,
-    status: "RELEASED",
-  })
-    .sort({ updatedAt: -1 })
-    .lean();
+ const payments = await Payment.find({
+  creatorId,
+  status: "RELEASED",
+}).lean<PaymentDocument[]>();
+
 
   // 2️⃣ Total earnings
   const totalEarnings = payments.reduce(
