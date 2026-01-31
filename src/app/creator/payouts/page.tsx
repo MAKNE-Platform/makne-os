@@ -5,6 +5,9 @@ import { connectDB } from "@/lib/db/connect";
 import { Payout } from "@/lib/db/models/Payout";
 import { getCreatorBalance } from "@/lib/payments/getCreatorBalance";
 
+import type { PayoutDocument } from "@/lib/db/models/Payout";
+
+
 export default async function CreatorPayoutsPage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("auth_session")?.value;
@@ -21,9 +24,10 @@ export default async function CreatorPayoutsPage() {
   const balance = await getCreatorBalance(creatorId);
 
   // Payout history
-  const payouts = await Payout.find({ creatorId })
-    .sort({ requestedAt: -1 })
-    .lean();
+  const payouts = await Payout.find({})
+  .sort({ requestedAt: -1 })
+  .lean<PayoutDocument[]>();
+
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
