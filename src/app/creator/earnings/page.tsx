@@ -5,6 +5,8 @@ import { connectDB } from "@/lib/db/connect";
 import { Payment } from "@/lib/db/models/Payment";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { Milestone } from "@/lib/db/models/Milestone";
+import { getCreatorBalance } from "@/lib/payments/getCreatorBalance";
+
 
 export default async function CreatorEarningsPage() {
   const cookieStore = await cookies();
@@ -17,6 +19,10 @@ export default async function CreatorEarningsPage() {
 
   await connectDB();
   const creatorId = new mongoose.Types.ObjectId(userId);
+
+  const balance = await getCreatorBalance(creatorId);
+
+console.log("CREATOR BALANCE:", balance);
 
   // 1️⃣ Fetch released payments
   const payments = await Payment.find({

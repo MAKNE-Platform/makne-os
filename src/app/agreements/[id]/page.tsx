@@ -70,6 +70,23 @@ export default async function AgreementDetailPage({
         milestones.length > 0 &&
         agreement.policies;
 
+    const totalValue = milestones.reduce(
+        (sum, m) => sum + m.amount,
+        0
+    );
+
+    const paidAmount = payments
+        .filter(p => p.status === "RELEASED")
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    const processingAmount = payments
+        .filter(p => p.status === "INITIATED")
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    const pendingAmount =
+        totalValue - paidAmount - processingAmount;
+
+
     return (
         <div className="max-w-2xl space-y-10">
 
@@ -192,9 +209,60 @@ export default async function AgreementDetailPage({
                 </div>
             )}
 
+            <div className="mb-8 rounded-2xl bg-muted/40 p-6">
+                <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+                    Payment summary
+                </h3>
+
+                <div className="flex flex-col gap-4">
+                    {/* Total value */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                            Total agreement value
+                        </span>
+                        <span className="text-base font-semibold">
+                            ₹{totalValue}
+                        </span>
+                    </div>
+
+                    {/* Paid */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                            Paid to creator
+                        </span>
+                        <span className="text-sm font-medium text-emerald-600">
+                            ₹{paidAmount}
+                        </span>
+                    </div>
+
+                    {/* Processing */}
+                    {processingAmount > 0 && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">
+                                Payment processing
+                            </span>
+                            <span className="text-sm font-medium text-amber-600">
+                                ₹{processingAmount}
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Pending */}
+                    {pendingAmount > 0 && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">
+                                Yet to be paid
+                            </span>
+                            <span className="text-sm font-medium">
+                                ₹{pendingAmount}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </div>
 
 
-            {/* ================= MILESTONES ================= */}
+            {/* ================= MILESTONES4 ================= */}
             <div className="rounded-xl border border-white/10 p-6 bg-white/5 space-y-4">
                 <h3 className="text-sm font-medium text-white">
                     Milestones
