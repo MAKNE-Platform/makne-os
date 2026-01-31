@@ -28,29 +28,18 @@ export async function POST(
 
   await connectDB();
 
-  console.log("📦 Connected DB:", mongoose.connection.name);
-  console.log("📦 Payments collection:", Payment.collection.name);
-
-
   const paymentId = new mongoose.Types.ObjectId(id);
 
   // 1️⃣ Fetch payment
   const payment = await Payment.findById(paymentId);
-
   if (!payment) {
-    console.log("❌ Payment not found");
-    return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Payment not found" },
+      { status: 404 }
+    );
   }
 
-  console.log("✅ BEFORE:", payment.status);
-
-  payment.status = "RELEASED";
-  await payment.save();
-
-  console.log("✅ AFTER:", payment.status);
-
-
-  // 2️⃣ Fetch agreement
+  // 2️⃣ Fetch agreement & verify ownership
   const agreement = await Agreement.findById(payment.agreementId);
   if (!agreement || agreement.brandId.toString() !== userId) {
     return NextResponse.json(
@@ -59,19 +48,36 @@ export async function POST(
     );
   }
 
-  // 3️⃣ Validate payment state
-  if (payment.status !== "PENDING") {
-    // Payment already done → just redirect back
+  // 🔁 Helper: redirect back safely
+  const redirectBack = () => {
     const response = NextResponse.redirect(
-      new URL(`/agreements/${payment.agreementId}?refresh=${Date.now()}`, request.url)
+      new URL(
+        `/agreements/${agreement._id}?refresh=${Date.now()}`,
+        request.url
+      )
     );
     response.headers.set("Cache-Control", "no-store");
     return response;
+  };
+
+  // 3️⃣ Idempotency: if already initiated or released → just redirect
+  if (payment.status !== "PENDING") {
+    return redirectBack();
   }
 
-
-  // 4️⃣ Atomic state transition
-
+  // 4️⃣ Atomic state transition: PENDING → INITIATED
+  await Payment.findOneAndUpdate(
+    {
+      _id: paymentId,
+      status: "PENDING",
+    },
+    {
+      $set: {
+        status: "INITIATED",
+        updatedAt: new Date(),
+      },
+    }
+  );
 
   // 5️⃣ Log activity
   await Agreement.findByIdAndUpdate(
@@ -79,17 +85,12 @@ export async function POST(
     {
       $push: {
         activity: {
-          message: "Payment released for milestone",
+          message: "Payment initiated for milestone",
           createdAt: new Date(),
         },
       },
     }
   );
 
-  const response = NextResponse.redirect(
-    new URL(`/agreements/${agreement._id}?refresh=${Date.now()}`, request.url)
-  );
-
-  response.headers.set("Cache-Control", "no-store");
-  return response;
+  return redirectBack();
 }
