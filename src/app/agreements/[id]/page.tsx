@@ -6,6 +6,8 @@ import { Agreement } from "@/lib/db/models/Agreement";
 import { User } from "@/lib/db/models/User";
 import { Milestone } from "@/lib/db/models/Milestone";
 import DeliverMilestoneForm from "./_components/DeliverMilestoneForm";
+import { Payment } from "@/lib/db/models/Payment";
+
 
 
 export default async function AgreementDetailPage({
@@ -43,6 +45,14 @@ export default async function AgreementDetailPage({
     const milestones = (await Milestone.find({
         agreementId: agreement._id,
     }).lean()) as any[];
+
+    const payments = await Payment.find({
+        agreementId: agreement._id,
+    }).lean();
+
+    const paymentByMilestoneId = new Map(
+        payments.map((p) => [p.milestoneId.toString(), p])
+    );
 
     const deliverables = agreement.deliverables || [];
 
@@ -371,7 +381,52 @@ export default async function AgreementDetailPage({
 
                     </div>
                 ))}
+
+                {milestones.map((milestone) => {
+                    const payment = paymentByMilestoneId.get(milestone._id.toString());
+
+                    return (
+                        <div
+                            key={milestone._id}
+                            className="rounded-lg border p-4 flex justify-between items-center"
+                        >
+                            <div>
+                                <h4 className="font-semibold">{milestone.title}</h4>
+                                <p className="text-sm text-gray-500">
+                                    Amount: ₹{milestone.amount}
+                                </p>
+                                <p className="text-sm">
+                                    Status: {milestone.status}
+                                </p>
+                            </div>
+
+                            {/* RIGHT SIDE ACTION */}
+                            {milestone.status === "COMPLETED" && payment ? (
+                                payment.status === "PENDING" ? (
+                                    <form
+                                        method="POST"
+                                        action={`/api/payments/${payment._id}/initiate`}
+                                    >
+                                        <button
+                                            type="submit"
+                                            className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                                        >
+                                            Pay ₹{payment.amount}
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <span className="text-green-600 font-medium">
+                                        ✅ Paid
+                                    </span>
+                                )
+                            ) : null}
+                        </div>
+                    );
+                })}
+
+
             </div>
+
 
             {/* ADD MILESTONE */}
             {isDraft && isBrand && (

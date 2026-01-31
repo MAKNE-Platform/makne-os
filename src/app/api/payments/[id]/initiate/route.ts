@@ -35,19 +35,19 @@ export async function POST(
   const paymentId = new mongoose.Types.ObjectId(id);
 
   // 1️⃣ Fetch payment
-const payment = await Payment.findById(paymentId);
+  const payment = await Payment.findById(paymentId);
 
-if (!payment) {
-  console.log("❌ Payment not found");
-  return NextResponse.json({ error: "Payment not found" }, { status: 404 });
-}
+  if (!payment) {
+    console.log("❌ Payment not found");
+    return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+  }
 
-console.log("✅ BEFORE:", payment.status);
+  console.log("✅ BEFORE:", payment.status);
 
-payment.status = "RELEASED";
-await payment.save();
+  payment.status = "RELEASED";
+  await payment.save();
 
-console.log("✅ AFTER:", payment.status);
+  console.log("✅ AFTER:", payment.status);
 
 
   // 2️⃣ Fetch agreement
@@ -61,11 +61,14 @@ console.log("✅ AFTER:", payment.status);
 
   // 3️⃣ Validate payment state
   if (payment.status !== "PENDING") {
-    return NextResponse.json(
-      { error: "Payment already processed" },
-      { status: 400 }
+    // Payment already done → just redirect back
+    const response = NextResponse.redirect(
+      new URL(`/agreements/${payment.agreementId}?refresh=${Date.now()}`, request.url)
     );
+    response.headers.set("Cache-Control", "no-store");
+    return response;
   }
+
 
   // 4️⃣ Atomic state transition
 
