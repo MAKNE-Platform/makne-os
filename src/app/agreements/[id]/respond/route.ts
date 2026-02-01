@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import mongoose from "mongoose";
+import { logAudit } from "@/lib/audit/logAudit"; // ✅ ADD
 
 export async function POST(
   request: Request,
@@ -43,6 +44,7 @@ export async function POST(
     agreement.activity = [];
   }
 
+  // 🔁 STATE MUTATION
   if (action === "ACCEPT") {
     agreement.status = "ACTIVE";
     agreement.activity.push({
@@ -57,7 +59,21 @@ export async function POST(
 
   await agreement.save();
 
-
+  // 🧾 AUDIT LOG (THIS IS THE KEY FIX)
+  await logAudit({
+    actorType: "CREATOR",
+    actorId: new mongoose.Types.ObjectId(userId),
+    action:
+      action === "ACCEPT"
+        ? "AGREEMENT_ACCEPTED"
+        : "AGREEMENT_REJECTED",
+    entityType: "AGREEMENT",
+    entityId: agreement._id,
+    metadata: {
+      brandId: agreement.brandId.toString(),
+      creatorId: agreement.creatorId.toString(),
+    },
+  });
 
   return NextResponse.redirect(
     new URL("/dashboard/creator", request.url)

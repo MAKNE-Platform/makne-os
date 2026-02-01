@@ -5,12 +5,15 @@ import { User } from "@/lib/db/models/User";
 import { cookies } from "next/headers";
 import mongoose from "mongoose";
 import { Milestone } from "@/lib/db/models/Milestone";
+import { logAudit } from "@/lib/audit/logAudit";
+import { sendAgreement } from "@/lib/domain/agreements/sendAgreement";
+
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params; // ✅ FIX HERE
+  const { id } = await context.params;
 
   const formData = await request.formData();
   const creatorEmail = formData.get("creatorEmail") as string;
@@ -63,7 +66,6 @@ export async function POST(
     );
   }
 
-
   if (milestones.length === 0) {
     return NextResponse.json(
       { error: "Add at least one milestone before sending" },
@@ -71,17 +73,34 @@ export async function POST(
     );
   }
 
-  await Agreement.findByIdAndUpdate(id, {
+  // 1️⃣ Update agreement
+  await sendAgreement({
+    agreementId: new mongoose.Types.ObjectId(id),
+    brandId: new mongoose.Types.ObjectId(brandId),
     creatorId: new mongoose.Types.ObjectId(creator._id),
     creatorEmail,
-    status: "SENT",
-    $push: {
-      activity: {
-        message: "Agreement sent to creator",
-      },
-    },
   });
 
+
+  console.log("ABOUT TO LOG AGREEMENT_SENT");
+
+
+  // 2️⃣ AUDIT LOG (this powers notifications)
+  try {
+    await logAudit({
+      actorType: "BRAND",
+      actorId: new mongoose.Types.ObjectId(brandId),
+      action: "AGREEMENT_SENT",
+      entityType: "AGREEMENT",
+      entityId: new mongoose.Types.ObjectId(id),
+      metadata: {
+        creatorId: creator._id.toString(),
+        brandId,
+      },
+    });
+  } catch (err) {
+    console.error("AUDIT LOG FAILED:", err);
+  }
 
   return NextResponse.redirect(new URL("/dashboard/brand", request.url));
 }
