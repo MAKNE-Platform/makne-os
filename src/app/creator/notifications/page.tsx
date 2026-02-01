@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
-import { Notification } from "@/lib/db/models/Notification";
+import { Notification, NotificationDocument } from "@/lib/db/models/Notification";
+import { MarkAsRead } from "./MarkAsRead";
 
 export default async function CreatorNotificationsPage() {
   const cookieStore = await cookies();
@@ -15,12 +16,12 @@ export default async function CreatorNotificationsPage() {
 
   await connectDB();
 
-  const notifications = await Notification.find({
-    userId: new mongoose.Types.ObjectId(userId),
-    role: "CREATOR",
-  })
-    .sort({ createdAt: -1 })
-    .lean();
+ const notifications = await Notification.find({
+  userId: new mongoose.Types.ObjectId(userId),
+  role: "CREATOR",
+})
+  .sort({ createdAt: -1 })
+  .lean<NotificationDocument[]>();
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
@@ -37,11 +38,10 @@ export default async function CreatorNotificationsPage() {
           {notifications.map((n) => (
             <div
               key={n._id.toString()}
-              className={`rounded-xl border p-4 ${
-                n.read
+              className={`rounded-xl border p-4 ${n.read
                   ? "bg-background"
                   : "bg-muted/40"
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -58,9 +58,17 @@ export default async function CreatorNotificationsPage() {
                 )}
               </div>
 
-              <p className="mt-2 text-xs text-muted-foreground">
-                {new Date(n.createdAt).toLocaleString()}
-              </p>
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {new Date(n.createdAt).toLocaleString()}
+                </p>
+
+                <MarkAsRead
+                  notificationId={n._id.toString()}
+                  isRead={n.read}
+                />
+              </div>
+
             </div>
           ))}
         </div>
