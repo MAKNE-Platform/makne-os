@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Payout } from "@/lib/db/models/Payout";
 import { getCreatorBalance } from "@/lib/payments/getCreatorBalance";
+import { logAudit } from "@/lib/audit/logAudit";
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
@@ -44,12 +45,23 @@ export async function POST(request: Request) {
   }
 
   // 2️⃣ Create payout request (locks funds)
-  await Payout.create({
+  const payout = await Payout.create({
     creatorId,
     amount,
     status: "REQUESTED",
     requestedAt: new Date(),
   });
+
+
+  await logAudit({
+    actorType: "CREATOR",
+    actorId: creatorId,
+    action: "PAYOUT_REQUESTED",
+    entityType: "PAYOUT",
+    entityId: payout._id,
+    metadata: { amount },
+  });
+
 
   return NextResponse.json({
     success: true,

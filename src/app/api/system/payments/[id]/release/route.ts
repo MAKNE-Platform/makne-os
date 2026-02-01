@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Payment } from "@/lib/db/models/Payment";
 import { Agreement } from "@/lib/db/models/Agreement";
+import { logAudit } from "@/lib/audit/logAudit";
 
 export async function POST(
   request: Request,
@@ -67,6 +68,14 @@ export async function POST(
       },
     }
   );
+
+  await logAudit({
+  actorType: "SYSTEM",
+  action: "PAYMENT_RELEASED",
+  entityType: "PAYMENT",
+  entityId: paymentId,
+});
+
 
   // 4️⃣ Log agreement activity
   await Agreement.findByIdAndUpdate(

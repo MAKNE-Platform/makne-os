@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Payout } from "@/lib/db/models/Payout";
+import { logAudit } from "@/lib/audit/logAudit";
 
 type Action = "PROCESS" | "COMPLETE" | "FAIL";
 
@@ -50,6 +51,14 @@ export async function POST(
     );
   }
 
+  await logAudit({
+  actorType: "SYSTEM",
+  action: `PAYOUT_${action}`,
+  entityType: "PAYOUT",
+  entityId: payoutId,
+});
+
+
   // 2️⃣ State machine
   if (action === "PROCESS") {
     if (payout.status !== "REQUESTED") {
@@ -62,6 +71,14 @@ export async function POST(
     payout.status = "PROCESSING";
     await payout.save();
   }
+
+  await logAudit({
+  actorType: "SYSTEM",
+  action: `PAYOUT_${action}`,
+  entityType: "PAYOUT",
+  entityId: payoutId,
+});
+
 
   if (action === "COMPLETE") {
     if (payout.status === "COMPLETED") {
@@ -83,6 +100,14 @@ export async function POST(
     await payout.save();
   }
 
+  await logAudit({
+  actorType: "SYSTEM",
+  action: `PAYOUT_${action}`,
+  entityType: "PAYOUT",
+  entityId: payoutId,
+});
+
+
   if (action === "FAIL") {
     if (payout.status === "COMPLETED") {
       return NextResponse.json(
@@ -94,6 +119,14 @@ export async function POST(
     payout.status = "FAILED";
     await payout.save();
   }
+
+  await logAudit({
+  actorType: "SYSTEM",
+  action: `PAYOUT_${action}`,
+  entityType: "PAYOUT",
+  entityId: payoutId,
+});
+
 
   return NextResponse.json({
     success: true,
