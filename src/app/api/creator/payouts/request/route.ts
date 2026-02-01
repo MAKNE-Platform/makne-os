@@ -17,8 +17,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json();
-  const amount = Number(body.amount);
+  let amount: number | null = null;
+
+  try {
+    const body = await request.json();
+    amount = Number(body?.amount);
+  } catch {
+    return NextResponse.json(
+      { error: "Request body must be JSON" },
+      { status: 400 }
+    );
+  }
+
 
   if (!amount || amount <= 0) {
     return NextResponse.json(
@@ -53,6 +63,7 @@ export async function POST(request: Request) {
   });
 
 
+  console.log("AUDIT LOG TRIGGERED");
   await logAudit({
     actorType: "CREATOR",
     actorId: creatorId,

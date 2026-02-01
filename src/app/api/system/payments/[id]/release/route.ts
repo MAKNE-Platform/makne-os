@@ -69,6 +69,7 @@ export async function POST(
     }
   );
 
+  console.log("AUDIT LOG TRIGGERED");
   await logAudit({
   actorType: "SYSTEM",
   action: "PAYMENT_RELEASED",

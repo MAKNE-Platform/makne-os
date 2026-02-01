@@ -28,7 +28,16 @@ export async function POST(
     );
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
+      { status: 400 }
+    );
+  }
+
   const action: Action = body.action;
 
   if (!["PROCESS", "COMPLETE", "FAIL"].includes(action)) {
@@ -40,10 +49,7 @@ export async function POST(
 
   await connectDB();
 
-  const payoutId = new mongoose.Types.ObjectId(id);
-
-  // 1️⃣ Fetch payout
-  const payout = await Payout.findById(payoutId);
+  const payout = await Payout.findById(id);
   if (!payout) {
     return NextResponse.json(
       { error: "Payout not found" },
@@ -51,43 +57,29 @@ export async function POST(
     );
   }
 
-  await logAudit({
-  actorType: "SYSTEM",
-  action: `PAYOUT_${action}`,
-  entityType: "PAYOUT",
-  entityId: payoutId,
-});
+  /* ---------------- STATE MACHINE ---------------- */
 
-
-  // 2️⃣ State machine
   if (action === "PROCESS") {
     if (payout.status !== "REQUESTED") {
-      return NextResponse.json({
-        success: true,
-        message: "Payout already processed or completed",
-      });
+      return NextResponse.json({ success: true });
     }
 
     payout.status = "PROCESSING";
     await payout.save();
+
+    await logAudit({
+      actorType: "SYSTEM",
+      action: "PAYOUT_PROCESSING",
+      entityType: "PAYOUT",
+      entityId: payout._id,
+      metadata: {
+        creatorId: payout.creatorId.toString(),
+        amount: payout.amount,
+      },
+    });
   }
 
-  await logAudit({
-  actorType: "SYSTEM",
-  action: `PAYOUT_${action}`,
-  entityType: "PAYOUT",
-  entityId: payoutId,
-});
-
-
   if (action === "COMPLETE") {
-    if (payout.status === "COMPLETED") {
-      return NextResponse.json({
-        success: true,
-        message: "Payout already completed",
-      });
-    }
-
     if (payout.status !== "PROCESSING") {
       return NextResponse.json(
         { error: "Payout not in processing state" },
@@ -98,15 +90,18 @@ export async function POST(
     payout.status = "COMPLETED";
     payout.processedAt = new Date();
     await payout.save();
+
+    await logAudit({
+      actorType: "SYSTEM",
+      action: "PAYOUT_COMPLETED",
+      entityType: "PAYOUT",
+      entityId: payout._id,
+      metadata: {
+        creatorId: payout.creatorId.toString(),
+        amount: payout.amount,
+      },
+    });
   }
-
-  await logAudit({
-  actorType: "SYSTEM",
-  action: `PAYOUT_${action}`,
-  entityType: "PAYOUT",
-  entityId: payoutId,
-});
-
 
   if (action === "FAIL") {
     if (payout.status === "COMPLETED") {
@@ -118,19 +113,22 @@ export async function POST(
 
     payout.status = "FAILED";
     await payout.save();
+
+    await logAudit({
+      actorType: "SYSTEM",
+      action: "PAYOUT_FAILED",
+      entityType: "PAYOUT",
+      entityId: payout._id,
+      metadata: {
+        creatorId: payout.creatorId.toString(),
+        amount: payout.amount,
+      },
+    });
   }
-
-  await logAudit({
-  actorType: "SYSTEM",
-  action: `PAYOUT_${action}`,
-  entityType: "PAYOUT",
-  entityId: payoutId,
-});
-
 
   return NextResponse.json({
     success: true,
-    payoutId: payout._id,
+    payoutId: payout._id.toString(),
     status: payout.status,
   });
 }

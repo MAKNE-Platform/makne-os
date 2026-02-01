@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { AuditLog, ActorType } from "@/lib/db/models/AuditLog";
+import { notifyFromAudit } from "@/lib/notifications/notifyFromAudit";
+
 
 export async function logAudit({
   actorType,
@@ -24,4 +26,12 @@ export async function logAudit({
     entityId,
     metadata,
   });
+  await notifyFromAudit({
+    action,
+    actorType,
+    entityType,
+    entityId,
+    metadata,
+  });
+
 }
