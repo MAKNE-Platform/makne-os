@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db/connect";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { Payment } from "@/lib/db/models/Payment";
+import { logAudit } from "@/lib/audit/logAudit"; // ✅ ADD
 
 export async function POST(
   request: Request,
@@ -37,7 +38,6 @@ export async function POST(
     );
   }
 
-
   await connectDB();
 
   const milestone = await Milestone.findById(id);
@@ -56,11 +56,6 @@ export async function POST(
     );
   }
 
-  /**
-   * ✅ Only IN_PROGRESS or REVISION milestones can be acted upon
-   * - IN_PROGRESS → approve OR revision
-   * - REVISION → approve after re-submission
-   */
   if (!["IN_PROGRESS", "REVISION"].includes(milestone.status)) {
     return NextResponse.json(
       { error: "Milestone not ready for approval" },
@@ -72,7 +67,6 @@ export async function POST(
     milestone.status = "COMPLETED";
     milestone.approvedAt = new Date();
 
-    // 🔥 NEW: Auto-create payment (idempotent)
     const existingPayment = await Payment.findOne({
       milestoneId: milestone._id,
     });
@@ -89,15 +83,28 @@ export async function POST(
     }
   }
 
-
   if (action === "REVISION") {
     milestone.status = "REVISION";
-
-    // ⬇️ IMPORTANT: clear previous approval metadata if any
     milestone.approvedAt = undefined;
   }
 
   await milestone.save();
+
+  // 🧾 AUDIT LOG (MINIMAL & CORRECT)
+  await logAudit({
+    actorType: "BRAND",
+    actorId: new mongoose.Types.ObjectId(userId),
+    action:
+      action === "APPROVE"
+        ? "MILESTONE_APPROVED"
+        : "MILESTONE_REVISION_REQUESTED",
+    entityType: "MILESTONE",
+    entityId: milestone._id,
+    metadata: {
+      creatorId: agreement.creatorId.toString(),
+      milestoneTitle: milestone.title,
+    },
+  });
 
   await Agreement.findByIdAndUpdate(
     agreement._id,

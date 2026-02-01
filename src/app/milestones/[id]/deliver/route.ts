@@ -4,11 +4,10 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
-
 import { revalidatePath } from "next/cache";
-
 import fs from "fs";
 import path from "path";
+import { logAudit } from "@/lib/audit/logAudit"; // ✅ ADD
 
 export async function POST(
   request: Request,
@@ -56,7 +55,6 @@ export async function POST(
     );
   }
 
-
   const agreement = await Agreement.findById(milestone.agreementId);
 
   if (
@@ -76,22 +74,18 @@ export async function POST(
     );
   }
 
-  // 🔗 Parse external links
   const links =
     linksRaw
       ?.split(",")
       .map((l) => l.trim())
       .filter(Boolean) || [];
 
-  // 📎 Store file metadata (placeholder storage)
-  // ✅ FILTER EMPTY FILE INPUTS
   const uploadDir = path.join(
     process.cwd(),
     "uploads",
     milestone._id.toString()
   );
 
-  // ensure folder exists
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
@@ -112,7 +106,6 @@ export async function POST(
     });
   }
 
-
   // ✅ Save submission
   milestone.submission = {
     note: note || undefined,
@@ -124,7 +117,20 @@ export async function POST(
   milestone.status = "IN_PROGRESS";
   await milestone.save();
 
-  // 📝 Activity log
+  // 🧾 AUDIT LOG (KEY ADDITION)
+  await logAudit({
+    actorType: "CREATOR",
+    actorId: new mongoose.Types.ObjectId(userId),
+    action: "DELIVERABLE_SUBMITTED",
+    entityType: "MILESTONE",
+    entityId: milestone._id,
+    metadata: {
+      brandId: agreement.brandId.toString(),
+      milestoneTitle: milestone.title,
+    },
+  });
+
+  // 📝 Activity log (existing)
   await Agreement.findByIdAndUpdate(
     milestone.agreementId,
     {
@@ -137,10 +143,7 @@ export async function POST(
     }
   );
 
-  // 🔥 FORCE AGREEMENT PAGE TO RE-RENDER
   revalidatePath(`/agreements/${milestone.agreementId}`);
 
   return NextResponse.json({ success: true });
-
-
 }
