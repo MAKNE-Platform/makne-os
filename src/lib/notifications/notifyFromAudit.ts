@@ -136,7 +136,11 @@ export async function notifyFromAudit({
 
     case "PAYMENT_INITIATED": {
       const adminEmail = process.env.ADMIN_EMAIL;
-      if (!adminEmail) break;
+      const appUrl = process.env.APP_URL;
+
+      if (!adminEmail || !appUrl) break;
+
+      const systemUrl = `${appUrl}/system/payments`;
 
       await sendEmail({
         to: adminEmail,
@@ -148,12 +152,16 @@ Amount: ₹${metadata?.amount}
 Agreement ID: ${metadata?.agreementId}
 Creator ID: ${metadata?.creatorId}
 
-Please run the payment processor from the system dashboard.
+👉 Release payment:
+${systemUrl}
+
+(If you are running locally, make sure the app is running.)
     `.trim(),
       });
 
       break;
     }
+
 
 
     default:
