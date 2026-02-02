@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/system/payments/auto-release",
-      "schedule": "*/1 * * * *"
-    }
-  ]
-}

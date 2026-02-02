@@ -8,10 +8,7 @@ const RELEASE_DELAY_MINUTES = 2;
 
 export async function POST(request: Request) {
   // 🔐 System auth
-  const systemKey =
-    request.headers.get("x-makne-system-key") ||
-    process.env.MAKNE_SYSTEM_KEY;
-
+  const systemKey = request.headers.get("x-makne-system-key");
   if (systemKey !== process.env.MAKNE_SYSTEM_KEY) {
     return NextResponse.json(
       { error: "Unauthorized system access" },
