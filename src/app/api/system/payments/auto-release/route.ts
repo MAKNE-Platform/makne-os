@@ -8,7 +8,10 @@ const RELEASE_DELAY_MINUTES = 2;
 
 export async function POST(request: Request) {
   // 🔐 System auth
-  const systemKey = request.headers.get("x-makne-system-key");
+  const systemKey =
+    request.headers.get("x-makne-system-key") ||
+    process.env.MAKNE_SYSTEM_KEY;
+
   if (systemKey !== process.env.MAKNE_SYSTEM_KEY) {
     return NextResponse.json(
       { error: "Unauthorized system access" },
@@ -24,9 +27,10 @@ export async function POST(request: Request) {
 
   // 1️⃣ Find releasable payments
   const paymentsToRelease = await Payment.find({
-    status: "INITIATED",
-    updatedAt: { $lte: releaseBefore },
+    status: "PROCESSING",
+    initiatedAt: { $lte: releaseBefore },
   });
+
 
   if (paymentsToRelease.length === 0) {
     return NextResponse.json({
