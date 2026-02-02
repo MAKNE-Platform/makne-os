@@ -81,12 +81,19 @@ export async function POST(
   );
 
   await logAudit({
-  actorType: "BRAND",
-  actorId: new mongoose.Types.ObjectId(userId),
-  action: "PAYMENT_INITIATED",
-  entityType: "PAYMENT",
-  entityId: paymentId,
-});
+    actorType: "BRAND",
+    actorId: new mongoose.Types.ObjectId(userId),
+    action: "PAYMENT_INITIATED",
+    entityType: "PAYMENT",
+    entityId: payment._id,
+    metadata: {
+      amount: payment.amount,
+      agreementId: payment.agreementId.toString(),
+      creatorId: payment.creatorId.toString(),
+      brandId: payment.brandId.toString(),
+    },
+  });
+
 
 
   // 5️⃣ Log activity
