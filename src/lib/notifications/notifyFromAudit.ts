@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { createNotification } from "./createNotification";
+import { sendEmail } from "@/lib/email/sendEmail";
+
 
 export async function notifyFromAudit({
   action,
@@ -131,6 +133,28 @@ export async function notifyFromAudit({
     // Creator requesting payout → no notification (self-initiated)
     case "PAYOUT_REQUESTED":
       break;
+
+    case "PAYMENT_INITIATED": {
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (!adminEmail) break;
+
+      await sendEmail({
+        to: adminEmail,
+        subject: "[MAKNE] Payment initiated – action required",
+        text: `
+A payment has been initiated and is waiting for release.
+
+Amount: ₹${metadata?.amount}
+Agreement ID: ${metadata?.agreementId}
+Creator ID: ${metadata?.creatorId}
+
+Please run the payment processor from the system dashboard.
+    `.trim(),
+      });
+
+      break;
+    }
+
 
     default:
       break;
