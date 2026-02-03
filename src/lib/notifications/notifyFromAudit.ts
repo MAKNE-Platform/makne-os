@@ -129,7 +129,8 @@ ${appUrl}/agreements/${entityId.toString()}
       break;
 
     // Creator submitted deliverable
-    case "DELIVERABLE_SUBMITTED":
+    case "DELIVERABLE_SUBMITTED": {
+      // 🔔 Brand in-app notification
       if (metadata?.brandId) {
         await createNotification({
           userId: new mongoose.Types.ObjectId(metadata.brandId),
@@ -142,7 +143,30 @@ ${appUrl}/agreements/${entityId.toString()}
           entityId,
         });
       }
+
+      // 📧 Brand email notification
+      if (metadata?.brandEmail && metadata?.milestoneTitle) {
+        const appUrl = process.env.APP_URL;
+
+        if (appUrl) {
+          await sendEmail({
+            to: metadata.brandEmail,
+            subject: "[MAKNE] Deliverable submitted",
+            text: `
+A creator has submitted work for a milestone.
+
+Milestone: ${metadata.milestoneTitle}
+
+👉 Review submission:
+${appUrl}/agreements/${metadata.agreementId ?? ""}
+        `.trim(),
+          });
+        }
+      }
+
       break;
+    }
+
 
     /* ---------------------------------
      * INTENTIONALLY SILENT EVENTS
