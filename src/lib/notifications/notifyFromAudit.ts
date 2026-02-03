@@ -31,19 +31,36 @@ export async function notifyFromAudit({
      * --------------------------------- */
 
     // Brand sent an agreement to creator
-    case "AGREEMENT_SENT":
-      if (metadata?.creatorId) {
-        await createNotification({
-          userId: new mongoose.Types.ObjectId(metadata.creatorId),
-          role: "CREATOR",
-          title: "New agreement received",
-          message: "A brand has sent you a new agreement",
-          entityType,
-          entityId,
-        });
-        
-      }
+    case "AGREEMENT_SENT": {
+      if (!metadata?.creatorId) break;
+
+      const appUrl = process.env.APP_URL;
+      if (!appUrl) break;
+
+      await createNotification({
+        userId: new mongoose.Types.ObjectId(metadata.creatorId),
+        role: "CREATOR",
+        title: "New agreement received",
+        message: "A brand has sent you a new agreement.",
+        entityType,
+        entityId,
+      });
+
+      // 📧 Email to creator
+      await sendEmail({
+        to: metadata.creatorEmail, // IMPORTANT: see note below
+        subject: "[MAKNE] You received a new agreement",
+        text: `
+You have received a new agreement from a brand.
+
+👉 View agreement:
+${appUrl}/agreements/${entityId.toString()}
+    `.trim(),
+      });
+
       break;
+    }
+
 
     // Brand approved milestone
     case "MILESTONE_APPROVED":

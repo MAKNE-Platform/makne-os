@@ -1,12 +1,10 @@
 import mongoose from "mongoose";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { logAudit } from "@/lib/audit/logAudit";
+import { connectDB } from "@/lib/db/connect"; // ✅ ADD THIS
 
-/**
- * Domain-level agreement send
- * This MUST be the single source of truth
-*/
 console.log("🔥 DOMAIN sendAgreement FILE LOADED 🔥");
+
 export async function sendAgreement({
   agreementId,
   brandId,
@@ -18,10 +16,12 @@ export async function sendAgreement({
   creatorId: mongoose.Types.ObjectId;
   creatorEmail: string;
 }) {
+  console.log("🔥 sendAgreement FUNCTION CALLED 🔥");
 
-    console.log("🔥 sendAgreement FUNCTION CALLED 🔥");
+  // ✅ ENSURE DB CONNECTION
+  await connectDB();
 
-  // 1️⃣ Core mutation (same as your current route)
+  // 1️⃣ Core mutation
   await Agreement.findByIdAndUpdate(agreementId, {
     creatorId,
     creatorEmail,
@@ -34,7 +34,7 @@ export async function sendAgreement({
     },
   });
 
-  // 2️⃣ Side-effect: audit log (notifications depend on this)
+  // 2️⃣ Audit log (powers activity + notifications + email)
   await logAudit({
     actorType: "BRAND",
     actorId: brandId,
@@ -43,6 +43,7 @@ export async function sendAgreement({
     entityId: agreementId,
     metadata: {
       creatorId: creatorId.toString(),
+      creatorEmail,
       brandId: brandId.toString(),
     },
   });

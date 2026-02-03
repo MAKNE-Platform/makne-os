@@ -5,9 +5,7 @@ import { User } from "@/lib/db/models/User";
 import { cookies } from "next/headers";
 import mongoose from "mongoose";
 import { Milestone } from "@/lib/db/models/Milestone";
-import { logAudit } from "@/lib/audit/logAudit";
 import { sendAgreement } from "@/lib/domain/agreements/sendAgreement";
-
 
 export async function POST(
   request: Request,
@@ -73,34 +71,15 @@ export async function POST(
     );
   }
 
-  // 1️⃣ Update agreement
+  // ✅ SINGLE source of truth
   await sendAgreement({
     agreementId: new mongoose.Types.ObjectId(id),
     brandId: new mongoose.Types.ObjectId(brandId),
     creatorId: new mongoose.Types.ObjectId(creator._id),
-    creatorEmail,
+    creatorEmail: creator.email,
   });
 
-
-  console.log("ABOUT TO LOG AGREEMENT_SENT");
-
-
-  // 2️⃣ AUDIT LOG (this powers notifications)
-  try {
-    await logAudit({
-      actorType: "BRAND",
-      actorId: new mongoose.Types.ObjectId(brandId),
-      action: "AGREEMENT_SENT",
-      entityType: "AGREEMENT",
-      entityId: new mongoose.Types.ObjectId(id),
-      metadata: {
-        creatorId: creator._id.toString(),
-        brandId,
-      },
-    });
-  } catch (err) {
-    console.error("AUDIT LOG FAILED:", err);
-  }
-
-  return NextResponse.redirect(new URL("/dashboard/brand", request.url));
+  return NextResponse.redirect(
+    new URL("/dashboard/brand", request.url)
+  );
 }
