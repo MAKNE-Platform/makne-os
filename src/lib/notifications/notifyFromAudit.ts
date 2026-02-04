@@ -101,6 +101,46 @@ Keep going 🚀
       break;
     }
 
+    case "MILESTONE_REVISION_REQUESTED": {
+      // 🔔 Creator in-app notification
+      if (metadata?.creatorId) {
+        await createNotification({
+          userId: new mongoose.Types.ObjectId(metadata.creatorId),
+          role: "CREATOR",
+          title: "Changes requested",
+          message: metadata.milestoneTitle
+            ? `Changes were requested for "${metadata.milestoneTitle}"`
+            : "Changes were requested for a milestone",
+          entityType,
+          entityId,
+        });
+      }
+
+      // 📧 Creator email
+      if (metadata?.creatorEmail && metadata?.milestoneTitle) {
+        const appUrl = process.env.APP_URL;
+        if (appUrl) {
+          await sendEmail({
+            to: metadata.creatorEmail,
+            subject: "[MAKNE] Changes requested for your deliverable",
+            text: `
+The brand has requested changes for your deliverable.
+
+Milestone: ${metadata.milestoneTitle}
+
+👉 Review & resubmit:
+${appUrl}/agreements/${metadata.agreementId ?? ""}
+
+Please update and resubmit when ready.
+        `.trim(),
+          });
+        }
+      }
+
+      break;
+    }
+
+
     // System released milestone payment
     case "PAYMENT_RELEASED":
       if (metadata?.creatorId) {
