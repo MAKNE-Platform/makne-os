@@ -215,6 +215,42 @@ You're all set to move forward 🚀
       break;
     }
 
+    case "AGREEMENT_REJECTED": {
+      // 🔔 Brand in-app notification
+      if (metadata?.brandId) {
+        await createNotification({
+          userId: new mongoose.Types.ObjectId(metadata.brandId),
+          role: "BRAND",
+          title: "Agreement rejected",
+          message: "A creator has rejected your agreement",
+          entityType,
+          entityId,
+        });
+      }
+
+      // 📧 Brand email
+      if (metadata?.brandEmail) {
+        const appUrl = process.env.APP_URL;
+        if (appUrl) {
+          await sendEmail({
+            to: metadata.brandEmail,
+            subject: "[MAKNE] Agreement rejected",
+            text: `
+The creator has rejected your agreement.
+
+You may review the agreement, update terms, and resend it if needed.
+
+👉 View agreement:
+${appUrl}/agreements/${entityId.toString()}
+        `.trim(),
+          });
+        }
+      }
+
+      break;
+    }
+
+
 
     // Creator submitted deliverable
     case "DELIVERABLE_SUBMITTED": {
