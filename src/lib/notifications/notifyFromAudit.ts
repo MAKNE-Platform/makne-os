@@ -178,18 +178,43 @@ Please update and resubmit when ready.
      * --------------------------------- */
 
     // Creator accepted agreement
-    case "AGREEMENT_ACCEPTED":
+    case "AGREEMENT_ACCEPTED": {
+      // 🔔 Brand in-app notification
       if (metadata?.brandId) {
         await createNotification({
           userId: new mongoose.Types.ObjectId(metadata.brandId),
           role: "BRAND",
           title: "Agreement accepted",
-          message: "A creator accepted your agreement",
+          message: "A creator has accepted your agreement",
           entityType,
           entityId,
         });
       }
+
+      // 📧 Brand email
+      if (metadata?.brandEmail) {
+        const appUrl = process.env.APP_URL;
+        if (appUrl) {
+          await sendEmail({
+            to: metadata.brandEmail,
+            subject: "[MAKNE] Agreement accepted 🎉",
+            text: `
+Good news!
+
+A creator has accepted your agreement and work can now begin.
+
+👉 View agreement:
+${appUrl}/agreements/${entityId.toString()}
+
+You're all set to move forward 🚀
+        `.trim(),
+          });
+        }
+      }
+
       break;
+    }
+
 
     // Creator submitted deliverable
     case "DELIVERABLE_SUBMITTED": {

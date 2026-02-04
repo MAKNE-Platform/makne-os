@@ -3,7 +3,9 @@ import { cookies } from "next/headers";
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import mongoose from "mongoose";
-import { logAudit } from "@/lib/audit/logAudit"; // ✅ ADD
+import { logAudit } from "@/lib/audit/logAudit";
+import { User } from "@/lib/db/models/User";
+
 
 export async function POST(
   request: Request,
@@ -59,6 +61,16 @@ export async function POST(
 
   await agreement.save();
 
+  const brand = await User.findById(agreement.brandId);
+
+  if (!brand) {
+    return NextResponse.json(
+      { error: "Brand not found" },
+      { status: 404 }
+    );
+  }
+
+
   // 🧾 AUDIT LOG (THIS IS THE KEY FIX)
   await logAudit({
     actorType: "CREATOR",
@@ -72,6 +84,7 @@ export async function POST(
     metadata: {
       brandId: agreement.brandId.toString(),
       creatorId: agreement.creatorId.toString(),
+      brandEmail: brand.email,
     },
   });
 

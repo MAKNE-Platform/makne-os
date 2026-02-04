@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
+import { logAudit } from "@/lib/audit/logAudit";
+import { User } from "@/lib/db/models/User";
 
 export async function POST(
   request: Request,
@@ -35,6 +37,15 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
+  const creator = await User.findById(agreement.creatorId);
+  if (!creator) {
+    return NextResponse.json(
+      { error: "Creator not found" },
+      { status: 404 }
+    );
+  }
+
+
   // 🔒 Only allow revision when work is submitted
   if (milestone.status !== "IN_PROGRESS") {
     return NextResponse.json(
@@ -45,6 +56,21 @@ export async function POST(
 
   milestone.status = "REVISION";
   await milestone.save();
+
+  await logAudit({
+    actorType: "BRAND",
+    actorId: new mongoose.Types.ObjectId(userId),
+    action: "MILESTONE_REVISION_REQUESTED",
+    entityType: "MILESTONE",
+    entityId: milestone._id,
+    metadata: {
+      creatorId: agreement.creatorId.toString(),
+      creatorEmail: creator.email,         
+      milestoneTitle: milestone.title,
+      agreementId: agreement._id.toString(), 
+    },
+  });
+
 
   await Agreement.findByIdAndUpdate(agreement._id, {
     $push: {
