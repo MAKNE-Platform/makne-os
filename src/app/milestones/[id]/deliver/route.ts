@@ -7,7 +7,8 @@ import { Agreement } from "@/lib/db/models/Agreement";
 import { revalidatePath } from "next/cache";
 import fs from "fs";
 import path from "path";
-import { logAudit } from "@/lib/audit/logAudit"; // ✅ ADD
+import { logAudit } from "@/lib/audit/logAudit"; 
+import { User } from "@/lib/db/models/User";
 
 export async function POST(
   request: Request,
@@ -56,6 +57,7 @@ export async function POST(
   }
 
   const agreement = await Agreement.findById(milestone.agreementId);
+  const brand = await User.findById(agreement.brandId);
 
   if (
     !agreement ||
@@ -127,6 +129,7 @@ export async function POST(
     metadata: {
       brandId: agreement.brandId.toString(),
       milestoneTitle: milestone.title,
+      brandEmail: brand.email,
     },
   });
 

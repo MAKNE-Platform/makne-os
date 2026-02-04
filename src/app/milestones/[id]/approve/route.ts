@@ -4,8 +4,9 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
+import { User } from "@/lib/db/models/User";
 import { Payment } from "@/lib/db/models/Payment";
-import { logAudit } from "@/lib/audit/logAudit"; // ✅ ADD
+import { logAudit } from "@/lib/audit/logAudit";
 
 export async function POST(
   request: Request,
@@ -56,6 +57,15 @@ export async function POST(
     );
   }
 
+  const creator = await User.findById(agreement.creatorId);
+  if (!creator) {
+    return NextResponse.json(
+      { error: "Creator not found" },
+      { status: 404 }
+    );
+  }
+
+
   if (!["IN_PROGRESS", "REVISION"].includes(milestone.status)) {
     return NextResponse.json(
       { error: "Milestone not ready for approval" },
@@ -102,7 +112,9 @@ export async function POST(
     entityId: milestone._id,
     metadata: {
       creatorId: agreement.creatorId.toString(),
+      creatorEmail: creator.email,        
       milestoneTitle: milestone.title,
+      agreementId: agreement._id.toString() 
     },
   });
 

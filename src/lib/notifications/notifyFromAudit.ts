@@ -61,22 +61,45 @@ ${appUrl}/agreements/${entityId.toString()}
       break;
     }
 
-
     // Brand approved milestone
-    case "MILESTONE_APPROVED":
+    case "MILESTONE_APPROVED": {
+      // 🔔 Creator in-app notification
       if (metadata?.creatorId) {
         await createNotification({
           userId: new mongoose.Types.ObjectId(metadata.creatorId),
           role: "CREATOR",
-          title: "Milestone approved",
+          title: "Deliverable approved",
           message: metadata.milestoneTitle
-            ? `Milestone "${metadata.milestoneTitle}" was approved`
-            : "A milestone was approved",
+            ? `Your deliverable for "${metadata.milestoneTitle}" was approved`
+            : "Your deliverable was approved",
           entityType,
           entityId,
         });
       }
+
+      // 📧 Creator email - Brand approved milestone
+      if (metadata?.creatorEmail && metadata?.milestoneTitle) {
+        const appUrl = process.env.APP_URL;
+        if (appUrl) {
+          await sendEmail({
+            to: metadata.creatorEmail,
+            subject: "[MAKNE] Deliverable approved 🎉",
+            text: `
+Good news!
+
+Your deliverable for the milestone "${metadata.milestoneTitle}" has been approved by the brand.
+
+👉 View agreement:
+${appUrl}/agreements/${metadata.agreementId ?? ""}
+
+Keep going 🚀
+        `.trim(),
+          });
+        }
+      }
+
       break;
+    }
 
     // System released milestone payment
     case "PAYMENT_RELEASED":
