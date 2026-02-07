@@ -3,14 +3,24 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function MobileTopNav() {
+type Props = {
+    brandName?: string;
+    industry?: string;
+    notificationCount?: number;
+};
+
+export default function MobileTopNav({
+    brandName,
+    industry,
+    notificationCount = 0,
+}: Props) {
     const [open, setOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
+    /* Close on outside click */
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
             if (
@@ -27,6 +37,7 @@ export default function MobileTopNav() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [open]);
 
+    /* Close on scroll */
     useEffect(() => {
         if (!open) return;
 
@@ -38,12 +49,13 @@ export default function MobileTopNav() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, [open]);
 
-
     return (
-        <div className="lg:hidden sticky top-0 z-40 bg-black border-b border-white/10">
+        <div className="lg:hidden sticky top-0 z-40 blur-3xl bg-black border-b border-white/10">
 
-            {/* Top bar */}
-            <div className="flex items-center justify-between px-4 py-3">
+            {/* ================= TOP BAR ================= */}
+            <div className="flex items-center justify-between px-3 py-4">
+
+                {/* Logo */}
                 <Image
                     src="/makne-logo-lg.png"
                     alt="Makne"
@@ -52,26 +64,61 @@ export default function MobileTopNav() {
                     priority
                 />
 
-                <button
-                    onClick={() => setOpen(v => !v)}
-                    className="h-9 w-9 rounded-full border border-white/10 flex items-center justify-center text-white"
-                    aria-label={open ? "Close menu" : "Open menu"}
-                >
-                    <motion.span
-                        key={open ? "close" : "open"}
-                        initial={{ opacity: 0, rotate: -90 }}
-                        animate={{ opacity: 1, rotate: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15, ease: "easeOut" }}
+                {/* Right actions */}
+                <div className="flex items-center gap-3">
+
+                    {/* Notification bell */}
+                    <Link
+                        href="/brand/notifications"
+                        className="
+              relative
+              h-9 w-9
+              rounded-full
+              border border-white/10
+              flex items-center justify-center
+              text-white
+            "
+                        aria-label="Notifications"
                     >
-                        {open ? "✕" : "☰"}
-                    </motion.span>
+                        🔔
+                        {notificationCount > 0 && (
+                            <span className="
+                absolute -top-1 -right-1
+                h-5 min-w-[20px]
+                rounded-full
+                bg-[#636EE1]
+                text-black
+                text-[11px]
+                font-medium
+                flex items-center justify-center
+                px-1
+              ">
+                                {notificationCount}
+                            </span>
+                        )}
+                    </Link>
 
-                </button>
+                    {/* Profile / Menu trigger */}
+                    <button
+                        ref={buttonRef}
+                        onClick={() => setOpen(v => !v)}
+                        className="
+              h-9 w-9
+              rounded-full
+              border border-white/10
+              bg-[#636EE1]/20
+              flex items-center justify-center
+              text-sm font-medium
+            "
+                        aria-label={open ? "Close menu" : "Open menu"}
+                    >
+                        {brandName?.[0]?.toUpperCase() ?? "B"}
+                    </button>
 
+                </div>
             </div>
 
-            {/* Dropdown menu */}
+            {/* ================= DROPDOWN MENU ================= */}
             <AnimatePresence>
                 {open && (
                     <motion.div
@@ -81,25 +128,43 @@ export default function MobileTopNav() {
                         exit={{ opacity: 0, y: -12 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
                         className="
-        absolute
+              absolute
         top-full
-        left-0
-        right-0
-        border-t border-white/10
-        bg-[#00000011]
-        px-4 py-4
-        space-y-2
-        backdrop-blur-2xl
-      "
+        mt-3
+        w-full
+        rounded-2xl
+        border border-white/10
+        bg-[#0e111770]
+              px-4 py-4
+              space-y-2
+              backdrop-blur-2xl
+            "
                     >
+
+                        {/* Navigation */}
                         <NavItem label="Dashboard" href="/dashboard/brand" />
                         <NavItem label="Agreements" href="/agreements" />
                         <NavItem label="Activity" href="/system/activity" />
                         <NavItem label="Inbox" href="/brand/notifications" />
-                        <NavItem label="Analytics" />
-                        <NavItem label="Payments" />
+                        <NavItem label="Analytics" href="/brand/analytics" />
+                        <NavItem label="Payments" href="/brand/payments" />
 
-                        <div className="pt-4 border-t border-white/10">
+                        {/* Divider */}
+                        <div className="pt-3 border-t border-white/10 space-y-2">
+
+                            {/* Brand info */}
+                            {brandName && (
+                                <div className="text-sm font-medium">
+                                    {brandName}
+                                </div>
+                            )}
+
+                            {industry && (
+                                <div className="text-xs opacity-60">
+                                    {industry}
+                                </div>
+                            )}
+
                             <Link
                                 href="/brand/settings"
                                 className="block text-sm text-[#636EE1]"
@@ -107,26 +172,35 @@ export default function MobileTopNav() {
                                 Manage brand
                             </Link>
                         </div>
+
                     </motion.div>
                 )}
             </AnimatePresence>
-
 
         </div>
     );
 }
 
+/* ================= NAV ITEM ================= */
+
 function NavItem({
     label,
-    href = "#",
+    href,
 }: {
     label: string;
-    href?: string;
+    href: string;
 }) {
     return (
         <Link
             href={href}
-            className="block rounded-lg px-3 py-2 text-sm hover:bg-white/5"
+            className="
+        block
+        rounded-lg
+        px-3 py-2
+        text-sm
+        hover:bg-white/5
+        transition
+      "
         >
             {label}
         </Link>

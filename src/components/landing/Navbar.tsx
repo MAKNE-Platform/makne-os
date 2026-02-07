@@ -172,7 +172,7 @@ export default function Navbar() {
         w-[90%]
         rounded-2xl
         border border-white/10
-        bg-[#0E1117]/95
+        bg-[#0e111770]
         backdrop-blur
         p-4
       "

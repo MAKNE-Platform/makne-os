@@ -7,7 +7,7 @@ import { Agreement } from "@/lib/db/models/Agreement";
 import { revalidatePath } from "next/cache";
 import fs from "fs";
 import path from "path";
-import { logAudit } from "@/lib/audit/logAudit"; 
+import { logAudit } from "@/lib/audit/logAudit";
 import { User } from "@/lib/db/models/User";
 
 export async function POST(
@@ -128,9 +128,17 @@ export async function POST(
     entityId: milestone._id,
     metadata: {
       brandId: agreement.brandId.toString(),
+      agreementId: agreement._id.toString(),
+
       milestoneTitle: milestone.title,
-      brandEmail: brand.email,
-    },
+      amount: milestone.amount,
+
+      note: note || null,
+      links,
+
+      creatorEmail: brand.email,  
+    }
+
   });
 
   // 📝 Activity log (existing)

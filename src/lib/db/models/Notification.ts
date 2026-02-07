@@ -12,6 +12,12 @@ export interface NotificationDocument extends Document {
 
   read: boolean;
   createdAt: Date;
+
+  readAt: {
+  type: Date,
+  default: null,
+},
+
 }
 
 const NotificationSchema = new Schema<NotificationDocument>(
@@ -30,6 +36,11 @@ const NotificationSchema = new Schema<NotificationDocument>(
     entityId: Schema.Types.ObjectId,
 
     read: { type: Boolean, default: false },
+    
+    readAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );
@@ -40,3 +51,15 @@ export const Notification =
     "Notification",
     NotificationSchema
   );
+
+
+  // Auto-delete notifications 30 days after they are read
+NotificationSchema.index(
+  { readAt: 1 },
+  {
+    expireAfterSeconds: 60 * 60 * 24 * 30, // 30 days
+    partialFilterExpression: {
+      readAt: { $exists: true, $ne: null },
+    },
+  }
+);

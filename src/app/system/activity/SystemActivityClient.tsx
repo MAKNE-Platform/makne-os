@@ -1,15 +1,22 @@
 "use client";
 
-/**
- * Small helper to humanize audit actions
- * PAYOUT_COMPLETED -> Payout completed
- */
+/* ================= HELPERS ================= */
+
 function prettyAction(action: string) {
     return action
         .toLowerCase()
         .replaceAll("_", " ")
         .replace(/^\w/, (c) => c.toUpperCase());
 }
+
+function actorLabel(log: ActivityLog) {
+    if (log.metadata?.creatorEmail) return log.metadata.creatorEmail;
+    if (log.actorType === "CREATOR") return "Creator";
+    if (log.actorType === "BRAND") return "Brand";
+    return "System";
+}
+
+/* ================= TYPES ================= */
 
 type ActivityLog = {
     id: string;
@@ -18,9 +25,17 @@ type ActivityLog = {
     actorId: string | null;
     entityType: string;
     entityId: string;
-    metadata: any;
+    metadata?: {
+        agreementId: any;
+        milestoneTitle?: string;
+        agreementTitle?: string;
+        amount?: number;
+        creatorEmail?: string;
+    };
     createdAt: string;
 };
+
+/* ================= COMPONENT ================= */
 
 export default function SystemActivityClient({
     logs,
@@ -28,69 +43,115 @@ export default function SystemActivityClient({
     logs: ActivityLog[];
 }) {
     return (
-        <div className="mx-auto max-w-4xl px-6 py-8">
-            <h1 className="mb-6 text-xl font-semibold">
-                Activity Timeline
+        <div className="mx-auto w-[98%] px-4 sm:px-6 py-6">
+            <h1 className="mb-6 text-4xl font-medium">
+                Activity
             </h1>
 
             {logs.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm opacity-70">
                     No activity recorded yet.
                 </p>
             ) : (
                 <div className="space-y-4">
                     {logs.map((log) => (
                         <div
-                            key={log.id} 
-                            className="rounded-xl border bg-background p-4"
+                            key={log.id}
+                            className="
+                rounded-xl
+                border border-white/10
+                bg-[#ffffff05]
+                p-4 sm:p-5
+              "
                         >
-
-                            <div className="flex items-start justify-between gap-4">
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
                                 <div className="space-y-1">
-                                    {/* Action */}
-                                    <p className="text-sm font-medium">
-                                        {prettyAction(log.action)}
+
+                                    {/* Main line */}
+                                    <p className="text-sm sm:text-base font-medium">
+                                        {activitySentence(log)}
                                     </p>
 
-                                    {/* Entity */}
-                                    <p className="text-xs text-muted-foreground">
-                                        {log.entityType} ·{" "}
-                                        <span className="font-mono">
-                                            {log.entityId}
-                                        </span>
+                                    {/* Context */}
+                                    <p className="text-xs sm:text-sm opacity-70">
+                                        {log.metadata?.milestoneTitle && (
+                                            <>
+                                                Milestone:{" "}
+                                                <span className="font-medium">
+                                                    {log.metadata.milestoneTitle}
+                                                </span>
+                                                {" · "}
+                                            </>
+                                        )}
+
+                                        {log.metadata?.agreementTitle ? (
+                                            <>
+                                                Agreement:{" "}
+                                                <span className="font-medium">
+                                                    {log.metadata.agreementTitle}
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span>Agreement</span>
+                                        )}
                                     </p>
 
-                                    {/* Metadata */}
-                                    {log.metadata && (
-                                        <pre className="mt-2 max-w-full overflow-x-auto rounded bg-muted/40 p-2 text-xs">
-                                            {JSON.stringify(log.metadata, null, 2)}
-                                        </pre>
+                                    {/* Amount */}
+                                    {typeof log.metadata?.amount === "number" && (
+                                        <p className="text-xs opacity-60">
+                                            Amount: ₹{log.metadata.amount}
+                                        </p>
                                     )}
                                 </div>
 
                                 {/* Timestamp */}
-                                <span className="whitespace-nowrap text-xs text-muted-foreground">
+                                <span className="text-xs opacity-50 whitespace-nowrap">
                                     {new Date(log.createdAt).toLocaleString()}
                                 </span>
                             </div>
-
-                            {/* Actor */}
-                            <p className="mt-2 text-xs text-muted-foreground">
-                                Actor: {log.actorType}
-                                {log.actorId && (
-                                    <>
-                                        {" "}
-                                        ·{" "}
-                                        <span className="font-mono">
-                                            {log.actorId}
-                                        </span>
-                                    </>
-                                )}
-                            </p>
                         </div>
                     ))}
                 </div>
             )}
         </div>
     );
+}
+
+function activitySentence(log: ActivityLog) {
+    const m = log.metadata ?? {};
+
+    switch (log.action) {
+        case "AGREEMENT_SENT":
+            return `Agreement sent to ${m.creatorEmail ?? "creator"}`;
+
+        case "AGREEMENT_ACCEPTED":
+            return `Agreement accepted by ${m.creatorEmail ?? "creator"}`;
+
+        case "AGREEMENT_REJECTED":
+            return `Agreement rejected by ${m.creatorEmail ?? "creator"}`;
+
+        case "DELIVERABLE_SUBMITTED":
+            return `Deliverable submitted for ${m.milestoneTitle ?? "a milestone"}`;
+
+        case "DELIVERABLE_APPROVED":
+            return `Deliverable approved for ${m.milestoneTitle ?? "a milestone"}`;
+
+        case "PAYMENT_INITIATED":
+            return `Payment of ₹${m.amount ?? "—"} has been initiated`;
+
+        case "PAYMENT_RELEASED":
+            return `Payment of ₹${m.amount ?? "—"} has been released`;
+
+        case "AGREEMENT_COMPLETED":
+            return `Agreement completed successfully`;
+
+        default:
+            return prettyAction(log.action);
+    }
+}
+
+function getAgreementLink(log: ActivityLog) {
+  return log.metadata?.agreementId
+    ? `/agreements/${log.metadata.agreementId}`
+    : null;
 }

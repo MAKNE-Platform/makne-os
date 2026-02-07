@@ -55,14 +55,14 @@ export default function LandingPage() {
           {/* CTA */}
           <div className="mt-12 flex justify-center gap-4">
             <a
-              href="/signup"
+              href="/auth/signup"
               className="rounded-full bg-white px-6 py-3 text-sm font-medium text-black hover:brightness-95 transition"
             >
               Get started
             </a>
 
             <a
-              href="/login"
+              href="/auth/login"
               className="rounded-full border border-white/10 px-6 py-3 text-sm text-zinc-300 hover:text-white transition"
             >
               Login

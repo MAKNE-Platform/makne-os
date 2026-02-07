@@ -8,6 +8,7 @@ import { connectDB } from "@/lib/db/connect";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
 import { Agreement } from "@/lib/db/models/Agreement";
 import MobileTopNav from "@/components/dashboard/MobileTopNav";
+import BrandSidebar from "@/components/brand/BrandSidebar";
 
 
 type AgreementType = {
@@ -86,7 +87,7 @@ export default async function BrandDashboard() {
     <div className="flex min-h-screen bg-black text-white">
 
       {/* ================= SIDEBAR ================= */}
-      <aside className="hidden lg:flex h-screen sticky top-0 w-64 flex-col border-r border-white/10 bg-black px-6 py-6">
+      {/* <aside className="hidden lg:flex h-screen sticky top-0 w-64 flex-col border-r border-white/10 bg-black px-6 py-6">
         <Image
           src="/makne-logo-lg.png"
           alt="Makne"
@@ -144,77 +145,90 @@ export default async function BrandDashboard() {
           </Link>
         </div>
 
-      </aside>
+      </aside> */}
+
+
+      {/* Sidebar */}
+      <BrandSidebar
+        active="dashboard"
+        brandProfile={brandProfile}
+      />
 
       {/* ================= MAIN ================= */}
       <main className="
   flex-1
-  px-4 sm:px-6 lg:px-8
-  py-6 lg:py-8
+  px-2 sm:px-6 lg:px-8
+  lg:py-8
   space-y-8 lg:space-y-10
   overflow-y-auto
 ">
-        <MobileTopNav />
+        {/* Mobile nav */}
+        <MobileTopNav
+          brandName={brandProfile.brandName}
+          industry={brandProfile.industry}
+        />
 
-        {/* Header */}
-        <div>
-          <h1 className="text-4xl font-medium">Dashboard</h1>
-        </div>
+        <div className="lg:px-0 px-4">
 
-        {/* ================= OVERVIEW ================= */}
-        <h2 className="text-2xl">Overview</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Header */}
+          <div>
+            <h1 className="text-4xl font-medium mb-4">Dashboard</h1>
+          </div>
 
-          <OverviewCard label="Active agreements" value={active.length} trend="up" />
-          <OverviewCard label="Pending agreements" value={pending.length} trend="flat" />
-          <OverviewCard label="Draft agreements" value={drafts.length} trend="down" />
-        </div>
+          {/* ================= OVERVIEW ================= */}
+          <h2 className="text-2xl mb-2">Overview</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 
-        <div className="
+            <OverviewCard label="Active agreements" value={active.length} trend="up" />
+            <OverviewCard label="Pending agreements" value={pending.length} trend="flat" />
+            <OverviewCard label="Draft agreements" value={drafts.length} trend="down" />
+          </div>
+
+          <div className="
   flex flex-col lg:flex-row
   gap-6
   w-full
 ">
 
-          {/* ================= AGREEMENTS ================= */}
-          <div className="space-y-4 w-full lg:w-full">
+            {/* ================= AGREEMENTS ================= */}
+            <div className="space-y-4 w-full lg:w-full">
 
-            {/* Header actions */}
-            <div className="
+              {/* Header actions */}
+              <div className="
   flex flex-col sm:flex-row
   items-start sm:items-center
   justify-between
   gap-3
 ">
 
-              <h2 className="lg:text-2xl text-sm font-medium opacity-80">
-                Agreements
-              </h2>
+                <h2 className="lg:text-2xl text-sm font-medium opacity-80">
+                  Agreements
+                </h2>
 
-              <div className="flex gap-3">
-                <Link
-                  href="/agreements/create/meta"
-                  className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm font-medium text-black"
-                >
-                  Add agreement
-                </Link>
+                <div className="flex gap-3">
+                  <Link
+                    href="/agreements/create/meta"
+                    className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm font-medium text-black"
+                  >
+                    Add agreement
+                  </Link>
 
-                <Link
-                  href="/agreements"
-                  className="rounded-lg border border-white/10 px-4 py-2 text-sm"
-                >
-                  View all
-                </Link>
+                  <Link
+                    href="/agreements"
+                    className="rounded-lg border border-white/10 px-4 py-2 text-sm"
+                  >
+                    View all
+                  </Link>
+                </div>
               </div>
-            </div>
 
-            {/* Agreement cards */}
-            <div className="space-y-3">
-              {recentAgreements.map(a => (
-                <Link
-                  key={a._id.toString()}
-                  href={`/agreements/${a._id}`}
-                  className="
+              {/* Agreement cards */}
+              <div className="space-y-3">
+                {recentAgreements.map(a => (
+                  <Link
+                    key={a._id.toString()}
+                    href={`/agreements/${a._id}`}
+                    className="
                   block rounded-xl
                   border border-white/10
                   bg-[#ffffff05]
@@ -222,62 +236,63 @@ export default async function BrandDashboard() {
                   transition
                   hover:border-[#636EE1]/50
                 "
-                >
-                  <div className="flex justify-between items-center gap-6">
-                    <div className="space-y-2">
-                      <div className="font-medium">
-                        {a.title}
+                  >
+                    <div className="flex justify-between items-center gap-6">
+                      <div className="space-y-2">
+                        <div className="font-medium">
+                          {a.title}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <Pill>{a.createdAt.toDateString()}</Pill>
+                          {a.creatorEmail && <Pill>{a.creatorEmail}</Pill>}
+                          <Pill>{a.status}</Pill>
+                        </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        <Pill>{a.createdAt.toDateString()}</Pill>
-                        {a.creatorEmail && <Pill>{a.creatorEmail}</Pill>}
-                        <Pill>{a.status}</Pill>
+                      <div className="lg:h-8 lg:w-8 h-7 w-10 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-xs">
+                        {a.creatorEmail?.[0]?.toUpperCase() ?? "C"}
                       </div>
                     </div>
-
-                    <div className="lg:h-8 lg:w-8 h-7 w-10 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-xs">
-                      {a.creatorEmail?.[0]?.toUpperCase() ?? "C"}
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Recent creators */}
-          <div className="rounded-xl lg:w-xl w-full border-2 border-white/10 bg-[#ffffff03] p-4 space-y-4">
-            <h3 className="text-sm font-medium opacity-80">
-              Recent creators
-            </h3>
+            {/* Recent creators */}
+            <div className="rounded-xl lg:w-xl w-full border-2 border-white/10 bg-[#ffffff03] p-4 space-y-4">
+              <h3 className="text-sm font-medium opacity-80">
+                Recent creators
+              </h3>
 
-            {recentCreators.map((a) => (
-              <div
-                key={a._id.toString()}
-                className="
+              {recentCreators.map((a) => (
+                <div
+                  key={a._id.toString()}
+                  className="
         rounded-lg
         border border-white/10
         p-3
         flex items-center justify-between
       "
-              >
-                <div className="flex items-center gap-3">
-                  {/* Avatar */}
-                  <div className="h-8 w-8 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-xs">
-                    {a.creatorEmail?.[0]?.toUpperCase()}
-                  </div>
-
-                  <div>
-                    <div className="text-sm font-medium truncate max-w-[180px]">
-                      {a.creatorEmail}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className="h-8 w-8 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-xs">
+                      {a.creatorEmail?.[0]?.toUpperCase()}
                     </div>
-                    <div className="text-xs opacity-60">
-                      Last collab {a.createdAt.toDateString()}
+
+                    <div>
+                      <div className="text-sm font-medium truncate max-w-[180px]">
+                        {a.creatorEmail}
+                      </div>
+                      <div className="text-xs opacity-60">
+                        Last collab {a.createdAt.toDateString()}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 

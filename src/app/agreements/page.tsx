@@ -6,6 +6,17 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 
+import BrandSidebar from "@/components/brand/BrandSidebar";
+import { BrandProfile } from "@/lib/db/models/BrandProfile";
+import { div } from "framer-motion/client";
+import MobileTopNav from "@/components/dashboard/MobileTopNav";
+
+type BrandProfileType = {
+  brandName: string;
+  industry: string;
+  location?: string;
+};
+
 export default async function AgreementsPage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("auth_session")?.value;
@@ -15,36 +26,90 @@ export default async function AgreementsPage() {
 
   await connectDB();
 
+  const brandProfile = await BrandProfile.findOne({
+    userId: new mongoose.Types.ObjectId(userId),
+  }).lean() as BrandProfileType | null;
+
   const agreements = await Agreement.find({
     brandId: new mongoose.Types.ObjectId(userId),
   })
     .sort({ createdAt: -1 })
     .lean();
 
+  const draftCount = agreements.filter(a => a.status === "DRAFT").length;
+  const activeCount = agreements.filter(a => a.status === "ACTIVE").length;
+  const sentCount = agreements.filter(
+    a => !["DRAFT", "ACTIVE"].includes(a.status)
+  ).length;
+
   return (
-    <div className="space-y-10 lg:px-10 lg:py-5 p-5">
+    <div className="lg:px-0 px-2">
+      {/* Mobile nav */}
+      <MobileTopNav
+        brandName={brandProfile.brandName}
+        industry={brandProfile.industry}
+      />
 
-      {/* Header */}
-      <div>
-        <h1 className="text-4xl font-medium">Agreements</h1>
-        <p className="mt-1 text-md opacity-70">
-          All collaborations created by your brand
-        </p>
-      </div>
+      <div className="flex min-h-screen bg-black text-white w-full relative">
 
-      {/* Empty state */}
-      {agreements.length === 0 && (
-        <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-6 text-sm opacity-70">
-          No agreements yet.
-        </div>
-      )}
+        {/* ================= SIDEBAR ================= */}
+        <BrandSidebar
+          active="agreements"
+          brandProfile={brandProfile}
+        />
 
-      {/* ================= DESKTOP TABLE (UNCHANGED) ================= */}
-      <div className="hidden md:block rounded-xl border border-white/10 overflow-hidden">
+        {/* ================= MAIN ================= */}
 
-        {/* Table header */}
-        <div
-          className="
+        <div className="space-y-10 px-4 sm:px-6 lg:px-8 py-6 w-full">
+
+          {/* Header */}
+          <div>
+            <h1 className="text-4xl font-medium">Agreements</h1>
+            <p className="mt-1 text-md opacity-70">
+              All collaborations created by your brand
+            </p>
+          </div>
+
+          {/* ================= AGREEMENTS OVERVIEW ================= */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+            <div className="rounded-xl border border-white/10 bg-black p-4">
+              <div className="text-xs opacity-70">Draft</div>
+              <div className="mt-1 text-4xl font-medium">
+                {draftCount}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-black p-4">
+              <div className="text-xs opacity-70">Sent</div>
+              <div className="mt-1 text-4xl font-medium">
+                {sentCount}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-black p-4">
+              <div className="text-xs opacity-70">Active</div>
+              <div className="mt-1 text-4xl font-medium text-[#636EE1]">
+                {activeCount}
+              </div>
+            </div>
+
+          </div>
+
+
+          {/* Empty state */}
+          {agreements.length === 0 && (
+            <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-6 text-sm opacity-70">
+              No agreements yet.
+            </div>
+          )}
+
+          {/* ================= DESKTOP TABLE (UNCHANGED) ================= */}
+          <div className="hidden md:block rounded-xl border border-white/10 overflow-hidden">
+
+            {/* Table header */}
+            <div
+              className="
             grid
             grid-cols-[2fr_1fr_2fr_1fr]
             gap-4
@@ -56,27 +121,27 @@ export default async function AgreementsPage() {
             border-b border-white/10
             bg-black
           "
-        >
-          <div>Title</div>
-          <div>Status</div>
-          <div>Creator</div>
-          <div>Date</div>
-        </div>
-
-        {/* Table rows */}
-        {agreements.map((agreement: any) => {
-          const isDraft = agreement.status === "DRAFT";
-
-          return (
-            <div
-              key={agreement._id}
-              className="border-b border-white/5 last:border-none"
             >
+              <div>Title</div>
+              <div>Status</div>
+              <div>Creator</div>
+              <div>Date</div>
+            </div>
 
-              {/* Main row */}
-              <Link
-                href={`/agreements/${agreement._id}`}
-                className="
+            {/* Table rows */}
+            {agreements.map((agreement: any) => {
+              const isDraft = agreement.status === "DRAFT";
+
+              return (
+                <div
+                  key={agreement._id}
+                  className="border-b border-white/5 last:border-none"
+                >
+
+                  {/* Main row */}
+                  <Link
+                    href={`/agreements/${agreement._id}`}
+                    className="
                   grid
                   grid-cols-[2fr_1fr_2fr_1fr]
                   gap-4
@@ -87,36 +152,36 @@ export default async function AgreementsPage() {
                   hover:bg-white/10
                   transition
                 "
-              >
-                <div className="font-medium truncate">
-                  {agreement.title}
-                </div>
-
-                <StatusPill status={agreement.status} />
-
-                <div className="truncate opacity-80">
-                  {agreement.creatorEmail ?? "—"}
-                </div>
-
-                <div className="text-xs opacity-60">
-                  {new Date(agreement.createdAt).toDateString()}
-                </div>
-              </Link>
-
-              {/* Draft inline action */}
-              {isDraft && (
-                <div className="px-4 py-3 bg-black border-t border-white/5">
-                  <form
-                    action={`/agreements/${agreement._id}/send`}
-                    method="POST"
-                    className="flex flex-col sm:flex-row gap-2"
                   >
-                    <input
-                      name="creatorEmail"
-                      type="email"
-                      required
-                      placeholder="Creator email"
-                      className="
+                    <div className="font-medium truncate">
+                      {agreement.title}
+                    </div>
+
+                    <StatusPill status={agreement.status} />
+
+                    <div className="truncate opacity-80">
+                      {agreement.creatorEmail ?? "—"}
+                    </div>
+
+                    <div className="text-xs opacity-60">
+                      {new Date(agreement.createdAt).toDateString()}
+                    </div>
+                  </Link>
+
+                  {/* Draft inline action */}
+                  {isDraft && (
+                    <div className="px-4 py-3 bg-black border-t border-white/5">
+                      <form
+                        action={`/agreements/${agreement._id}/send`}
+                        method="POST"
+                        className="flex flex-col sm:flex-row gap-2"
+                      >
+                        <input
+                          name="creatorEmail"
+                          type="email"
+                          required
+                          placeholder="Creator email"
+                          className="
                         flex-1
                         rounded-lg
                         bg-black
@@ -128,11 +193,11 @@ export default async function AgreementsPage() {
                         focus:outline-none
                         focus:border-[#636EE1]
                       "
-                    />
+                        />
 
-                    <button
-                      type="submit"
-                      className="
+                        <button
+                          type="submit"
+                          className="
                         rounded-lg
                         bg-[#636EE1]
                         px-4 py-2
@@ -142,24 +207,24 @@ export default async function AgreementsPage() {
                         hover:brightness-95
                         transition
                       "
-                    >
-                      Send invite
-                    </button>
-                  </form>
+                        >
+                          Send invite
+                        </button>
+                      </form>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              );
+            })}
+          </div>
 
-      {/* ================= MOBILE UI ================= */}
-      <div className="md:hidden space-y-3">
-        {agreements.map((agreement: any) => (
-          <Link
-            key={agreement._id}
-            href={`/agreements/${agreement._id}`}
-            className="
+          {/* ================= MOBILE UI ================= */}
+          <div className="md:hidden space-y-3">
+            {agreements.map((agreement: any) => (
+              <Link
+                key={agreement._id}
+                href={`/agreements/${agreement._id}`}
+                className="
               block
               rounded-xl
               border border-white/10
@@ -169,26 +234,29 @@ export default async function AgreementsPage() {
               hover:border-[#636EE1]/40
               transition
             "
-          >
-            <div className="font-medium">
-              {agreement.title}
-            </div>
+              >
+                <div className="font-medium">
+                  {agreement.title}
+                </div>
 
-            <div className="flex flex-wrap gap-2 text-xs">
-              <Pill>{agreement.status}</Pill>
-              <Pill>
-                {new Date(agreement.createdAt).toDateString()}
-              </Pill>
-            </div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <Pill>{agreement.status}</Pill>
+                  <Pill>
+                    {new Date(agreement.createdAt).toDateString()}
+                  </Pill>
+                </div>
 
-            <div className="text-sm opacity-70 truncate">
-              {agreement.creatorEmail ?? "No creator assigned"}
-            </div>
-          </Link>
-        ))}
+                <div className="text-sm opacity-70 truncate">
+                  {agreement.creatorEmail ?? "No creator assigned"}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+        </div>
       </div>
-
     </div>
+
   );
 }
 
