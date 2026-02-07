@@ -9,11 +9,11 @@ import { Notification as NotificationModel } from "@/lib/db/models/Notification"
 import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
+import { Payment } from "@/lib/db/models/Payment";
 
 import BrandSidebar from "@/components/brand/BrandSidebar";
 import MobileTopNav from "@/components/dashboard/MobileTopNav";
 import DeleteNotificationButton from "@/components/brand/DeleteNotificationButton";
-import { div } from "framer-motion/client";
 
 /* ================= TYPES ================= */
 
@@ -38,7 +38,6 @@ type LeanAgreement = {
   creatorEmail?: string;
 };
 
-
 type BrandProfileType = {
   brandName: string;
   industry: string;
@@ -56,7 +55,6 @@ type InboxDeliverable = {
   submittedAt: Date;
   files: { name: string; url: string }[];
 };
-
 
 type InboxNotification = {
   id: string;
@@ -78,10 +76,12 @@ export default async function BrandInboxPage() {
 
   await connectDB();
 
+  const brandObjectId = new mongoose.Types.ObjectId(userId);
+
   /* ================= BRAND ================= */
 
   const brandProfile = (await BrandProfile.findOne({
-    userId: new mongoose.Types.ObjectId(userId),
+    userId: brandObjectId,
   }).lean()) as BrandProfileType | null;
 
   if (!brandProfile) redirect("/onboarding/brand");
@@ -98,9 +98,7 @@ export default async function BrandInboxPage() {
       _id: mongoose.Types.ObjectId;
       entityId: mongoose.Types.ObjectId;
       createdAt: Date;
-      metadata: {
-        milestoneTitle?: string;
-      };
+      metadata: { milestoneTitle?: string };
     }[];
 
   const inboxDeliverables: InboxDeliverable[] = [];
@@ -110,13 +108,11 @@ export default async function BrandInboxPage() {
       .select("agreementId submission amount")
       .lean()) as LeanMilestone | null;
 
-
     if (!milestone?.agreementId) continue;
 
     const agreement = (await Agreement.findById(milestone.agreementId)
       .select("title creatorEmail")
       .lean()) as LeanAgreement | null;
-
 
     if (!agreement) continue;
 
@@ -131,13 +127,12 @@ export default async function BrandInboxPage() {
       submittedAt: log.createdAt,
       files: milestone.submission?.files ?? [],
     });
-
   }
 
   /* ================= NOTIFICATIONS ================= */
 
   const rawNotifications = (await NotificationModel.find({
-    userId: new mongoose.Types.ObjectId(userId),
+    userId: brandObjectId,
     role: "BRAND",
   })
     .sort({ createdAt: -1 })
@@ -148,9 +143,7 @@ export default async function BrandInboxPage() {
       message: string;
       createdAt: Date;
       readAt?: Date;
-      metadata?: {
-        agreementId?: string;
-      };
+      metadata?: { agreementId?: string };
     }[];
 
   const notifications: InboxNotification[] = rawNotifications.map((n) => ({
@@ -162,32 +155,52 @@ export default async function BrandInboxPage() {
     isUnread: !n.readAt,
   }));
 
-  const unreadCount = notifications.filter((n) => n.isUnread).length;
+  const unreadNotificationsCount = notifications.filter(
+    (n) => n.isUnread
+  ).length;
+
+  /* ================= GLOBAL COUNTS ================= */
+
+  const deliverablesCount = inboxDeliverables.length;
+
+  const inboxCount = unreadNotificationsCount + deliverablesCount;
+
+  const draftAgreementsCount = await Agreement.countDocuments({
+    brandId: brandObjectId,
+    status: "DRAFT",
+  });
+
+  const pendingPaymentsCount = await Payment.countDocuments({
+    brandId: brandObjectId,
+    status: { $in: ["PENDING", "INITIATED"] },
+  });
 
   /* ================= UI ================= */
 
   return (
-
-    <div className="">
-      <div className="lg:px-0 px-2">
-        {/* Mobile nav */}
-        <MobileTopNav
-          brandName={brandProfile.brandName}
-          industry={brandProfile.industry}
-        />
-      </div>
+    <div className="lg:px-0 px-2">
+      {/* ================= MOBILE NAV ================= */}
+      <MobileTopNav
+        brandName={brandProfile.brandName}
+        industry={brandProfile.industry}
+        pendingPaymentsCount={pendingPaymentsCount}
+        inboxCount={inboxCount}
+        draftAgreementsCount={draftAgreementsCount}
+      />
 
       <div className="flex min-h-screen bg-black text-white">
-
-        {/* Sidebar */}
+        {/* ================= SIDEBAR ================= */}
         <BrandSidebar
           active="notifications"
           brandProfile={brandProfile}
-          notificationCount={unreadCount}
+          inboxCount={inboxCount}
+          draftAgreementsCount={draftAgreementsCount}
+          pendingPaymentsCount={pendingPaymentsCount}
         />
 
+
         {/* Main */}
-        <main className="flex-1 px-6 py-6 lg:px-10 space-y-8">
+        <main className="flex-1 px-4 py-6 lg:px-10 space-y-8">
           <div>
             <h1 className="text-4xl font-medium">Inbox</h1>
             <p className="mt-1 text-md opacity-70">

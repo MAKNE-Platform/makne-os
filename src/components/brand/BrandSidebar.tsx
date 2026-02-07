@@ -2,20 +2,34 @@ import Image from "next/image";
 import Link from "next/link";
 
 type Props = {
-  active: "dashboard" | "agreements" | "activity" | "notifications" | "analytics" | "payments";
+  active:
+  | "dashboard"
+  | "agreements"
+  | "activity"
+  | "notifications"
+  | "analytics"
+  | "payments";
+
   brandProfile: {
     brandName: string;
     industry: string;
     location?: string;
   };
-  notificationCount?: number;
+
+  inboxCount?: number;
+  draftAgreementsCount?: number;
+  pendingPaymentsCount?: number;
 };
+
 
 export default function BrandSidebar({
   active,
   brandProfile,
-  notificationCount = 0,
+  inboxCount = 0,
+  draftAgreementsCount = 0,
+  pendingPaymentsCount = 0,
 }: Props) {
+
   return (
     <aside className="hidden lg:flex h-screen sticky top-0 w-64 flex-col border-r border-white/10 bg-black px-6 py-6 shrink-0">
 
@@ -33,9 +47,25 @@ export default function BrandSidebar({
       <nav className="mt-12 space-y-6 text-sm">
 
         <div className="space-y-1">
-          <SidebarItem label="Dashboard" href="/dashboard/brand" active={active === "dashboard"} />
-          <SidebarItem label="Agreements" href="/agreements" active={active === "agreements"} />
-          <SidebarItem label="Activity" href="/system/activity" active={active === "activity"} />
+          <SidebarItem
+            label="Dashboard"
+            href="/dashboard/brand"
+            active={active === "dashboard"}
+          />
+
+          <SidebarItem
+            label="Agreements"
+            href="/agreements"
+            active={active === "agreements"}
+            badge={draftAgreementsCount}
+          />
+
+
+          <SidebarItem
+            label="Activity"
+            href="/system/activity"
+            active={active === "activity"}
+          />
         </div>
 
         <div className="space-y-1 border-t border-white/10 pt-4">
@@ -43,12 +73,24 @@ export default function BrandSidebar({
             label="Inbox"
             href="/brand/notifications"
             active={active === "notifications"}
-            badge={notificationCount}
+            badge={inboxCount}
           />
-          <SidebarItem label="Analytics" href="/brand/analytics" active={active === "analytics"} />
-          <SidebarItem label="Payments" href="/brand/payments" active={active === "payments"} />
+          
+          <SidebarItem
+            label="Analytics"
+            href="/brand/analytics"
+            active={active === "analytics"}
+          />
+
+          <SidebarItem
+            label="Payments"
+            href="/brand/payments"
+            active={active === "payments"}
+            badge={pendingPaymentsCount}
+          />
         </div>
       </nav>
+
 
       {/* Brand footer */}
       <div className="mt-auto border-t border-white/10 pt-4 space-y-1">
@@ -92,10 +134,12 @@ function SidebarItem({
   label,
   href,
   active,
+  badge,
 }: {
   label: string;
   href?: string;
   active?: boolean;
+  badge?: number;
 }) {
   const Comp = href ? Link : "div";
 
@@ -103,7 +147,7 @@ function SidebarItem({
     <Comp
       href={href as any}
       className={`
-        flex items-center
+        flex items-center justify-between
         rounded-lg
         px-3 py-2
         text-sm
@@ -114,7 +158,26 @@ function SidebarItem({
         }
       `}
     >
-      {label}
+      <span>{label}</span>
+
+      {badge !== undefined && badge > 0 && (
+        <span
+          className="
+            ml-2
+            min-w-[20px]
+            h-5
+            px-1
+            rounded-full
+            bg-[#636EE1]
+            text-black
+            text-[11px]
+            font-medium
+            flex items-center justify-center
+          "
+        >
+          {badge}
+        </span>
+      )}
     </Comp>
   );
 }

@@ -12,6 +12,10 @@ import { User } from "@/lib/db/models/User";
 import BrandSidebar from "@/components/brand/BrandSidebar";
 import MobileTopNav from "@/components/dashboard/MobileTopNav";
 
+import { AuditLog } from "@/lib/db/models/AuditLog";
+import { Notification } from "@/lib/db/models/Notification";
+
+
 type BrandProfileType = {
     brandName: string;
     industry: string;
@@ -53,6 +57,32 @@ export default async function BrandPaymentsPage() {
         0
     );
 
+    /* ================= COUNTS (SHARED LOGIC) ================= */
+
+    // Inbox = unread notifications + submitted deliverables
+    const unreadNotifications = await Notification.countDocuments({
+        userId: new mongoose.Types.ObjectId(userId),
+        role: "BRAND",
+        readAt: { $exists: false },
+    });
+
+    const pendingDeliverables = await AuditLog.countDocuments({
+        action: "DELIVERABLE_SUBMITTED",
+        "metadata.brandId": userId,
+    });
+
+    const inboxCount = unreadNotifications + pendingDeliverables;
+
+    // Pending payments count
+    const pendingPaymentsCount = pending.length;
+
+    // Draft agreements count
+    const draftAgreementsCount = await Agreement.countDocuments({
+        brandId: new mongoose.Types.ObjectId(userId),
+        status: "DRAFT",
+    });
+
+
     /* ================= LOOKUPS ================= */
 
     // Agreements
@@ -85,6 +115,9 @@ export default async function BrandPaymentsPage() {
             <MobileTopNav
                 brandName={brandProfile.brandName}
                 industry={brandProfile.industry}
+                pendingPaymentsCount={pendingPaymentsCount}
+                inboxCount={inboxCount}
+                draftAgreementsCount={draftAgreementsCount}
             />
 
             <div className="flex">
@@ -93,7 +126,11 @@ export default async function BrandPaymentsPage() {
                 <BrandSidebar
                     active="payments"
                     brandProfile={brandProfile}
+                    inboxCount={inboxCount}
+                    pendingPaymentsCount={pendingPaymentsCount}
+                    draftAgreementsCount={draftAgreementsCount}
                 />
+
 
                 {/* ================= MAIN ================= */}
                 <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -249,7 +286,11 @@ function SummaryCard({
         <div className="
       rounded-xl
       border border-white/10
-      bg-[#ffffff05]
+      inset-0
+          bg-gradient-to-br
+          from-[#636EE1]/10
+          via-transparent
+          to-transparent
       p-4
     ">
             <div className="text-xs opacity-70">

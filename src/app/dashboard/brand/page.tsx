@@ -10,6 +10,10 @@ import { Agreement } from "@/lib/db/models/Agreement";
 import MobileTopNav from "@/components/dashboard/MobileTopNav";
 import BrandSidebar from "@/components/brand/BrandSidebar";
 
+import { AuditLog } from "@/lib/db/models/AuditLog";
+import { Notification } from "@/lib/db/models/Notification";
+import { Payment } from "@/lib/db/models/Payment";
+
 
 type AgreementType = {
   _id: mongoose.Types.ObjectId;
@@ -51,6 +55,43 @@ export default async function BrandDashboard() {
     .sort({ createdAt: -1 })
     .lean()) as unknown as AgreementType[];
 
+
+  /* ================= COUNTS FOR SIDEBAR ================= */
+
+  /* ================= INBOX COUNT ================= */
+
+  // 1. Unread notifications
+  const unreadNotifications = await Notification.countDocuments({
+    userId: new mongoose.Types.ObjectId(userId),
+    role: "BRAND",
+    readAt: { $exists: false },
+  });
+
+  // 2. Submitted deliverables (not yet approved / checked)
+  const pendingDeliverables = await AuditLog.countDocuments({
+    action: "DELIVERABLE_SUBMITTED",
+    "metadata.brandId": userId,
+    // optional: add status check if you later track approval
+  });
+
+  const inboxCount = unreadNotifications + pendingDeliverables;
+
+
+  const deliverablesCount = await AuditLog.countDocuments({
+    action: "DELIVERABLE_SUBMITTED",
+    "metadata.brandId": userId,
+  });
+
+
+  /* ================= PAYMENTS COUNT ================= */
+
+  const pendingPayments = await Payment.countDocuments({
+    brandId: new mongoose.Types.ObjectId(userId),
+    status: { $in: ["PENDING", "INITIATED"] },
+  });
+
+
+
   const active = agreements.filter(a => a.status === "ACTIVE");
   const pending = agreements.filter(a =>
     ["SUBMITTED", "REVISION_REQUESTED"].includes(a.status)
@@ -81,6 +122,11 @@ export default async function BrandDashboard() {
         new Date(a.createdAt).getTime()
     )
     .slice(0, 4);
+
+  /* ================= FINAL COUNTS (USED BY NAV) ================= */
+
+  const draftAgreementsCount = drafts.length;
+  const pendingPaymentsCount = pendingPayments;
 
 
   return (
@@ -152,7 +198,12 @@ export default async function BrandDashboard() {
       <BrandSidebar
         active="dashboard"
         brandProfile={brandProfile}
+        inboxCount={inboxCount}
+        draftAgreementsCount={drafts.length}
+        pendingPaymentsCount={pendingPayments}
       />
+
+
 
       {/* ================= MAIN ================= */}
       <main className="
@@ -163,10 +214,17 @@ export default async function BrandDashboard() {
   overflow-y-auto
 ">
         {/* Mobile nav */}
-        <MobileTopNav
-          brandName={brandProfile.brandName}
-          industry={brandProfile.industry}
-        />
+        <div className="lg:hidden sticky top-0 z-[100] bg-black">
+          <MobileTopNav
+            brandName={brandProfile.brandName}
+            industry={brandProfile.industry}
+            pendingPaymentsCount={pendingPaymentsCount}
+            inboxCount={inboxCount}
+            draftAgreementsCount={draftAgreementsCount}
+          />
+
+
+        </div>
 
         <div className="lg:px-0 px-4">
 
@@ -338,7 +396,11 @@ function OverviewCard({
   trend: "up" | "down" | "flat";
 }) {
   return (
-    <div className="rounded-xl border-2 border-white/10 bg-[#ffffff0a] p-4 flex justify-between items-center">
+    <div className="rounded-xl border border-white/10 inset-0
+          bg-gradient-to-br
+          from-[#636EE1]/10
+          via-transparent
+          to-transparent p-4 flex justify-between items-center">
       <div>
         <div className="text-xs opacity-70">{label}</div>
         <div className="mt-1 lg:text-6xl text-2xl font-medium">

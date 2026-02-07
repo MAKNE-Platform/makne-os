@@ -1,226 +1,197 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import mongoose from "mongoose";
-
-import { connectDB } from "@/lib/db/connect";
-import { Agreement } from "@/lib/db/models/Agreement";
-import { BrandProfile } from "@/lib/db/models/BrandProfile";
+import DeliverablesLineChart from "@/components/analytics/DeliverablesLineChart";
+import PaymentsLineChart from "@/components/analytics/PaymentsLineChart";
+import TopCreatorsBarChart from "@/components/analytics/TopCreatorsBarChart";
+import GraphCard from "@/components/analytics/GraphCard";
+import MetricCard from "@/components/analytics/MetricCard";
 
 import BrandSidebar from "@/components/brand/BrandSidebar";
 import MobileTopNav from "@/components/dashboard/MobileTopNav";
+import { connectDB } from "@/lib/db/connect";
+import { BrandProfile } from "@/lib/db/models/BrandProfile";
+import mongoose from "mongoose";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+import { Agreement } from "@/lib/db/models/Agreement";
+import { Payment } from "@/lib/db/models/Payment";
+import { AuditLog } from "@/lib/db/models/AuditLog";
+import { Notification } from "@/lib/db/models/Notification";
 
 type BrandProfileType = {
-  brandName: string;
-  industry: string;
-  location?: string;
+    brandName: string;
+    industry: string;
+    location?: string;
 };
 
+/* ================= MOCK DATA (REPLACE WITH DB LATER) ================= */
+
+const deliverablesData = [
+    { label: "01-09", value: 0 },
+    { label: "01-15", value: 1 },
+    { label: "01-22", value: 3 },
+    { label: "01-30", value: 5 },
+    { label: "02-02", value: 8 },
+    { label: "02-05", value: 6 },
+];
+
+const paymentsData = [
+    { label: "01-15", value: 12000 },
+    { label: "01-22", value: 28000 },
+    { label: "01-30", value: 45000 },
+    { label: "02-02", value: 103444 },
+    { label: "02-05", value: 0 },
+];
+
+const creatorsData = [
+    { label: "creator1@gmail.com", value: 6 },
+    { label: "creator2@gmail.com", value: 4 },
+    { label: "creator3@gmail.com", value: 2 },
+];
+
+/* ================= PAGE ================= */
+
 export default async function BrandAnalyticsPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("auth_session")?.value;
-  const role = cookieStore.get("user_role")?.value;
 
-  if (!userId || role !== "BRAND") redirect("/auth/login");
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("auth_session")?.value;
+    const role = cookieStore.get("user_role")?.value;
 
-  await connectDB();
+    if (!userId || role !== "BRAND") redirect("/auth/login");
 
-  const brandProfile = (await BrandProfile.findOne({
-    userId: new mongoose.Types.ObjectId(userId),
-  }).lean()) as BrandProfileType | null;
+    await connectDB();
 
-  if (!brandProfile) redirect("/onboarding/brand");
+    const brandProfile = (await BrandProfile.findOne({
+        userId: new mongoose.Types.ObjectId(userId),
+    }).lean()) as BrandProfileType | null;
 
-  const agreements = await Agreement.find({
-    brandId: new mongoose.Types.ObjectId(userId),
-  }).lean();
+    if (!brandProfile) redirect("/onboarding/brand");
 
-  /* ================= METRICS ================= */
+    const brandObjectId = new mongoose.Types.ObjectId(userId);
 
-  const active = agreements.filter(a => a.status === "ACTIVE").length;
-  const pending = agreements.filter(a =>
-    ["SUBMITTED", "REVISION_REQUESTED"].includes(a.status)
-  ).length;
-  const completed = agreements.filter(a => a.status === "COMPLETED").length;
-  const drafts = agreements.filter(a => a.status === "DRAFT").length;
+    // Inbox = unread notifications + submitted deliverables
+    const unreadNotificationsCount = await Notification.countDocuments({
+        userId: brandObjectId,
+        role: "BRAND",
+        readAt: { $exists: false },
+    });
 
-  return (
-    <div className="min-h-screen bg-black text-white lg:px-0 px-2">
+    const deliverablesCount = await AuditLog.countDocuments({
+        action: "DELIVERABLE_SUBMITTED",
+        "metadata.brandId": userId,
+    });
 
-      {/* ================= MOBILE NAV ================= */}
-      <MobileTopNav
-        brandName={brandProfile.brandName}
-        industry={brandProfile.industry}
-      />
+    const inboxCount = unreadNotificationsCount + deliverablesCount;
 
-      <div className="flex">
+    // Draft agreements
+    const draftAgreementsCount = await Agreement.countDocuments({
+        brandId: brandObjectId,
+        status: "DRAFT",
+    });
 
-        {/* ================= SIDEBAR ================= */}
-        <BrandSidebar
-          active="analytics"
-          brandProfile={brandProfile}
-        />
+    // Pending payments
+    const pendingPaymentsCount = await Payment.countDocuments({
+        brandId: brandObjectId,
+        status: { $in: ["PENDING", "INITIATED"] },
+    });
 
-        {/* ================= MAIN ================= */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    return (
+        <div className="min-h-screen lg:px-0 px-2 bg-black text-white">
 
-          {/* Header */}
-          <div>
-            <h1 className="text-4xl font-medium">Analytics</h1>
-            <p className="mt-1 text-md opacity-70">
-              Performance overview of your collaborations
-            </p>
-          </div>
+            {/* ================= MOBILE NAV ================= */}
+            {/* MOBILE NAV */}
+            <div className="lg:hidden sticky top-0 z-[100] bg-black">
+                <MobileTopNav
+                    brandName={brandProfile.brandName}
+                    industry={brandProfile.industry}
+                    pendingPaymentsCount={pendingPaymentsCount}
+                    inboxCount={inboxCount}
+                    draftAgreementsCount={draftAgreementsCount}
+                />
 
-          {/* ================= KPI GRID ================= */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            </div>
 
-            <MetricCard
-              label="Active"
-              value={active}
-              hint="Currently running"
-            />
+            <div className="flex">
 
-            <MetricCard
-              label="Pending"
-              value={pending}
-              hint="Needs action"
-            />
+                {/* SIDEBAR (hidden automatically on mobile inside component) */}
+                <BrandSidebar
+                    active="analytics"
+                    brandProfile={brandProfile}
+                    inboxCount={inboxCount}
+                    draftAgreementsCount={draftAgreementsCount}
+                    pendingPaymentsCount={pendingPaymentsCount}
+                />
 
-            <MetricCard
-              label="Completed"
-              value={completed}
-              hint="Successfully delivered"
-            />
 
-            <MetricCard
-              label="Drafts"
-              value={drafts}
-              hint="Not yet sent"
-            />
+                {/* ================= MAIN ================= */}
+                <main
+                    className="
+          flex-1
+          px-3 sm:px-6 lg:px-8
+          py-6 sm:py-8
+          space-y-8 sm:space-y-10
+        "
+                >
 
-          </div>
+                    {/* ================= HEADER ================= */}
+                    <div className="space-y-1">
+                        <h1 className="text-3xl sm:text-4xl font-medium">
+                            Analytics
+                        </h1>
+                        <p className="text-sm sm:text-md opacity-70">
+                            Performance overview (last 30 days)
+                        </p>
+                    </div>
 
-          {/* ================= INSIGHT CARDS ================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* ================= OVERVIEW ================= */}
+                    <div
+                        className="
+            grid
+            grid-cols-2
+            sm:grid-cols-2
+            lg:grid-cols-4
+            gap-3 sm:gap-4
+          "
+                    >
+                        <MetricCard label="Spend" value="₹1.2L" />
+                        <MetricCard label="Active" value={12} />
+                        <MetricCard label="Pending" value={4} />
+                        <MetricCard label="Completed" value={9} />
+                    </div>
 
-            {/* Agreement health */}
-            <InsightCard
-              title="Agreement health"
-              description="A quick snapshot of how your agreements are progressing."
-            >
-              <StatRow label="Active vs Pending">
-                {active} / {pending}
-              </StatRow>
-              <StatRow label="Completion ratio">
-                {completed} of {agreements.length}
-              </StatRow>
-            </InsightCard>
+                    {/* ================= DELIVERABLES ================= */}
+                    <div className="w-full">
+                        <GraphCard title="Deliverables submitted (30 days)">
+                            <div className="w-full overflow-x-hidden">
+                                <DeliverablesLineChart data={deliverablesData} />
+                            </div>
+                        </GraphCard>
+                    </div>
 
-            {/* Operational note */}
-            <InsightCard
-              title="Operational insight"
-              description="Where to focus your attention right now."
-            >
-              {pending > 0 ? (
-                <p className="text-sm opacity-80">
-                  You have <span className="text-[#636EE1] font-medium">{pending}</span> pending
-                  submissions that may require review.
-                </p>
-              ) : (
-                <p className="text-sm opacity-80">
-                  No pending actions right now.
-                </p>
-              )}
-            </InsightCard>
+                    {/* ================= PAYMENTS + CREATORS ================= */}
+                    <div
+                        className="
+            grid
+            grid-cols-1
+            lg:grid-cols-2
+            gap-5 sm:gap-6
+          "
+                    >
+                        <GraphCard title="Payments released">
+                            <div className="w-full overflow-x-hidden">
+                                <PaymentsLineChart data={paymentsData} />
+                            </div>
+                        </GraphCard>
 
-          </div>
+                        <GraphCard title="Top creators">
+                            <div className="w-full overflow-x-hidden">
+                                <TopCreatorsBarChart data={creatorsData} />
+                            </div>
+                        </GraphCard>
+                    </div>
 
-        </main>
-      </div>
-    </div>
-  );
-}
-
-/* ================= UI COMPONENTS ================= */
-
-function MetricCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: number;
-  hint?: string;
-}) {
-  return (
-    <div className="
-      rounded-xl
-      border border-white/10
-      bg-[#ffffff05]
-      p-4
-      flex flex-col justify-between
-    ">
-      <div className="text-xs opacity-70">
-        {label}
-      </div>
-
-      <div className="mt-2 text-4xl font-medium">
-        {value}
-      </div>
-
-      {hint && (
-        <div className="mt-2 text-xs opacity-50">
-          {hint}
+                </main>
+            </div>
         </div>
-      )}
-    </div>
-  );
-}
+    );
 
-function InsightCard({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="
-      rounded-xl
-      border border-white/10
-      bg-[#ffffff05]
-      p-6
-      space-y-4
-    ">
-      <div>
-        <div className="text-sm font-medium">
-          {title}
-        </div>
-        <div className="mt-1 text-sm opacity-70">
-          {description}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function StatRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="opacity-70">{label}</span>
-      <span className="font-medium">{children}</span>
-    </div>
-  );
 }

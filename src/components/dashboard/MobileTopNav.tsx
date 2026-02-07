@@ -6,16 +6,23 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
-    brandName?: string;
-    industry?: string;
-    notificationCount?: number;
+  brandName?: string;
+  industry?: string;
+
+  inboxCount?: number;
+  draftAgreementsCount?: number;
+  pendingPaymentsCount?: number;
 };
 
+
 export default function MobileTopNav({
-    brandName,
-    industry,
-    notificationCount = 0,
+  brandName,
+  industry,
+  inboxCount = 0,
+  draftAgreementsCount = 0,
+  pendingPaymentsCount = 0,
 }: Props) {
+
     const [open, setOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -50,19 +57,22 @@ export default function MobileTopNav({
     }, [open]);
 
     return (
-        <div className="lg:hidden sticky top-0 z-40 blur-3xl bg-black border-b border-white/10">
+        <div className="lg:hidden sticky top-0 z-[100] bg-black border-b border-white/10">
+
 
             {/* ================= TOP BAR ================= */}
-            <div className="flex items-center justify-between px-3 py-4">
+            <div className="flex items-center justify-between px-3 py-4 bg-[#00000032] backdrop-blur-lg">
 
                 {/* Logo */}
-                <Image
+                <a href="/dashboard/brand">
+                    <Image
                     src="/makne-logo-lg.png"
                     alt="Makne"
                     width={96}
                     height={24}
                     priority
                 />
+                </a>
 
                 {/* Right actions */}
                 <div className="flex items-center gap-3">
@@ -81,7 +91,7 @@ export default function MobileTopNav({
                         aria-label="Notifications"
                     >
                         🔔
-                        {notificationCount > 0 && (
+                        {inboxCount > 0 && (
                             <span className="
                 absolute -top-1 -right-1
                 h-5 min-w-[20px]
@@ -93,7 +103,7 @@ export default function MobileTopNav({
                 flex items-center justify-center
                 px-1
               ">
-                                {notificationCount}
+                                {inboxCount}
                             </span>
                         )}
                     </Link>
@@ -143,11 +153,11 @@ export default function MobileTopNav({
 
                         {/* Navigation */}
                         <NavItem label="Dashboard" href="/dashboard/brand" />
-                        <NavItem label="Agreements" href="/agreements" />
+                        <NavItem label="Agreements" href="/agreements" badge={draftAgreementsCount} />
                         <NavItem label="Activity" href="/system/activity" />
-                        <NavItem label="Inbox" href="/brand/notifications" />
+                        <NavItem label="Inbox" href="/brand/notifications" badge={inboxCount} />
                         <NavItem label="Analytics" href="/brand/analytics" />
-                        <NavItem label="Payments" href="/brand/payments" />
+                        <NavItem label="Payments" href="/brand/payments" badge={pendingPaymentsCount} />
 
                         {/* Divider */}
                         <div className="pt-3 border-t border-white/10 space-y-2">
@@ -184,25 +194,44 @@ export default function MobileTopNav({
 /* ================= NAV ITEM ================= */
 
 function NavItem({
-    label,
-    href,
+  label,
+  href,
+  badge,
 }: {
-    label: string;
-    href: string;
+  label: string;
+  href: string;
+  badge?: number;
 }) {
-    return (
-        <Link
-            href={href}
-            className="
-        block
+  return (
+    <Link
+      href={href}
+      className="
+        flex items-center justify-between
         rounded-lg
         px-3 py-2
         text-sm
         hover:bg-white/5
         transition
       "
-        >
-            {label}
-        </Link>
-    );
+    >
+      <span>{label}</span>
+
+      {badge !== undefined && badge > 0 && (
+        <span className="
+          min-w-[18px]
+          h-4
+          rounded-full
+          bg-[#636EE1]
+          text-black
+          text-[10px]
+          font-medium
+          flex items-center justify-center
+          px-1
+        ">
+          {badge}
+        </span>
+      )}
+    </Link>
+  );
 }
+

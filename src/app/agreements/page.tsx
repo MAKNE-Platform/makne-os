@@ -10,6 +10,9 @@ import BrandSidebar from "@/components/brand/BrandSidebar";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
 import { div } from "framer-motion/client";
 import MobileTopNav from "@/components/dashboard/MobileTopNav";
+import { Notification } from "@/lib/db/models/Notification";
+import { Payment } from "@/lib/db/models/Payment";
+import { AuditLog } from "@/lib/db/models/AuditLog";
 
 type BrandProfileType = {
   brandName: string;
@@ -26,15 +29,51 @@ export default async function AgreementsPage() {
 
   await connectDB();
 
-  const brandProfile = await BrandProfile.findOne({
+  /* ================= INBOX COUNT ================= */
+
+  // 1. Unread notifications
+  const unreadNotifications = await Notification.countDocuments({
     userId: new mongoose.Types.ObjectId(userId),
-  }).lean() as BrandProfileType | null;
+    role: "BRAND",
+    readAt: { $exists: false },
+  });
+
+  // 2. Submitted deliverables (not yet approved / checked)
+  const pendingDeliverables = await AuditLog.countDocuments({
+    action: "DELIVERABLE_SUBMITTED",
+    "metadata.brandId": userId,
+    // optional: add status check if you later track approval
+  });
+
+  const inboxCount = unreadNotifications + pendingDeliverables;
+
+  const brandObjectId = new mongoose.Types.ObjectId(userId);
+
+  const brandProfile = (await BrandProfile.findOne({
+    userId: brandObjectId,
+  }).lean()) as BrandProfileType | null;
+
+  if (!brandProfile) redirect("/onboarding/brand");
 
   const agreements = await Agreement.find({
     brandId: new mongoose.Types.ObjectId(userId),
   })
     .sort({ createdAt: -1 })
     .lean();
+
+  const drafts = agreements.filter(
+    (a) => a.status === "DRAFT"
+  ).length;
+
+  const pendingPayments = await Payment.countDocuments({
+    brandId: new mongoose.Types.ObjectId(userId),
+    status: { $in: ["PENDING", "INITIATED"] },
+  });
+
+  const draftAgreementsCount = await Agreement.countDocuments({
+    brandId: brandObjectId,
+    status: "DRAFT",
+  });
 
   const draftCount = agreements.filter(a => a.status === "DRAFT").length;
   const activeCount = agreements.filter(a => a.status === "ACTIVE").length;
@@ -48,7 +87,11 @@ export default async function AgreementsPage() {
       <MobileTopNav
         brandName={brandProfile.brandName}
         industry={brandProfile.industry}
+        pendingPaymentsCount={pendingPayments}
+        inboxCount={inboxCount}
+        draftAgreementsCount={draftAgreementsCount}
       />
+
 
       <div className="flex min-h-screen bg-black text-white w-full relative">
 
@@ -56,7 +99,11 @@ export default async function AgreementsPage() {
         <BrandSidebar
           active="agreements"
           brandProfile={brandProfile}
+          inboxCount={inboxCount}
+          draftAgreementsCount={drafts}
+          pendingPaymentsCount={pendingPayments}
         />
+
 
         {/* ================= MAIN ================= */}
 
@@ -73,26 +120,39 @@ export default async function AgreementsPage() {
           {/* ================= AGREEMENTS OVERVIEW ================= */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-            <div className="rounded-xl border border-white/10 bg-black p-4">
+            <div className="rounded-xl border  border-white/10 inset-0
+          bg-gradient-to-br
+          from-[#636EE1]/10
+          via-transparent
+          to-transparent p-4">
+              <div className="text-xs opacity-70">Active</div>
+              <div className="mt-1 text-4xl font-medium text-[#636EE1]">
+                {activeCount}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 inset-0
+          bg-gradient-to-br
+          from-[#636EE1]/10
+          via-transparent
+          to-transparent p-4">
               <div className="text-xs opacity-70">Draft</div>
               <div className="mt-1 text-4xl font-medium">
                 {draftCount}
               </div>
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-black p-4">
+            <div className="rounded-xl border  border-white/10 inset-0
+          bg-gradient-to-br
+          from-[#636EE1]/10
+          via-transparent
+          to-transparent p-4">
               <div className="text-xs opacity-70">Sent</div>
               <div className="mt-1 text-4xl font-medium">
                 {sentCount}
               </div>
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-black p-4">
-              <div className="text-xs opacity-70">Active</div>
-              <div className="mt-1 text-4xl font-medium text-[#636EE1]">
-                {activeCount}
-              </div>
-            </div>
 
           </div>
 

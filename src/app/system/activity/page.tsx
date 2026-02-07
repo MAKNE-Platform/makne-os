@@ -5,11 +5,13 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { AuditLog } from "@/lib/db/models/AuditLog";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
+import { Notification } from "@/lib/db/models/Notification";
+import { Agreement } from "@/lib/db/models/Agreement";
+import { Payment } from "@/lib/db/models/Payment";
 
 import BrandSidebar from "@/components/brand/BrandSidebar";
 import MobileTopNav from "@/components/dashboard/MobileTopNav";
 import SystemActivityClient from "./SystemActivityClient";
-import { div } from "framer-motion/client";
 
 type BrandProfileType = {
   brandName: string;
@@ -38,6 +40,8 @@ export default async function SystemActivityPage() {
     redirect("/onboarding/brand");
   }
 
+  const brandObjectId = new mongoose.Types.ObjectId(userId);
+
   /* ================= AUDIT LOGS ================= */
 
   const logs = await AuditLog.find({
@@ -56,7 +60,6 @@ export default async function SystemActivityPage() {
       createdAt: Date;
     }[]>();
 
-  // 🔥 Serialize EVERYTHING (correctly)
   const serializedLogs = logs.map((log) => ({
     id: log._id.toString(),
     action: log.action,
@@ -68,26 +71,58 @@ export default async function SystemActivityPage() {
     createdAt: log.createdAt.toISOString(),
   }));
 
+  /* ================= COUNTS (SHARED) ================= */
+
+  // Inbox = unread notifications + submitted deliverables
+  const unreadNotifications = await Notification.countDocuments({
+    userId: brandObjectId,
+    role: "BRAND",
+    readAt: { $exists: false },
+  });
+
+  const pendingDeliverables = await AuditLog.countDocuments({
+    action: "DELIVERABLE_SUBMITTED",
+    "metadata.brandId": userId,
+  });
+
+  const inboxCount = unreadNotifications + pendingDeliverables;
+
+  // Draft agreements
+  const draftAgreementsCount = await Agreement.countDocuments({
+    brandId: brandObjectId,
+    status: "DRAFT",
+  });
+
+  // Pending payments
+  const pendingPaymentsCount = await Payment.countDocuments({
+    brandId: brandObjectId,
+    status: { $in: ["PENDING", "INITIATED"] },
+  });
+
   /* ================= UI ================= */
 
   return (
     <div className="lg:px-0 px-2">
-      {/* Mobile nav */}
-      <MobileTopNav />
+      {/* ================= MOBILE NAV ================= */}
+      <MobileTopNav
+        brandName={brandProfile.brandName}
+        industry={brandProfile.industry}
+        pendingPaymentsCount={pendingPaymentsCount}
+        inboxCount={inboxCount}
+        draftAgreementsCount={draftAgreementsCount}
+      />
 
       <div className="flex min-h-screen bg-black text-white">
-
-        {/* Sidebar */}
+        {/* ================= SIDEBAR ================= */}
         <BrandSidebar
           active="activity"
-          brandProfile={{
-            brandName: brandProfile.brandName,
-            industry: brandProfile.industry,
-            location: brandProfile.location,
-          }}
+          brandProfile={brandProfile}
+          inboxCount={inboxCount}
+          draftAgreementsCount={draftAgreementsCount}
+          pendingPaymentsCount={pendingPaymentsCount}
         />
 
-        {/* Main */}
+        {/* ================= MAIN ================= */}
         <main className="flex-1 overflow-y-auto">
           <SystemActivityClient logs={serializedLogs} />
         </main>
