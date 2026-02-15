@@ -60,22 +60,22 @@ export default function BrandSidebar({
             badge={draftAgreementsCount}
           />
 
-
-          <SidebarItem
-            label="Activity"
-            href="/system/activity"
-            active={active === "activity"}
-          />
-        </div>
-
-        <div className="space-y-1 border-t border-white/10 pt-4">
           <SidebarItem
             label="Inbox"
             href="/brand/notifications"
             active={active === "notifications"}
             badge={inboxCount}
           />
-          
+
+        </div>
+
+        <div className="space-y-1 border-t border-white/10 pt-4">
+          <SidebarItem
+            label="Activity"
+            href="/system/activity"
+            active={active === "activity"}
+          />
+
           <SidebarItem
             label="Analytics"
             href="/brand/analytics"
@@ -93,7 +93,7 @@ export default function BrandSidebar({
 
 
       {/* Brand footer */}
-      <div className="mt-auto border-t border-white/10 pt-4 space-y-1">
+      <div className="mt-auto border-t capitalize border-white/10 pt-4 space-y-1">
         <div className="text-sm font-medium">
           {brandProfile.brandName}
         </div>
