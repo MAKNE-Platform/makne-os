@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { PortfolioProject } from "@/types/portfolio";
+import { PortfolioItem } from "@/types/portfolio";
 
 type Props = {
-  initialPortfolio: PortfolioProject[];
+  initialPortfolio: PortfolioItem[];
 };
 
 export default function ManagePortfolioClient({ initialPortfolio }: Props) {
-  const [items, setItems] = useState<PortfolioProject[]>(initialPortfolio);
+  const [items, setItems] = useState<PortfolioItem[]>(initialPortfolio);
   const [saving, setSaving] = useState(false);
 
   async function savePortfolio() {
@@ -27,9 +27,9 @@ export default function ManagePortfolioClient({ initialPortfolio }: Props) {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-medium">Manage Portfolio</h1>
+        <h1 className="text-3xl font-medium">Manage Projects</h1>
         <p className="text-sm opacity-70 mt-1">
-          Add and manage your featured projects
+          Add and manage your projects
         </p>
       </div>
 
@@ -40,20 +40,21 @@ export default function ManagePortfolioClient({ initialPortfolio }: Props) {
           setItems([
             ...items,
             {
-                title: "",
-                brandName: "",
-                description: "",
-                duration: {},
-                deliverables: [],
-                links: [],
-                media: [],
-                outcome: {},
-                meta: {
-                    draft: true,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                },
-                link: undefined
+              title: "",
+              brandName: "",
+              description: "",
+              duration: {},
+              deliverables: [],
+              links: [],
+              media: [],
+              outcome: {},
+              meta: {
+                draft: true,
+                featured: true,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+              link: undefined
             },
           ])
         }
@@ -75,6 +76,23 @@ export default function ManagePortfolioClient({ initialPortfolio }: Props) {
             key={index}
             className="rounded-xl border border-white/10 bg-[#ffffff05] p-5 space-y-4"
           >
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={item.meta?.featured ?? false}
+                onChange={(e) => {
+                  const copy = [...items];
+                  copy[index].meta = {
+                    ...copy[index].meta,
+                    featured: e.target.checked,
+                    updatedAt: new Date().toISOString(),
+                  };
+                  setItems(copy);
+                }}
+              />
+              Mark as Featured
+            </label>
+
             {/* Title */}
             <input
               placeholder="Project title"

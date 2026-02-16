@@ -23,6 +23,8 @@ export async function POST(req: Request) {
       niche: body.niche,
       platforms: body.platforms,
       profileImage: body.profileImage,
+      skills: body.skills,
+
     },
     { new: true }
   );

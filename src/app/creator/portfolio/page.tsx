@@ -65,14 +65,21 @@ export default async function CreatorPortfolioPage() {
   const profileDoc = (await CreatorProfile.findOne({
     userId: new mongoose.Types.ObjectId(userId),
   }).lean()) as unknown as {
-    bio: string;
-    location: string;
-    profileImage: string;
-    niche: string;
-    platforms: string;
-    portfolio?: string;
+    bio?: string;
+    location?: string;
+    profileImage?: string;
+    niche?: string;
+    platforms?: string;
+    portfolio?: any[];
     availability?: "AVAILABLE" | "LIMITED" | "UNAVAILABLE";
+    skills?: {
+      contentFormats?: string[];
+      tools?: string[];
+      languages?: string[];
+      strengths?: string[];
+    };
   };
+
 
 
   if (!profileDoc) redirect("/onboarding/creator");
@@ -149,13 +156,30 @@ export default async function CreatorPortfolioPage() {
         100
       );
 
+  console.log("RAW PORTFOLIO:", profileDoc.portfolio);
 
   /* ================= PORTFOLIO PARSE ================= */
 
   const portfolio: PortfolioItem[] = Array.isArray(profileDoc.portfolio)
     ? profileDoc.portfolio.map((project: any) => ({
-      ...project,
       _id: project._id?.toString(),
+
+      title: project.title ?? "",
+      brandName: project.brandName ?? "",
+      campaignType: project.campaignType ?? "",
+      thumbnail: project.thumbnail ?? "",
+      description: project.description ?? "",
+
+      duration: project.duration
+        ? {
+          start: project.duration.start ?? "",
+          end: project.duration.end ?? "",
+        }
+        : undefined,
+
+      deliverables: Array.isArray(project.deliverables)
+        ? project.deliverables
+        : [],
 
       media: Array.isArray(project.media)
         ? project.media.map((m: any) => ({
@@ -173,7 +197,7 @@ export default async function CreatorPortfolioPage() {
 
       outcome: project.outcome
         ? {
-          summary: project.outcome.summary,
+          summary: project.outcome.summary ?? "",
           metrics: Array.isArray(project.outcome.metrics)
             ? project.outcome.metrics.map((m: any) => ({
               label: m.label,
@@ -182,10 +206,61 @@ export default async function CreatorPortfolioPage() {
             : [],
         }
         : undefined,
+
+      meta: project.meta
+        ? {
+          draft: !!project.meta.draft,
+          featured: !!project.meta.featured,
+          verifiedByBrand: !!project.meta.verifiedByBrand,
+          createdAt: project.meta.createdAt ?? "",
+          updatedAt: project.meta.updatedAt ?? "",
+        }
+        : undefined,
     }))
     : [];
 
+  const hasImage = !!profileDoc.profileImage;
+  const hasDisplayName = !!user.email; // or profileDoc.displayName if you store it
+  const hasBio = !!profileDoc.bio;
+  const hasLocation = !!profileDoc.location;
+  const hasNiche = !!profileDoc.niche;
+  const hasPlatforms = !!profileDoc.platforms;
 
+  const hasContentFormats =
+    (profileDoc.skills?.contentFormats?.length ?? 0) > 0;
+
+  const hasTools =
+    (profileDoc.skills?.tools?.length ?? 0) > 0;
+
+  const hasLanguages =
+    (profileDoc.skills?.languages?.length ?? 0) > 0;
+
+  const hasStrengths =
+    (profileDoc.skills?.strengths?.length ?? 0) > 0;
+
+
+  const hasPublishedProject =
+    Array.isArray(profileDoc.portfolio) &&
+    profileDoc.portfolio.some((p: any) => !p.meta?.draft);
+
+  let completion = 0;
+
+  // Identity (40%)
+  if (hasImage) completion += 10;
+  if (hasDisplayName) completion += 10;
+  if (hasBio) completion += 10;
+  if (hasLocation) completion += 10;
+
+  // Professional Info (30%)
+  if (hasNiche) completion += 10;
+  if (hasPlatforms) completion += 10;
+  if (hasContentFormats) completion += 5;
+  if (hasTools) completion += 5;
+
+  // Credibility (30%)
+  if (hasLanguages) completion += 5;
+  if (hasStrengths) completion += 5;
+  if (hasPublishedProject) completion += 20;
 
 
   /* ================= COUNTS ================= */
@@ -255,13 +330,21 @@ export default async function CreatorPortfolioPage() {
   const profile = {
     displayName: user.email.split("@")[0],
     email: user.email,
-    niche: profileDoc.niche,
-    platforms: profileDoc.platforms,
+    niche: profileDoc.niche ?? "",
+    platforms: profileDoc.platforms ?? "",
     profileImage: profileDoc.profileImage ?? "",
     availability: profileDoc.availability ?? "AVAILABLE",
     bio: profileDoc.bio ?? "",
     location: profileDoc.location ?? "",
+    profileCompletion: completion,
     portfolio,
+
+    skills: {
+      contentFormats: profileDoc.skills?.contentFormats ?? [],
+      tools: profileDoc.skills?.tools ?? [],
+      languages: profileDoc.skills?.languages ?? [],
+      strengths: profileDoc.skills?.strengths ?? [],
+    },
 
     overview: {
       totalCampaigns,
@@ -278,6 +361,7 @@ export default async function CreatorPortfolioPage() {
       completionRate,
     },
   };
+
 
 
   return (

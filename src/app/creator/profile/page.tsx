@@ -36,6 +36,12 @@ export default async function CreatorProfilePage() {
     niche: profile.niche ?? "",
     platforms: profile.platforms ?? "",
     profileImage: profile.profileImage ?? "",
+    skills: profile.skills ?? {
+      contentFormats: [],
+      tools: [],
+      languages: [],
+      strengths: [],
+    },
   };
 
   return (

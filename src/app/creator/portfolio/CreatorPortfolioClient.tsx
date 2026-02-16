@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import PortfolioOverviewCard from "@/components/creator/PortfolioOverviewCard";
 import CreatorBasicInfoSection from "@/components/creator/CreatorBasicInfoSection";
 import CreatorContactCTAs from "@/components/creator/CreatorContactCTAs";
@@ -21,6 +23,7 @@ type Props = {
         niche: string;
         platforms: string;
         profileImage?: string;
+        profileCompletion: number;
         portfolio: PortfolioItem[];
         performance: {
             collaborations: number;
@@ -28,6 +31,15 @@ type Props = {
             earnings: number;
             completionRate: number;
         };
+        skills: {
+            contentFormats: string[];
+            tools: string[];
+            languages: string[];
+            strengths: string[];
+        };
+        hasPublishedProject: any,
+
+
     };
 };
 
@@ -35,42 +47,99 @@ type Props = {
 
 export default function CreatorPortfolioClient({ profile }: Props) {
 
-    const featuredProjects = profile.portfolio
-        .filter(p => !p.meta?.draft)     // hide drafts
-        .slice(0, 2);                    // show only top 2
+    const [showAllProjects, setShowAllProjects] = useState(false);
+
+    // All projects creator owns
+    const allProjects = profile.portfolio ?? [];
+
+    // Explicit featured (ignore draft)
+    const explicitlyFeatured = allProjects.filter(
+        (p) => p.meta?.featured
+    );
+
+    // Final featured display for creator view
+    const featuredProjects =
+        explicitlyFeatured.length > 0
+            ? explicitlyFeatured
+            : allProjects.slice(0, 2);
+
+    const maxVisible = 4;
+
+    const visibleProjects = showAllProjects
+        ? allProjects
+        : allProjects.slice(0, maxVisible);
+
+    const hasMoreThanMax = allProjects.length > maxVisible;
+
+
+    console.log("PORTFOLIO ITEMS:", profile.portfolio);
+
 
     return (
         <div className="space-y-12">
 
             {/* ===== PROFILE HEADER ===== */}
             {/* <h1 className="text-4xl">My Portfolio</h1> */}
-            <div className="flex items-center gap-4">
-                {/* Avatar */}
-                <div className="relative">
-                    {profile.profileImage ? (
-                        <img
-                            src={profile.profileImage}
-                            alt={profile.displayName}
-                            className="h-20 w-20 rounded-full object-cover border border-white/10"
-                        />
-                    ) : (
-                        <div className="h-20 w-20 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-2xl font-medium">
-                            {profile.displayName[0].toUpperCase()}
-                        </div>
-                    )}
-                    <Link
-                        href="/creator/profile"
-                        className="absolute -bottom-1 -right-1 rounded-full bg-[#636EE1] py-1 px-1.5 text-xs text-black"
-                    >
-                        ✎
-                    </Link>
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-5">
+                    {/* Avatar */}
+                    <div className="relative">
+                        {profile.profileImage ? (
+                            <img
+                                src={profile.profileImage}
+                                alt={profile.displayName}
+                                className="h-20 w-20 rounded-full object-cover border border-white/10"
+                            />
+                        ) : (
+                            <div className="h-20 w-20 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-2xl font-medium">
+                                {profile.displayName[0].toUpperCase()}
+                            </div>
+                        )}
+                        <Link
+                            href="/creator/profile"
+                            className="absolute -bottom-1 -right-1 rounded-full bg-[#636EE1] py-1 px-1.5 text-xs text-black"
+                        >
+                            ✎
+                        </Link>
+                    </div>
+
+                    {/* Name */}
+                    <div>
+                        <h1 className="text-3xl font-medium">{profile.displayName}</h1>
+                        <div className="text-sm opacity-70">{profile.niche}</div>
+                    </div>
                 </div>
 
-                {/* Name */}
-                <div>
-                    <h1 className="text-3xl font-medium">{profile.displayName}</h1>
-                    <div className="text-sm opacity-70">{profile.niche}</div>
+                {/* ===== PROFILE COMPLETION ===== */}
+                <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-5 space-y-3">
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm opacity-70">Profile completion</span>
+                        <span className="text-sm font-medium">
+                            {profile.profileCompletion}%
+                        </span>
+                    </div>
+
+                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-[#636EE1] transition-all duration-500"
+                            style={{ width: `${profile.profileCompletion}%` }}
+                        />
+                    </div>
+
+                    {profile.profileCompletion < 100 && (
+                        <div className="text-xs opacity-70 space-y-1">
+                            <div>Complete your profile to increase brand visibility.</div>
+
+                            {!profile.hasPublishedProject && (
+                                <div className="text-[#636EE1]">
+                                    • Publish at least one project to unlock full visibility.
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                 </div>
+
             </div>
 
 
@@ -176,45 +245,70 @@ export default function CreatorPortfolioClient({ profile }: Props) {
 
                     {/* Primary Niche */}
                     <CapabilityCard title="Primary Niche">
-                        <CapabilityPill>{profile.niche}</CapabilityPill>
+                        {profile.niche ? (
+                            <CapabilityPill>{profile.niche}</CapabilityPill>
+                        ) : (
+                            <span className="text-xs opacity-40">Not added yet</span>
+                        )}
                     </CapabilityCard>
 
                     {/* Platforms */}
                     <CapabilityCard title="Platforms">
-                        {profile.platforms.split(",").map((p) => (
-                            <CapabilityPill key={p}>{p.trim()}</CapabilityPill>
-                        ))}
+                        {profile.platforms
+                            ? profile.platforms.split(",").map((p) => (
+                                <CapabilityPill key={p.trim()}>
+                                    {p.trim()}
+                                </CapabilityPill>
+                            ))
+                            : <span className="text-xs opacity-40">Not added yet</span>}
                     </CapabilityCard>
 
                     {/* Content Formats */}
                     <CapabilityCard title="Content Formats">
-                        {["Reels", "Posts", "Stories", "Short-form Video"].map((f) => (
-                            <CapabilityPill key={f}>{f}</CapabilityPill>
-                        ))}
+                        {profile.skills?.contentFormats?.length ? (
+                            profile.skills.contentFormats.map((f) => (
+                                <CapabilityPill key={f}>{f}</CapabilityPill>
+                            ))
+                        ) : (
+                            <span className="text-xs opacity-40">Not added yet</span>
+                        )}
                     </CapabilityCard>
 
                     {/* Tools */}
                     <CapabilityCard title="Tools & Software">
-                        {["Canva", "Premiere Pro", "CapCut"].map((t) => (
-                            <CapabilityPill key={t}>{t}</CapabilityPill>
-                        ))}
+                        {profile.skills?.tools?.length ? (
+                            profile.skills.tools.map((t) => (
+                                <CapabilityPill key={t}>{t}</CapabilityPill>
+                            ))
+                        ) : (
+                            <span className="text-xs opacity-40">Not added yet</span>
+                        )}
                     </CapabilityCard>
 
                     {/* Languages */}
                     <CapabilityCard title="Languages">
-                        {["English", "Hindi"].map((l) => (
-                            <CapabilityPill key={l}>{l}</CapabilityPill>
-                        ))}
+                        {profile.skills?.languages?.length ? (
+                            profile.skills.languages.map((l) => (
+                                <CapabilityPill key={l}>{l}</CapabilityPill>
+                            ))
+                        ) : (
+                            <span className="text-xs opacity-40">Not added yet</span>
+                        )}
                     </CapabilityCard>
 
                     {/* Strengths */}
                     <CapabilityCard title="Strengths">
-                        {["Brand storytelling", "Audience engagement", "Consistency"].map((s) => (
-                            <CapabilityPill key={s}>{s}</CapabilityPill>
-                        ))}
+                        {profile.skills?.strengths?.length ? (
+                            profile.skills.strengths.map((s) => (
+                                <CapabilityPill key={s}>{s}</CapabilityPill>
+                            ))
+                        ) : (
+                            <span className="text-xs opacity-40">Not added yet</span>
+                        )}
                     </CapabilityCard>
 
                 </div>
+
             </div>
 
 
@@ -233,11 +327,11 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                     )}
                 </div>
 
-                {featuredProjects.length === 0 ? (
+                {allProjects.length === 0 ? (
                     <div className="rounded-2xl border border-white/10 bg-[#ffffff05] p-6 space-y-3">
-                        <div className="text-sm font-medium">No featured projects yet</div>
+                        <div className="text-sm font-medium">No projects yet</div>
                         <div className="text-sm opacity-70">
-                            Publish at least one project to showcase your work.
+                            Add projects to showcase your work.
                         </div>
 
                         <Link
@@ -248,15 +342,30 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {featuredProjects.map((item, index) => (
-                            <Link key={index} href={`/creator/portfolio/${index}`}>
-                                <FeaturedProjectCard item={item} />
-                            </Link>
-                        ))}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {visibleProjects.map((item, index) => (
+                                <Link key={index} href={`/creator/portfolio/${item._id}`}>
+                                    <FeaturedProjectCard item={item} />
+                                </Link>
+                            ))}
+                        </div>
+
+                        {/* View All Toggle */}
+                        {hasMoreThanMax && (
+                            <div className="flex justify-center pt-4">
+                                <button
+                                    onClick={() => setShowAllProjects(!showAllProjects)}
+                                    className="text-sm text-[#636EE1] hover:underline"
+                                >
+                                    {showAllProjects ? "Show less" : "View all projects"}
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
+
 
 
         </div>
@@ -276,15 +385,22 @@ function PerfCard({ label, value }: { label: string; value: string | number }) {
 
 function FeaturedProjectCard({ item }: { item: PortfolioItem }) {
     return (
-        <div className="group overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff05] transition hover:border-[#636EE1]/40 hover:-translate-y-1">
+        <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff05] transition hover:border-[#636EE1]/40">
+
+            {/* Featured Badge */}
+            {item.meta?.featured && (
+                <div className="absolute top-3 right-3 z-10 rounded-full border bg-[#0000005f] border-[#636EE1] px-3 py-1 text-[10px] font-medium text-white shadow-md">
+                    Featured
+                </div>
+            )}
 
             {/* Thumbnail */}
-            <div className="aspect-[16/9] bg-black/30">
+            <div className="aspect-[16/9] bg-black/30 relative overflow-hidden">
                 {item.thumbnail ? (
                     <img
                         src={item.thumbnail}
                         alt={item.title}
-                        className="h-full w-full object-cover transition group-hover:scale-105"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs opacity-50">
@@ -294,16 +410,36 @@ function FeaturedProjectCard({ item }: { item: PortfolioItem }) {
             </div>
 
             {/* Content */}
-            <div className="p-4 space-y-1">
+            <div className="p-4 space-y-2">
+
+                {/* Title */}
                 <div className="text-sm font-medium">{item.title}</div>
 
+                {/* Brand + Campaign */}
                 <div className="text-xs opacity-70">
                     {item.brandName || "Brand collaboration"}
                     {item.campaignType && ` • ${item.campaignType}`}
                 </div>
 
+                {/* Duration */}
+                {item.duration?.start && (
+                    <div className="text-xs opacity-60">
+                        {item.duration.start}
+                        {item.duration.end && ` – ${item.duration.end}`}
+                    </div>
+                )}
+
+                {/* Deliverables Count */}
+                {item.deliverables && item.deliverables.length > 0 && (
+                    <div className="text-xs opacity-60">
+                        {item.deliverables.length} deliverable
+                        {item.deliverables.length > 1 && "s"}
+                    </div>
+                )}
+
+                {/* Outcome Summary */}
                 {item.outcome?.summary && (
-                    <div className="pt-1 text-xs opacity-80 line-clamp-2">
+                    <div className="pt-1 text-xs text-[#636EE1] font-medium line-clamp-2">
                         {item.outcome.summary}
                     </div>
                 )}
@@ -311,6 +447,7 @@ function FeaturedProjectCard({ item }: { item: PortfolioItem }) {
         </div>
     );
 }
+
 
 function CapabilityCard({
     title,

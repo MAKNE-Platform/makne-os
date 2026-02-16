@@ -8,12 +8,11 @@ import { User } from "@/lib/db/models/User";
 
 type Params = {
   params: Promise<{
-    index: string;
+    index: string; // this is now projectId
   }>;
 };
 
 export default async function ProjectDetailPage({ params }: Params) {
-
   const cookieStore = await cookies();
   const userId = cookieStore.get("auth_session")?.value;
   const role = cookieStore.get("user_role")?.value;
@@ -33,19 +32,38 @@ export default async function ProjectDetailPage({ params }: Params) {
     redirect("/creator/portfolio");
   }
 
-  const { index } = await params;
-  const projectIndex = Number(index);
-  const project = profileDoc.portfolio[projectIndex];
+  const { index } = await params; // index is actually projectId
 
-  // invalid index or draft project
-  if (!project || project.meta?.draft) {
+  // ✅ Find project by _id instead of array index
+  const project = profileDoc.portfolio.find(
+    (p: any) => p._id?.toString() === index
+  );
+
+  if (!project) {
     redirect("/creator/portfolio");
   }
 
-  // 🔒 serialize embedded object
+  // 🔒 Fully serialize project to plain object
   const serializedProject = {
     ...project,
-    id: project._id?.toString(),
+    _id: project._id?.toString(),
+    media: project.media?.map((m: any) => ({
+      type: m.type,
+      url: m.url,
+    })),
+    links: project.links?.map((l: any) => ({
+      label: l.label,
+      url: l.url,
+    })),
+    outcome: project.outcome
+      ? {
+          summary: project.outcome.summary,
+          metrics: project.outcome.metrics?.map((m: any) => ({
+            label: m.label,
+            value: m.value,
+          })),
+        }
+      : undefined,
   };
 
   return (
@@ -62,7 +80,7 @@ export default async function ProjectDetailPage({ params }: Params) {
 
       {/* Thumbnail */}
       {serializedProject.thumbnail && (
-        <div className="overflow-hidden rounded-2xl border border-white/10">
+        <div className="overflow-hidden rounded-2xl h-[60vh] object-cover border border-white/10">
           <img
             src={serializedProject.thumbnail}
             alt={serializedProject.title}
@@ -71,26 +89,25 @@ export default async function ProjectDetailPage({ params }: Params) {
         </div>
       )}
 
-      {/* ===== MEDIA GALLERY ===== */}
-{serializedProject.media?.length > 0 && (
-  <div className="space-y-3">
-    <h2 className="text-lg font-medium">Media</h2>
+      {/* MEDIA */}
+      {serializedProject.media?.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-medium">Media</h2>
 
-    <div className="flex gap-4 overflow-x-auto pb-2">
-      {serializedProject.media.map((m: any, i: number) => (
-        <MediaItem key={i} media={m} />
-      ))}
-    </div>
-  </div>
-)}
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {serializedProject.media.map((m: any, i: number) => (
+              <MediaItem key={i} media={m} />
+            ))}
+          </div>
+        </div>
+      )}
 
-
-      {/* Meta */}
+      {/* Duration */}
       {serializedProject.duration && (
         <div className="text-sm opacity-70">
           Duration:{" "}
-          {serializedProject.duration.start || "—"}{" "}
-          {serializedProject.duration.end && `→ ${serializedProject.duration.end}`}
+          {serializedProject.duration.start || "—"}
+          {serializedProject.duration.end && ` → ${serializedProject.duration.end}`}
         </div>
       )}
 
@@ -109,14 +126,13 @@ export default async function ProjectDetailPage({ params }: Params) {
         )}
       </div>
 
-
       {/* Deliverables */}
       <div className="space-y-2">
         <h2 className="text-lg font-medium">Deliverables</h2>
 
         {serializedProject.deliverables?.length ? (
           <ul className="list-disc list-inside text-sm opacity-80">
-            {serializedProject.deliverables.map((d, i) => (
+            {serializedProject.deliverables.map((d: string, i: number) => (
               <li key={i}>{d}</li>
             ))}
           </ul>
@@ -126,7 +142,6 @@ export default async function ProjectDetailPage({ params }: Params) {
           </p>
         )}
       </div>
-
 
       {/* Outcome */}
       {serializedProject.outcome?.summary && (
@@ -170,33 +185,6 @@ export default async function ProjectDetailPage({ params }: Params) {
             ))}
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
-function MediaItem({
-  media,
-}: {
-  media: {
-    type: "image" | "video";
-    url: string;
-  };
-}) {
-  return (
-    <div className="min-w-[280px] max-w-[320px] aspect-video rounded-xl border border-white/10 bg-black overflow-hidden">
-      {media.type === "image" ? (
-        <img
-          src={media.url}
-          alt="Project media"
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <video
-          src={media.url}
-          controls
-          className="h-full w-full object-cover"
-        />
       )}
     </div>
   );

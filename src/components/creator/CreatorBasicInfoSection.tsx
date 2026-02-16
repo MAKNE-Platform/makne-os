@@ -62,14 +62,14 @@ export default function CreatorBasicInfoSection({
           border border-white/15
           bg-[#ffffff05]
           flex items-center justify-center
-          h-[40vh]
+          h-[40vh] overflow-hidden
         "
       >
         {profileImage ? (
           <img
             src={profileImage}
             alt={displayName}
-            className="h-40 w-40 rounded-full object-cover border border-white/10"
+            className="h-full w-full rounded object-cover border border-white/10"
           />
         ) : (
           <div className="h-40 w-40 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-4xl font-medium">

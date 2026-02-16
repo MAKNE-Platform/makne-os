@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 
 const CreatorProfileSchema = new mongoose.Schema(
   {
+
+    username: { type: String, unique: true, required: true },
+
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -21,6 +24,14 @@ const CreatorProfileSchema = new mongoose.Schema(
       required: true,
     },
 
+    skills: {
+      contentFormats: [{ type: String }],
+      tools: [{ type: String }],
+      languages: [{ type: String }],
+      strengths: [{ type: String }],
+    },
+
+
     bio: {
       type: String,
       default: "",
@@ -39,64 +50,67 @@ const CreatorProfileSchema = new mongoose.Schema(
     /* ===== PORTFOLIO ===== */
 
     portfolio: [
-      {
-        _id: false, // 🔥 Prevent nested ObjectId
+      new mongoose.Schema(
+        {
+          title: { type: String, required: true },
+          brandName: { type: String },
+          thumbnail: { type: String },
 
-        title: { type: String, required: true },
-        brandName: { type: String },
-        thumbnail: { type: String },
+          description: { type: String },
 
-        description: { type: String },
-
-        duration: {
-          _id: false,
-          start: { type: String },
-          end: { type: String },
-        },
-
-        deliverables: [{ type: String }],
-
-        links: [
-          {
+          duration: {
             _id: false,
-            label: { type: String },
-            url: { type: String },
+            start: { type: String },
+            end: { type: String },
           },
-        ],
 
-        media: [
-          {
-            _id: false, // 🔥 prevents media _id issue
-            type: {
-              type: String,
-              enum: ["image", "video"],
-            },
-            url: { type: String },
-          },
-        ],
+          deliverables: [{ type: String }],
 
-        outcome: {
-          _id: false,
-          summary: { type: String },
-          metrics: [
+          links: [
             {
-              _id: false, // 🔥 prevents metrics _id issue
+              _id: false,
               label: { type: String },
-              value: { type: String },
+              url: { type: String },
             },
           ],
-        },
 
-        meta: {
-          _id: false,
-          draft: { type: Boolean, default: true },
-          featured: { type: Boolean, default: false },
-          verifiedByBrand: { type: Boolean, default: false },
-          createdAt: { type: String },
-          updatedAt: { type: String },
+          media: [
+            {
+              _id: false,
+              type: {
+                type: String,
+                enum: ["image", "video"],
+              },
+              url: { type: String },
+            },
+          ],
+
+          outcome: {
+            _id: false,
+            summary: { type: String },
+            metrics: [
+              {
+                _id: false,
+                label: { type: String },
+                value: { type: String },
+              },
+            ],
+          },
+
+          meta: {
+            _id: false,
+            draft: { type: Boolean, default: true },
+            featured: { type: Boolean, default: false },
+            verifiedByBrand: { type: Boolean, default: false },
+            createdAt: { type: String },
+            updatedAt: { type: String },
+          },
         },
-      },
+        { _id: true } // 🔥 ENABLE PROJECT ID
+      ),
     ],
+
+
   },
   { timestamps: true }
 );

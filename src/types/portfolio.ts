@@ -1,4 +1,5 @@
 export type PortfolioItem = {
+  _id: any;
   link: string | undefined;
   id?: string; // stringified _id (for client use)
 
