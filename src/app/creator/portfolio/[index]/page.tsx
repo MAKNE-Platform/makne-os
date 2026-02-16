@@ -57,134 +57,206 @@ export default async function ProjectDetailPage({ params }: Params) {
     })),
     outcome: project.outcome
       ? {
-          summary: project.outcome.summary,
-          metrics: project.outcome.metrics?.map((m: any) => ({
-            label: m.label,
-            value: m.value,
-          })),
-        }
+        summary: project.outcome.summary,
+        metrics: project.outcome.metrics?.map((m: any) => ({
+          label: m.label,
+          value: m.value,
+        })),
+      }
       : undefined,
   };
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 sm:px-6 lg:px-8 py-10 max-w-4xl mx-auto space-y-10">
+    <div className="min-h-screen bg-black text-white px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-5xl mx-auto space-y-12">
 
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-medium">{serializedProject.title}</h1>
-        <div className="text-sm opacity-70">
-          {serializedProject.brandName}
-          {serializedProject.campaignType && ` • ${serializedProject.campaignType}`}
+        {/* ===== BACK BUTTON ===== */}
+        <div>
+          <a
+            href="/creator/portfolio"
+            className="text-sm text-[#636EE1] hover:underline"
+          >
+            ← Back to portfolio
+          </a>
         </div>
-      </div>
 
-      {/* Thumbnail */}
-      {serializedProject.thumbnail && (
-        <div className="overflow-hidden rounded-2xl h-[60vh] object-cover border border-white/10">
-          <img
-            src={serializedProject.thumbnail}
-            alt={serializedProject.title}
-            className="w-full object-cover"
-          />
-        </div>
-      )}
+        {/* ===== HEADER ===== */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
 
-      {/* MEDIA */}
-      {serializedProject.media?.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-medium">Media</h2>
+            <h1 className="text-4xl font-semibold">
+              {serializedProject.title}
+            </h1>
 
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {serializedProject.media.map((m: any, i: number) => (
-              <MediaItem key={i} media={m} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Duration */}
-      {serializedProject.duration && (
-        <div className="text-sm opacity-70">
-          Duration:{" "}
-          {serializedProject.duration.start || "—"}
-          {serializedProject.duration.end && ` → ${serializedProject.duration.end}`}
-        </div>
-      )}
-
-      {/* Description */}
-      <div className="space-y-2">
-        <h2 className="text-lg font-medium">Overview</h2>
-
-        {serializedProject.description ? (
-          <p className="text-sm opacity-80 leading-relaxed">
-            {serializedProject.description}
-          </p>
-        ) : (
-          <p className="text-sm opacity-50 italic">
-            No description provided for this project yet.
-          </p>
-        )}
-      </div>
-
-      {/* Deliverables */}
-      <div className="space-y-2">
-        <h2 className="text-lg font-medium">Deliverables</h2>
-
-        {serializedProject.deliverables?.length ? (
-          <ul className="list-disc list-inside text-sm opacity-80">
-            {serializedProject.deliverables.map((d: string, i: number) => (
-              <li key={i}>{d}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm opacity-50 italic">
-            Deliverables not specified.
-          </p>
-        )}
-      </div>
-
-      {/* Outcome */}
-      {serializedProject.outcome?.summary && (
-        <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-4 space-y-2">
-          <div className="text-sm font-medium">Outcome</div>
-          <div className="text-sm opacity-80">
-            {serializedProject.outcome.summary}
+            {serializedProject.meta?.featured && (
+              <span className="text-xs bg-[#636EE1]/20 text-[#636EE1] px-3 py-1 rounded-full">
+                Featured
+              </span>
+            )}
           </div>
 
-          {serializedProject.outcome.metrics?.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-              {serializedProject.outcome.metrics.map((m: any, i: number) => (
-                <div
-                  key={i}
-                  className="rounded-lg border border-white/10 px-3 py-2 text-xs"
-                >
-                  <div className="opacity-60">{m.label}</div>
-                  <div className="font-medium">{m.value}</div>
-                </div>
-              ))}
-            </div>
+          <div className="text-sm opacity-70 flex flex-wrap gap-3">
+            {serializedProject.brandName && (
+              <span>{serializedProject.brandName}</span>
+            )}
+
+            {serializedProject.campaignType && (
+              <span>• {serializedProject.campaignType}</span>
+            )}
+
+            {serializedProject.duration?.start && (
+              <span>
+                • {serializedProject.duration.start}
+                {serializedProject.duration.end &&
+                  ` → ${serializedProject.duration.end}`}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* ===== THUMBNAIL HERO ===== */}
+        {serializedProject.thumbnail && (
+          <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#ffffff05]">
+            <img
+              src={serializedProject.thumbnail}
+              alt={serializedProject.title}
+              className="w-full h-[60vh] object-cover object-center"
+            />
+          </div>
+        )}
+
+        {/* ===== OVERVIEW ===== */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-medium">Overview</h2>
+
+          {serializedProject.description ? (
+            <p className="text-sm opacity-80 leading-relaxed max-w-3xl">
+              {serializedProject.description}
+            </p>
+          ) : (
+            <p className="text-sm opacity-50 italic">
+              No description provided for this project yet.
+            </p>
           )}
         </div>
-      )}
 
-      {/* Links */}
-      {serializedProject.links?.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="text-lg font-medium">Links</h2>
-          <div className="flex flex-wrap gap-3">
-            {serializedProject.links.map((l: any, i: number) => (
-              <a
-                key={i}
-                href={l.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-[#636EE1] hover:underline"
-              >
-                {l.label}
-              </a>
-            ))}
+        {/* ===== MEDIA GALLERY ===== */}
+        {serializedProject.media?.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-medium">Media</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {serializedProject.media.map((m: any, i: number) => (
+                <MediaItem key={`${m.url}-${i}`} media={m} />
+
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* ===== DELIVERABLES ===== */}
+        {serializedProject.deliverables?.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-medium">Deliverables</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {serializedProject.deliverables.map(
+                (d: string, i: number) => (
+                  <div
+                    key={i}
+                    className="rounded-lg border border-white/10 px-4 py-3 text-sm bg-[#ffffff05]"
+                  >
+                    {d}
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ===== OUTCOME ===== */}
+        {serializedProject.outcome?.summary && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-medium">Outcome</h2>
+
+            <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#636EE1]/10 to-transparent p-6 space-y-4">
+              <p className="text-sm opacity-90 leading-relaxed">
+                {serializedProject.outcome.summary}
+              </p>
+
+              {serializedProject.outcome.metrics?.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {serializedProject.outcome.metrics.map(
+                    (m: any, i: number) => (
+                      <div
+                        key={i}
+                        className="rounded-xl border border-white/10 bg-[#ffffff05] p-4"
+                      >
+                        <div className="text-xs opacity-60">
+                          {m.label}
+                        </div>
+                        <div className="mt-1 text-lg font-medium">
+                          {m.value}
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ===== LINKS ===== */}
+        {serializedProject.links?.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-medium">Project Links</h2>
+
+            <div className="flex flex-wrap gap-4">
+              {serializedProject.links.map((l: any, i: number) => (
+                <a
+                  key={i}
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg border border-[#636EE1]/40 text-[#636EE1] px-4 py-2 text-sm hover:bg-[#636EE1]/10 transition"
+                >
+                  {l.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+
+}
+
+
+function MediaItem({
+  media,
+}: {
+  media: {
+    type: "image" | "video";
+    url: string;
+  };
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-black">
+      {media.type === "image" ? (
+        <img
+          src={media.url}
+          alt="Project media"
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <video
+          src={media.url}
+          controls
+          className="w-full h-full object-cover"
+        />
       )}
     </div>
   );

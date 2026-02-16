@@ -112,8 +112,8 @@ export default function CreatorPortfolioClient({ profile }: Props) {
 
                 {/* ===== PROFILE COMPLETION ===== */}
                 <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-5 space-y-3">
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm opacity-70">Profile completion</span>
+                    <div className="flex justify-between items-center gap-1">
+                        <span className="text-sm opacity-70">Profile completion:</span>
                         <span className="text-sm font-medium">
                             {profile.profileCompletion}%
                         </span>
@@ -255,8 +255,8 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                     {/* Platforms */}
                     <CapabilityCard title="Platforms">
                         {profile.platforms
-                            ? profile.platforms.split(",").map((p) => (
-                                <CapabilityPill key={p.trim()}>
+                            ? profile.platforms.split(",").map((p, i) => (
+                                <CapabilityPill key={`${p.trim()}-${i}`}>
                                     {p.trim()}
                                 </CapabilityPill>
                             ))
@@ -266,8 +266,8 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                     {/* Content Formats */}
                     <CapabilityCard title="Content Formats">
                         {profile.skills?.contentFormats?.length ? (
-                            profile.skills.contentFormats.map((f) => (
-                                <CapabilityPill key={f}>{f}</CapabilityPill>
+                            profile.skills.contentFormats.map((f, i) => (
+                                <CapabilityPill key={`${f}-${i}`}>{f}</CapabilityPill>
                             ))
                         ) : (
                             <span className="text-xs opacity-40">Not added yet</span>
@@ -277,8 +277,8 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                     {/* Tools */}
                     <CapabilityCard title="Tools & Software">
                         {profile.skills?.tools?.length ? (
-                            profile.skills.tools.map((t) => (
-                                <CapabilityPill key={t}>{t}</CapabilityPill>
+                            profile.skills.tools.map((t, i) => (
+                                <CapabilityPill key={`${t}-${i}`}>{t}</CapabilityPill>
                             ))
                         ) : (
                             <span className="text-xs opacity-40">Not added yet</span>
@@ -288,8 +288,8 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                     {/* Languages */}
                     <CapabilityCard title="Languages">
                         {profile.skills?.languages?.length ? (
-                            profile.skills.languages.map((l) => (
-                                <CapabilityPill key={l}>{l}</CapabilityPill>
+                            profile.skills.languages.map((l, i) => (
+                                <CapabilityPill key={`${l}-${i}`}>{l}</CapabilityPill>
                             ))
                         ) : (
                             <span className="text-xs opacity-40">Not added yet</span>
@@ -299,8 +299,8 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                     {/* Strengths */}
                     <CapabilityCard title="Strengths">
                         {profile.skills?.strengths?.length ? (
-                            profile.skills.strengths.map((s) => (
-                                <CapabilityPill key={s}>{s}</CapabilityPill>
+                            profile.skills.strengths.map((s, i) => (
+                                <CapabilityPill key={`${s}-${i}`}>{s}</CapabilityPill>
                             ))
                         ) : (
                             <span className="text-xs opacity-40">Not added yet</span>
@@ -492,3 +492,4 @@ function SectionHeader({
         </div>
     );
 }
+

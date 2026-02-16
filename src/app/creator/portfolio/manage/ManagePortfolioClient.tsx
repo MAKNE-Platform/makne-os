@@ -11,6 +11,11 @@ export default function ManagePortfolioClient({ initialPortfolio }: Props) {
   const [items, setItems] = useState<PortfolioItem[]>(initialPortfolio);
   const [saving, setSaving] = useState(false);
 
+  const [deliverablesInputs, setDeliverablesInputs] = useState(
+    initialPortfolio.map(p => (p.deliverables ?? []).join(", "))
+  );
+
+
   async function savePortfolio() {
     setSaving(true);
 
@@ -175,15 +180,23 @@ export default function ManagePortfolioClient({ initialPortfolio }: Props) {
             {/* Deliverables */}
             <input
               placeholder="Deliverables (comma separated)"
-              value={(item.deliverables ?? []).join(", ")}
+              value={deliverablesInputs[index] ?? ""}
               onChange={(e) => {
+                const newInputs = [...deliverablesInputs];
+                newInputs[index] = e.target.value;
+                setDeliverablesInputs(newInputs);
+              }}
+              onBlur={() => {
                 const copy = [...items];
-                copy[index].deliverables = e.target.value
-                  .split(",")
-                  .map((d) => d.trim())
-                  .filter(Boolean);
+                copy[index].deliverables =
+                  (deliverablesInputs[index] ?? "")
+                    .split(",")
+                    .map((d) => d.trim())
+                    .filter(Boolean);
+
                 setItems(copy);
               }}
+
               className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-sm"
             />
 
