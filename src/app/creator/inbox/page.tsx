@@ -49,7 +49,7 @@ export default async function CreatorInboxPage() {
   /* ================= SERIALIZE ================= */
 
   const inboxItems = [
-    // 🔔 Notifications
+    // Notifications
     ...notifications.map((n: any) => ({
       id: n._id?.toString(),
       type: "notification" as const,
@@ -60,7 +60,7 @@ export default async function CreatorInboxPage() {
       read: !!n.readAt,
     })),
 
-    // ⚡ Urgent revisions
+    // Urgent revisions
     ...revisionLogs.map((log: any) => ({
       id: log._id?.toString(),
       type: "deliverable" as const,
@@ -73,7 +73,7 @@ export default async function CreatorInboxPage() {
         : undefined,
     })),
 
-    // 💰 Payments
+    // Payments
     ...pendingPayments.map((p: any) => ({
       id: p._id?.toString(),
       type: "payment" as const,

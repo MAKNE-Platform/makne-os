@@ -5,10 +5,18 @@ import { connectDB } from "@/lib/db/connect";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { revalidatePath } from "next/cache";
-import fs from "fs";
-import path from "path";
+
+import { v2 as cloudinary } from "cloudinary";
+
 import { logAudit } from "@/lib/audit/logAudit";
 import { User } from "@/lib/db/models/User";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
+
 
 export async function POST(
   request: Request,
@@ -83,31 +91,34 @@ export async function POST(
       .map((l) => l.trim())
       .filter(Boolean) || [];
 
-  const uploadDir = path.join(
-    process.cwd(),
-    "uploads",
-    milestone._id.toString()
-  );
-
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
   const storedFiles = [];
 
   for (const file of files) {
     if (!file || !file.name || file.size === 0) continue;
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const filePath = path.join(uploadDir, file.name);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    fs.writeFileSync(filePath, buffer);
+    const uploadResult: any = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: `makne/deliverables/${milestone._id}`,
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+
+      stream.end(buffer);
+    });
 
     storedFiles.push({
       name: file.name,
-      url: `/api/files/${milestone._id}/${file.name}`,
+      url: uploadResult.secure_url,
     });
   }
+
 
   // ✅ Save submission
   milestone.submission = {

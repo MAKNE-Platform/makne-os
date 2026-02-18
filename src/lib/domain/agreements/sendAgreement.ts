@@ -1,9 +1,12 @@
 import mongoose from "mongoose";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { logAudit } from "@/lib/audit/logAudit";
-import { connectDB } from "@/lib/db/connect"; // ✅ ADD THIS
+import { connectDB } from "@/lib/db/connect"; 
 
 console.log("🔥 DOMAIN sendAgreement FILE LOADED 🔥");
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+
 
 export async function sendAgreement({
   agreementId,

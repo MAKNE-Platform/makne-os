@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Payout } from "@/lib/db/models/Payout";
