@@ -47,7 +47,7 @@ export default function CreatorSidebar({
                     />
                     <SidebarItem
                         label="Agreements"
-                        href="/agreements"
+                        href="/creator/agreements"
                         active={active === "agreements"}
                         badge={agreementsCount}
                     />

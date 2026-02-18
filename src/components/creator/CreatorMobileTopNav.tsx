@@ -104,7 +104,7 @@ export default function CreatorMobileTopNav({
             className="absolute top-full mt-3 w-full rounded-2xl border border-white/10 bg-[#0e111770] px-4 py-4 space-y-2 backdrop-blur-2xl"
           >
             <NavItem label="Dashboard" href="/dashboard/creator" />
-            <NavItem label="Agreements" href="/agreements" badge={agreementsCount} />
+            <NavItem label="Agreements" href="/creator/agreements" badge={agreementsCount} />
             <NavItem label="Inbox" href="/creator/inbox" badge={inboxCount} />
             <NavItem label="Portfolio" href="/creator/portfolio" />
             <NavItem label="Analytics" href="/creator/analytics" />
