@@ -153,7 +153,7 @@ export async function POST(
       note: note || null,
       links,
 
-      creatorEmail: brand.email,
+      brandEmail: brand.email,
     }
 
   });

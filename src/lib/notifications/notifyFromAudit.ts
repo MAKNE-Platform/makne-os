@@ -35,7 +35,12 @@ export async function notifyFromAudit({
       if (!metadata?.creatorId) break;
 
       const appUrl = process.env.APP_URL;
-      if (!appUrl) break;
+      
+      if (!appUrl) {
+        console.error("APP_URL is not defined");
+        break;
+      }
+
 
       const agreementTitle = metadata.agreementTitle ?? "Untitled agreement";
       const brandName = metadata.brandName ?? "a brand";
