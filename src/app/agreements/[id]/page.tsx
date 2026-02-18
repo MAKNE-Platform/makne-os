@@ -9,7 +9,6 @@ import DeliverMilestoneForm from "./_components/DeliverMilestoneForm";
 import { Payment } from "@/lib/db/models/Payment";
 
 
-
 export default async function AgreementDetailPage({
     params,
 }: {

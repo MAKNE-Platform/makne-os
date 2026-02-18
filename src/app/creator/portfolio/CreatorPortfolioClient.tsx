@@ -39,7 +39,6 @@ type Props = {
         };
         hasPublishedProject: any,
 
-
     };
 };
 
@@ -70,10 +69,6 @@ export default function CreatorPortfolioClient({ profile }: Props) {
         : allProjects.slice(0, maxVisible);
 
     const hasMoreThanMax = allProjects.length > maxVisible;
-
-
-    console.log("PORTFOLIO ITEMS:", profile.portfolio);
-
 
     return (
         <div className="space-y-12">

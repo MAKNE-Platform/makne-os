@@ -206,8 +206,9 @@ export default async function CreatorDashboardPage() {
                     active="dashboard"
                     creatorProfile={{ name: "Creator" }}
                     inboxCount={inboxCount}
+                    agreementsCount={agreementsCount}
                     pendingDeliverablesCount={pendingDeliverables.length}
-                    pendingPaymentsCount={pendingPayments} agreementsCount={0}
+                    pendingPaymentsCount={pendingPayments}
                 />
 
                 {/* ================= MAIN ================= */}

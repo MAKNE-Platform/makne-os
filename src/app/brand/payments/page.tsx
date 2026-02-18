@@ -90,7 +90,9 @@ export default async function BrandPaymentsPage() {
     const agreements = await Agreement.find(
         { _id: { $in: agreementIds } },
         { title: 1 }
-    ).lean();
+    )
+        .lean<{ _id: mongoose.Types.ObjectId; title: string }[]>();
+
 
     const agreementMap = new Map(
         agreements.map(a => [a._id.toString(), a.title])
@@ -101,7 +103,9 @@ export default async function BrandPaymentsPage() {
     const creators = await User.find(
         { _id: { $in: creatorIds } },
         { email: 1 }
-    ).lean();
+    )
+        .lean<{ _id: mongoose.Types.ObjectId; email: string }[]>();
+
 
     const creatorMap = new Map(
         creators.map(c => [c._id.toString(), c.email])

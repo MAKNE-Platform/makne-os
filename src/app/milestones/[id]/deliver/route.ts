@@ -59,6 +59,7 @@ export async function POST(
   const agreement = await Agreement.findById(milestone.agreementId);
   const brand = await User.findById(agreement.brandId);
 
+
   if (
     !agreement ||
     agreement.creatorId?.toString() !== userId
@@ -119,6 +120,11 @@ export async function POST(
   milestone.status = "IN_PROGRESS";
   await milestone.save();
 
+
+  const creatorUser = await User.findById(agreement.creatorId).lean<{
+    email: string;
+  }>();
+
   // 🧾 AUDIT LOG (KEY ADDITION)
   await logAudit({
     actorType: "CREATOR",
@@ -129,14 +135,14 @@ export async function POST(
     metadata: {
       brandId: agreement.brandId.toString(),
       agreementId: agreement._id.toString(),
-
+      creatorName: creatorUser?.email?.split("@")[0] ?? "Creator",
       milestoneTitle: milestone.title,
       amount: milestone.amount,
 
       note: note || null,
       links,
 
-      creatorEmail: brand.email,  
+      creatorEmail: brand.email,
     }
 
   });

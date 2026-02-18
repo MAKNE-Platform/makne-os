@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { User } from "@/lib/db/models/User";
+import { notifyFromAudit } from "@/lib/notifications/notifyFromAudit";
 
 async function finalizeAgreement(mode: "CREATE" | "SEND") {
   const cookieStore = await cookies();
@@ -26,8 +27,9 @@ async function finalizeAgreement(mode: "CREATE" | "SEND") {
   const agreement = await Agreement.findOne({
     _id: new mongoose.Types.ObjectId(agreementId),
     brandId: new mongoose.Types.ObjectId(brandId),
-    status: "DRAFT",
   });
+
+  const brandUser = await User.findById(brandId).lean<{ email: string }>();
 
   if (!agreement) {
     redirect("/dashboard/brand");
@@ -52,6 +54,21 @@ async function finalizeAgreement(mode: "CREATE" | "SEND") {
     agreement.activity.push({
       message: "Agreement created and sent to creator",
     });
+
+    await notifyFromAudit({
+      action: "AGREEMENT_SENT",
+      actorType: "BRAND",
+      entityType: "AGREEMENT",
+      entityId: agreement._id,
+      metadata: {
+        creatorId: creator._id.toString(),
+        creatorEmail: agreement.creatorEmail,
+        agreementTitle: agreement.title,
+        brandName: brandUser?.email?.split("@")[0] ?? "Brand",
+      },
+    });
+
+
   } else {
     agreement.activity.push({
       message: "Agreement created as draft",

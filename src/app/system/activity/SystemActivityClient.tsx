@@ -35,6 +35,13 @@ type ActivityLog = {
     createdAt: string;
 };
 
+type AuditMetadata = {
+    creatorEmail?: string;
+    milestoneTitle?: string;
+    amount?: number;
+};
+
+
 /* ================= COMPONENT ================= */
 
 export default function SystemActivityClient({
@@ -118,7 +125,8 @@ export default function SystemActivityClient({
 }
 
 function activitySentence(log: ActivityLog) {
-    const m = log.metadata ?? {};
+    const m = (log.metadata ?? {}) as AuditMetadata;
+
 
     switch (log.action) {
         case "AGREEMENT_SENT":
@@ -151,7 +159,7 @@ function activitySentence(log: ActivityLog) {
 }
 
 function getAgreementLink(log: ActivityLog) {
-  return log.metadata?.agreementId
-    ? `/agreements/${log.metadata.agreementId}`
-    : null;
+    return log.metadata?.agreementId
+        ? `/agreements/${log.metadata.agreementId}`
+        : null;
 }

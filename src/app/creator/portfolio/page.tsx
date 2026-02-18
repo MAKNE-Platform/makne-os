@@ -40,6 +40,7 @@ type CaseStudy = {
 
   results?: string;        // metrics or qualitative
   testimonial?: string;    // optional
+  link: string;
 };
 
 
@@ -169,7 +170,7 @@ export default async function CreatorPortfolioPage() {
       campaignType: project.campaignType ?? "",
       thumbnail: project.thumbnail ?? "",
       description: project.description ?? "",
-
+      link: project.link ?? "",
       duration: project.duration
         ? {
           start: project.duration.start ?? "",
@@ -338,6 +339,7 @@ export default async function CreatorPortfolioPage() {
     location: profileDoc.location ?? "",
     profileCompletion: completion,
     portfolio,
+    hasPublishedProject,
 
     skills: {
       contentFormats: profileDoc.skills?.contentFormats ?? [],

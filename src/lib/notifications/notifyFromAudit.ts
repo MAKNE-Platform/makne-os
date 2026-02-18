@@ -37,21 +37,27 @@ export async function notifyFromAudit({
       const appUrl = process.env.APP_URL;
       if (!appUrl) break;
 
+      const agreementTitle = metadata.agreementTitle ?? "Untitled agreement";
+      const brandName = metadata.brandName ?? "a brand";
+
       await createNotification({
         userId: new mongoose.Types.ObjectId(metadata.creatorId),
         role: "CREATOR",
-        title: "New agreement received",
-        message: "A brand has sent you a new agreement.",
+        title: "New Agreement",
+        message: `You received "${agreementTitle}" from ${brandName}.`,
         entityType,
         entityId,
       });
 
-      // 📧 Email to creator
       await sendEmail({
-        to: metadata.creatorEmail, // IMPORTANT: see note below
-        subject: "[MAKNE] You received a new agreement",
+        to: metadata.creatorEmail,
+        subject: `[MAKNE] New agreement from ${brandName}`,
         text: `
-You have received a new agreement from a brand.
+You have received a new agreement titled:
+
+"${agreementTitle}"
+
+From: ${brandName}
 
 👉 View agreement:
 ${appUrl}/agreements/${entityId.toString()}
@@ -60,6 +66,7 @@ ${appUrl}/agreements/${entityId.toString()}
 
       break;
     }
+
 
     // Brand approved milestone
     case "MILESTONE_APPROVED": {
@@ -102,36 +109,33 @@ Keep going 🚀
     }
 
     case "MILESTONE_REVISION_REQUESTED": {
-      // 🔔 Creator in-app notification
-      if (metadata?.creatorId) {
-        await createNotification({
-          userId: new mongoose.Types.ObjectId(metadata.creatorId),
-          role: "CREATOR",
-          title: "Changes requested",
-          message: metadata.milestoneTitle
-            ? `Changes were requested for "${metadata.milestoneTitle}"`
-            : "Changes were requested for a milestone",
-          entityType,
-          entityId,
-        });
-      }
+      if (!metadata?.creatorId) break;
 
-      // 📧 Creator email
-      if (metadata?.creatorEmail && metadata?.milestoneTitle) {
+      const milestoneTitle = metadata.milestoneTitle ?? "a milestone";
+      const brandName = metadata.brandName ?? "the brand";
+
+      await createNotification({
+        userId: new mongoose.Types.ObjectId(metadata.creatorId),
+        role: "CREATOR",
+        title: "Revision requested",
+        message: `${brandName} requested changes for "${milestoneTitle}".`,
+        entityType,
+        entityId,
+      });
+
+      if (metadata?.creatorEmail) {
         const appUrl = process.env.APP_URL;
         if (appUrl) {
           await sendEmail({
             to: metadata.creatorEmail,
-            subject: "[MAKNE] Changes requested for your deliverable",
+            subject: "[MAKNE] Revision requested",
             text: `
-The brand has requested changes for your deliverable.
+${brandName} has requested changes for:
 
-Milestone: ${metadata.milestoneTitle}
+"${milestoneTitle}"
 
 👉 Review & resubmit:
 ${appUrl}/agreements/${metadata.agreementId ?? ""}
-
-Please update and resubmit when ready.
         `.trim(),
           });
         }
@@ -179,13 +183,16 @@ Please update and resubmit when ready.
 
     // Creator accepted agreement
     case "AGREEMENT_ACCEPTED": {
+      const agreementTitle = metadata?.agreementTitle ?? "your agreement";
+      const creatorName = metadata?.creatorName ?? "A creator";
+
       // 🔔 Brand in-app notification
       if (metadata?.brandId) {
         await createNotification({
           userId: new mongoose.Types.ObjectId(metadata.brandId),
           role: "BRAND",
           title: "Agreement accepted",
-          message: "A creator has accepted your agreement",
+          message: `${creatorName} accepted "${agreementTitle}".`,
           entityType,
           entityId,
         });
@@ -197,16 +204,16 @@ Please update and resubmit when ready.
         if (appUrl) {
           await sendEmail({
             to: metadata.brandEmail,
-            subject: "[MAKNE] Agreement accepted 🎉",
+            subject: `[MAKNE] ${creatorName} accepted your agreement`,
             text: `
-Good news!
+Great news!
 
-A creator has accepted your agreement and work can now begin.
+${creatorName} has accepted:
+
+"${agreementTitle}"
 
 👉 View agreement:
 ${appUrl}/agreements/${entityId.toString()}
-
-You're all set to move forward 🚀
         `.trim(),
           });
         }
@@ -216,19 +223,20 @@ You're all set to move forward 🚀
     }
 
     case "AGREEMENT_REJECTED": {
-      // 🔔 Brand in-app notification
+      const agreementTitle = metadata?.agreementTitle ?? "your agreement";
+      const creatorName = metadata?.creatorName ?? "The creator";
+
       if (metadata?.brandId) {
         await createNotification({
           userId: new mongoose.Types.ObjectId(metadata.brandId),
           role: "BRAND",
           title: "Agreement rejected",
-          message: "A creator has rejected your agreement",
+          message: `${creatorName} rejected "${agreementTitle}".`,
           entityType,
           entityId,
         });
       }
 
-      // 📧 Brand email
       if (metadata?.brandEmail) {
         const appUrl = process.env.APP_URL;
         if (appUrl) {
@@ -236,9 +244,11 @@ You're all set to move forward 🚀
             to: metadata.brandEmail,
             subject: "[MAKNE] Agreement rejected",
             text: `
-The creator has rejected your agreement.
+${creatorName} rejected:
 
-You may review the agreement, update terms, and resend it if needed.
+"${agreementTitle}"
+
+You may revise and resend it.
 
 👉 View agreement:
 ${appUrl}/agreements/${entityId.toString()}
@@ -251,35 +261,32 @@ ${appUrl}/agreements/${entityId.toString()}
     }
 
 
-
     // Creator submitted deliverable
     case "DELIVERABLE_SUBMITTED": {
-      // 🔔 Brand in-app notification
+      const milestoneTitle = metadata?.milestoneTitle ?? "a milestone";
+      const creatorName = metadata?.creatorName ?? "A creator";
+
       if (metadata?.brandId) {
         await createNotification({
           userId: new mongoose.Types.ObjectId(metadata.brandId),
           role: "BRAND",
           title: "Deliverable submitted",
-          message: metadata.milestoneTitle
-            ? `Deliverable submitted for "${metadata.milestoneTitle}"`
-            : "A deliverable was submitted",
+          message: `${creatorName} submitted work for "${milestoneTitle}".`,
           entityType,
           entityId,
         });
       }
 
-      // 📧 Brand email notification
-      if (metadata?.brandEmail && metadata?.milestoneTitle) {
+      if (metadata?.brandEmail) {
         const appUrl = process.env.APP_URL;
-
         if (appUrl) {
           await sendEmail({
             to: metadata.brandEmail,
             subject: "[MAKNE] Deliverable submitted",
             text: `
-A creator has submitted work for a milestone.
+${creatorName} submitted work for:
 
-Milestone: ${metadata.milestoneTitle}
+"${milestoneTitle}"
 
 👉 Review submission:
 ${appUrl}/agreements/${metadata.agreementId ?? ""}
@@ -290,6 +297,7 @@ ${appUrl}/agreements/${metadata.agreementId ?? ""}
 
       break;
     }
+
 
 
     /* ---------------------------------

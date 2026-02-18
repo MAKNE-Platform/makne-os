@@ -23,7 +23,7 @@ export default function PaymentsLineChart({
           <XAxis dataKey="label" tick={{ fill: "#ffffff70", fontSize: 11 }} />
           <YAxis tick={{ fill: "#ffffff70", fontSize: 11 }} />
           <Tooltip
-            formatter={(v: number) => [`₹${v}`, "Spend"]}
+            formatter={(v) => [`₹${v ?? 0}`, "Spend"]}
             contentStyle={{
               background: "#000",
               border: "1px solid #636EE1",

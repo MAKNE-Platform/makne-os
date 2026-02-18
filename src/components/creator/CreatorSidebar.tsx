@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 type Props = {
-    active: "dashboard" | "agreements" | "portfolio" | "profile" | "payments" | "activity";
+    active: "dashboard" | "agreements" | "portfolio" | "profile" | "payments" | "activity" | "inbox" | "analytics";
     creatorProfile: {
         name: string;
         email?: string;
@@ -19,6 +19,7 @@ export default function CreatorSidebar({
     creatorProfile,
     inboxCount = 0,
     pendingDeliverablesCount = 0,
+    agreementsCount = 0,
     pendingPaymentsCount = 0,
 }: Props) {
     return (
@@ -48,8 +49,9 @@ export default function CreatorSidebar({
                         label="Agreements"
                         href="/agreements"
                         active={active === "agreements"}
-                        badge={pendingDeliverablesCount}
+                        badge={agreementsCount}
                     />
+
                     <SidebarItem
                         label="Inbox"
                         href="/creator/inbox"
@@ -93,7 +95,7 @@ export default function CreatorSidebar({
                 )}
 
                 <Link
-                    href="/creator/settings"
+                    href="/creator/portfolio"
                     className="
             mt-2 inline-flex items-center gap-1
             text-xs

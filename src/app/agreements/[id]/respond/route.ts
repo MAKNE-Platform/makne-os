@@ -70,6 +70,10 @@ export async function POST(
     );
   }
 
+  const creatorUser = await User.findById(agreement.creatorId).lean<{
+    email: string;
+  }>();
+
 
   // 🧾 AUDIT LOG (THIS IS THE KEY FIX)
   await logAudit({
@@ -85,6 +89,8 @@ export async function POST(
       brandId: agreement.brandId.toString(),
       creatorId: agreement.creatorId.toString(),
       brandEmail: brand.email,
+      agreementTitle: agreement.title,
+      creatorName: creatorUser?.email?.split("@")[0] ?? "Creator",
     },
   });
 

@@ -59,7 +59,8 @@ export default function ManagePortfolioClient({ initialPortfolio }: Props) {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
               },
-              link: undefined
+              link: undefined,
+              _id: undefined
             },
           ])
         }
