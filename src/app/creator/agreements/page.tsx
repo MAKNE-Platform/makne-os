@@ -13,6 +13,9 @@ import CreatorSidebar from "@/components/creator/CreatorSidebar";
 import CreatorMobileTopNav from "@/components/creator/CreatorMobileTopNav";
 import CreatorAgreementsClient from "./CreatorAgreementsClient";
 
+import { BrandProfile } from "@/lib/db/models/BrandProfile";
+
+
 export default async function CreatorAgreementsPage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("auth_session")?.value;
@@ -36,20 +39,28 @@ export default async function CreatorAgreementsPage() {
     .lean();
 
 
-  const agreements = await Promise.all(
-    agreementsRaw.map(async (a: any) => {
-      const brand = await User.findById(a.brandId).lean<{ email: string }>();
+  const brandProfiles = await BrandProfile.find({
+    userId: { $in: agreementsRaw.map((a) => a.brandId) },
+  }).lean();
 
-      return {
-        id: a._id.toString(),
-        title: a.title,
-        brandName: brand?.email?.split("@")[0] ?? "Brand",
-        status: a.status,
-        amount: a.amount ?? 0,
-        updatedAt: a.updatedAt?.toISOString(),
-      };
-    })
+  const brandProfileMap = new Map(
+    brandProfiles.map((b: any) => [b.userId.toString(), b])
   );
+
+  const agreements = agreementsRaw.map((a: any) => {
+    const brandProfile = brandProfileMap.get(
+      a.brandId.toString()
+    ) as any;
+
+    return {
+      id: a._id.toString(),
+      title: a.title,
+      brandName: brandProfile?.brandName ?? "Brand",
+      status: a.status,
+      amount: a.amount ?? 0,
+      updatedAt: a.updatedAt?.toISOString(),
+    };
+  });
 
   console.log("AGREEMENTS RAW:", agreementsRaw[0]);
 
@@ -88,6 +99,7 @@ export default async function CreatorAgreementsPage() {
     creatorId: creatorObjectId,
     status: { $in: ["PENDING", "INITIATED"] },
   });
+
 
   return (
     <div className="min-h-screen bg-black text-white">

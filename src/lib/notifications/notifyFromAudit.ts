@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { createNotification } from "./createNotification";
 import { sendEmail } from "@/lib/email/sendEmail";
+import { BrandProfile } from "../db/models/BrandProfile";
 
 
 export async function notifyFromAudit({
@@ -35,7 +36,7 @@ export async function notifyFromAudit({
       if (!metadata?.creatorId) break;
 
       const appUrl = process.env.APP_URL;
-      
+
       if (!appUrl) {
         console.error("APP_URL is not defined");
         break;
@@ -43,7 +44,18 @@ export async function notifyFromAudit({
 
 
       const agreementTitle = metadata.agreementTitle ?? "Untitled agreement";
-      const brandName = metadata.brandName ?? "a brand";
+      let brandName = metadata?.brandName;
+
+      if (!brandName && metadata?.brandId) {
+        const brandProfile = (await BrandProfile.findOne({
+          userId: metadata.brandId,
+        }).lean()) as any;
+
+        brandName = brandProfile?.brandName;
+      }
+
+      brandName = brandName ?? "Brand";
+
 
       await createNotification({
         userId: new mongoose.Types.ObjectId(metadata.creatorId),
