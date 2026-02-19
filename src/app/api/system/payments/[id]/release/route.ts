@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { Payment } from "@/lib/db/models/Payment";
 import { Agreement } from "@/lib/db/models/Agreement";
+import { Milestone } from "@/lib/db/models/Milestone";
 import { logAudit } from "@/lib/audit/logAudit";
 
 export async function POST(
@@ -19,6 +20,9 @@ export async function POST(
       { status: 401 }
     );
   }
+
+  console.log("SYSTEM RELEASE ROUTE HIT:", id);
+
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json(
@@ -71,11 +75,11 @@ export async function POST(
 
   console.log("AUDIT LOG TRIGGERED");
   await logAudit({
-  actorType: "SYSTEM",
-  action: "PAYMENT_RELEASED",
-  entityType: "PAYMENT",
-  entityId: paymentId,
-});
+    actorType: "SYSTEM",
+    action: "PAYMENT_RELEASED",
+    entityType: "PAYMENT",
+    entityId: paymentId,
+  });
 
 
   // 4️⃣ Log agreement activity
@@ -90,6 +94,41 @@ export async function POST(
       },
     }
   );
+
+  // 5️⃣ Check if agreement should be marked as COMPLETED
+
+  const agreementId = payment.agreementId;
+
+  // Fetch all milestones for this agreement
+  const milestones = await Milestone.find({ agreementId });
+
+  // Fetch all payments for this agreement
+  const payments = await Payment.find({ agreementId });
+
+  const allMilestonesCompleted =
+    milestones.length > 0 &&
+    milestones.every((m) => m.status === "COMPLETED");
+
+  const allPaymentsReleased =
+    payments.length > 0 &&
+    payments.every((p) => p.status === "RELEASED");
+
+  console.log("Milestones:", milestones.map(m => m.status));
+  console.log("Payments:", payments.map(p => p.status));
+
+  console.log("All milestones completed:", allMilestonesCompleted);
+  console.log("All payments released:", allPaymentsReleased);
+
+
+  if (allMilestonesCompleted && allPaymentsReleased) {
+    await Agreement.findByIdAndUpdate(agreementId, {
+      status: "COMPLETED",
+      updatedAt: new Date(),
+    });
+
+    console.log("Agreement marked as COMPLETED");
+  }
+
 
   return NextResponse.json({
     success: true,

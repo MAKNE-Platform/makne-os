@@ -14,6 +14,8 @@ import CreatorMobileTopNav from "@/components/creator/CreatorMobileTopNav";
 import CreatorAgreementsClient from "./CreatorAgreementsClient";
 
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
+import { AuditLog } from "@/lib/db/models/AuditLog";
+import { Notification } from "@/lib/db/models/Notification";
 
 
 export default async function CreatorAgreementsPage() {
@@ -94,7 +96,21 @@ export default async function CreatorAgreementsPage() {
 
   /* ================= COUNTS FOR SIDEBAR ================= */
 
-  const inboxCount = 0;
+  const unreadNotificationsCount =
+      await Notification.countDocuments({
+        userId: creatorObjectId,
+        role: "CREATOR",
+        readAt: { $exists: false },
+      });
+  
+    const pendingDeliverablesCount =
+      await AuditLog.countDocuments({
+        action: "DELIVERABLE_SUBMITTED",
+        "metadata.creatorId": userId,
+      });
+
+  const inboxCount = unreadNotificationsCount + pendingDeliverablesCount;
+  
   const pendingPaymentsCount = await Payment.countDocuments({
     creatorId: creatorObjectId,
     status: { $in: ["PENDING", "INITIATED"] },

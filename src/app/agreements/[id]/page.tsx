@@ -29,6 +29,11 @@ export default async function AgreementDetailPage({
 
     const isBrand = agreement.brandId.toString() === userId;
     const isCreator = agreement.creatorId?.toString() === userId;
+
+    const backHref = isBrand
+        ? "/agreements"
+        : "/creator/agreements";
+
     if (!isBrand && !isCreator) redirect("/dashboard");
 
     const brandProfile = (await BrandProfile.findOne({
@@ -65,7 +70,20 @@ export default async function AgreementDetailPage({
 
     return (
         <div className="min-h-screen bg-[#0B0B0D] text-white">
+            
             <div className="max-w-5xl mx-auto px-8 py-12 space-y-10">
+
+                {/* BACK BUTTON */}
+                <div className="flex items-center justify-between border-b pb-5 border-white/5">
+                    <a
+                        href={backHref}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/5 bg-[#121214] hover:border-[#636EE1] hover:text-white text-sm text-zinc-400 transition"
+                    >
+                        ← Back
+                    </a>
+                    <img className="h-10" src="/makne-logo-lg.png" alt="" />
+                </div>
+
 
                 {/* HEADER */}
                 <div className="flex items-center justify-between">
@@ -329,34 +347,34 @@ export default async function AgreementDetailPage({
                                     {/* ================= BRAND PAYMENT BLOCK ================= */}
                                     {isBrand && payment && m.status === "COMPLETED" && (
                                         <div className="pt-4 border-t border-white/5">
-                                           {isBrand && payment && m.status === "COMPLETED" && (
-  <div className="pt-4 border-t border-white/5 space-y-3">
+                                            {isBrand && payment && m.status === "COMPLETED" && (
+                                                <div className="pt-4 border-t border-white/5 space-y-3">
 
-    {payment.status === "PENDING" && (
-      <form
-        method="POST"
-        action={`/api/payments/${payment._id}/initiate`}
-      >
-        <button className="bg-[#636EE1] px-4 py-2 rounded-md text-sm">
-          Release ₹{payment.amount}
-        </button>
-      </form>
-    )}
+                                                    {payment.status === "PENDING" && (
+                                                        <form
+                                                            method="POST"
+                                                            action={`/api/payments/${payment._id}/initiate`}
+                                                        >
+                                                            <button className="bg-[#636EE1] px-4 py-2 rounded-md text-sm">
+                                                                Release ₹{payment.amount}
+                                                            </button>
+                                                        </form>
+                                                    )}
 
-    {payment.status === "INITIATED" && (
-      <p className="text-amber-400 text-sm">
-        ⏳ Payment processing...
-      </p>
-    )}
+                                                    {payment.status === "INITIATED" && (
+                                                        <p className="text-amber-400 text-sm">
+                                                            ⏳ Payment processing...
+                                                        </p>
+                                                    )}
 
-    {payment.status === "RELEASED" && (
-      <p className="text-emerald-400 text-sm">
-        ✅ Payment released to creator
-      </p>
-    )}
+                                                    {payment.status === "RELEASED" && (
+                                                        <p className="text-emerald-400 text-sm">
+                                                            ✅ Payment released to creator
+                                                        </p>
+                                                    )}
 
-  </div>
-)}
+                                                </div>
+                                            )}
 
                                         </div>
                                     )}

@@ -87,7 +87,7 @@ ${appUrl}/agreements/${entityId.toString()}
 
     // Brand approved milestone
     case "MILESTONE_APPROVED": {
-      // 🔔 Creator in-app notification
+      // Creator in-app notification
       if (metadata?.creatorId) {
         await createNotification({
           userId: new mongoose.Types.ObjectId(metadata.creatorId),

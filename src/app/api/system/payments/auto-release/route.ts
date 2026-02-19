@@ -4,6 +4,8 @@ import { connectDB } from "@/lib/db/connect";
 import { Payment } from "@/lib/db/models/Payment";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { logAudit } from "@/lib/audit/logAudit";
+import { Milestone } from "@/lib/db/models/Milestone";
+
 
 // ⏱️ TEST MODE: 5 seconds (change to 120 for production)
 const RELEASE_DELAY_SECONDS = 0.1;
@@ -92,6 +94,30 @@ export async function POST(request: Request) {
         },
       }
     );
+
+    // 5️⃣ Check if agreement should be marked COMPLETED
+
+    const agreementId = new mongoose.Types.ObjectId(payment.agreementId);
+
+    const milestones = await Milestone.find({ agreementId });
+    const payments = await Payment.find({ agreementId });
+
+    const allMilestonesCompleted =
+      milestones.length > 0 &&
+      milestones.every((m) => m.status === "COMPLETED");
+
+    const allPaymentsReleased =
+      payments.length > 0 &&
+      payments.every((p) => p.status === "RELEASED");
+
+    if (allMilestonesCompleted && allPaymentsReleased) {
+      await Agreement.findByIdAndUpdate(agreementId, {
+        status: "COMPLETED",
+        updatedAt: new Date(),
+      });
+
+      console.log("Agreement auto-marked COMPLETED:", agreementId.toString());
+    }
   }
 
   return NextResponse.json({

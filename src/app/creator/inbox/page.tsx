@@ -136,8 +136,8 @@ export default async function CreatorInboxPage() {
         createdAt: log.createdAt?.toISOString(),
         priority,
         link: log.metadata?.agreementId
-      ? `/agreements/${log.metadata.agreementId}`
-      : `/creator/agreements`,
+          ? `/agreements/${log.metadata.agreementId}`
+          : `/creator/agreements`,
         read: readIds.has(log._id?.toString()),
       };
     }),
@@ -154,7 +154,21 @@ export default async function CreatorInboxPage() {
     creatorId: creatorObjectId,
   });
 
-  const inboxCount = auditLogs.length;
+  const unreadNotificationsCount =
+    await Notification.countDocuments({
+      userId: creatorObjectId,
+      role: "CREATOR",
+      readAt: { $exists: false },
+    });
+
+  const pendingDeliverablesCount =
+    await AuditLog.countDocuments({
+      action: "DELIVERABLE_SUBMITTED",
+      "metadata.creatorId": userId,
+    });
+
+  const inboxCount =
+    unreadNotificationsCount + pendingDeliverablesCount;
   const pendingPaymentsCount = pendingPayments.length;
 
   return (
