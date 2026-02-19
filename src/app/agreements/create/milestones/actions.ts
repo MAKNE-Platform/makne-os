@@ -76,5 +76,27 @@ export async function saveMilestonesAction(formData: FormData) {
     });
   }
 
+  // Calculate total milestone amount
+  const totalAmountAgg = await Milestone.aggregate([
+    {
+      $match: {
+        agreementId: new mongoose.Types.ObjectId(agreementId),
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: "$amount" },
+      },
+    },
+  ]);
+
+  const totalAmount = totalAmountAgg[0]?.total ?? 0;
+
+  // Save total amount into Agreement
+  await Agreement.findByIdAndUpdate(agreementId, {
+    amount: totalAmount,
+  });
+
   redirect("/agreements/create/policies");
 }

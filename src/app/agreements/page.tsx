@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import mongoose from "mongoose";
+import { ArrowRight } from "lucide-react";
 
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
@@ -164,119 +165,80 @@ export default async function AgreementsPage() {
             </div>
           )}
 
-          {/* ================= DESKTOP TABLE (UNCHANGED) ================= */}
+          {/* ================= DESKTOP TABLE ================= */}
           <div className="hidden md:block rounded-xl border border-white/10 overflow-hidden">
 
-            {/* Table header */}
-            <div
-              className="
-            grid
-            grid-cols-[2fr_1fr_2fr_1fr]
-            gap-4
-            px-4 py-3
-            text-xs
-            uppercase
-            tracking-wide
-            opacity-60
-            border-b border-white/10
-            bg-black
-          "
-            >
-              <div>Title</div>
-              <div>Status</div>
-              <div>Creator</div>
-              <div>Date</div>
-            </div>
+            <table className="w-full text-sm">
+              <thead className="bg-white/5 text-white/60 border-b-2 border-b-[#ffffff24]">
+                <tr>
+                  <th className="text-left px-6 py-4">Title</th>
+                  <th className="text-left px-6 py-4">Status</th>
+                  <th className="text-left px-6 py-4">Creator</th>
+                  <th className="text-left px-6 py-4">Date</th>
+                  <th className="px-6 py-4"></th>
+                </tr>
+              </thead>
 
-            {/* Table rows */}
-            {agreements.map((agreement: any) => {
-              const isDraft = agreement.status === "DRAFT";
-
-              return (
-                <div
-                  key={agreement._id}
-                  className="border-b border-white/5 last:border-none"
-                >
-
-                  {/* Main row */}
-                  <Link
-                    href={`/agreements/${agreement._id}`}
-                    className="
-                  grid
-                  grid-cols-[2fr_1fr_2fr_1fr]
-                  gap-4
-                  px-4 py-4
-                  text-sm
-                  items-center
-                  bg-[#ffffff05]
-                  hover:bg-white/10
-                  transition
-                "
+              <tbody>
+                {agreements.map((agreement: any) => (
+                  <tr
+                    key={agreement._id}
+                    className="border-t border-white/5 hover:bg-white/5 transition"
                   >
-                    <div className="font-medium truncate">
-                      {agreement.title}
-                    </div>
+                    <td className="px-6 py-4 font-medium">
+                      <Link href={`/agreements/${agreement._id}`}>
+                        {agreement.title}
+                      </Link>
+                    </td>
 
-                    <StatusPill status={agreement.status} />
+                    <td className="px-6 py-4">
+                      <StatusBadge status={agreement.status} />
+                    </td>
 
-                    <div className="truncate opacity-80">
+                    <td className="px-6 py-4 opacity-80">
                       {agreement.creatorEmail ?? "—"}
-                    </div>
+                    </td>
 
-                    <div className="text-xs opacity-60">
+                    <td className="px-6 py-4 text-xs opacity-60">
                       {new Date(agreement.createdAt).toDateString()}
-                    </div>
-                  </Link>
+                    </td>
 
-                  {/* Draft inline action */}
-                  {isDraft && (
-                    <div className="px-4 py-3 bg-black border-t border-white/5">
-                      <form
-                        action={`/agreements/${agreement._id}/send`}
-                        method="POST"
-                        className="flex flex-col sm:flex-row gap-2"
+                    <td className="px-6 py-4 text-right">
+                      <Link
+                        href={`/agreements/${agreement._id}`}
+                        className="
+      inline-flex
+      items-center
+      gap-1
+      rounded-full
+      border
+      border-[#636EE1]/40
+      bg-[#636EE1]/10
+      px-4
+      py-1.5
+      text-xs
+      font-medium
+      text-[#636EE1]
+      hover:bg-[#636EE1]
+      hover:text-black
+      transition-all
+      duration-200
+    "
                       >
-                        <input
-                          name="creatorEmail"
-                          type="email"
-                          required
-                          placeholder="Creator email"
-                          className="
-                        flex-1
-                        rounded-lg
-                        bg-black
-                        border border-white/10
-                        px-3 py-2
-                        text-sm
-                        text-white
-                        placeholder:opacity-40
-                        focus:outline-none
-                        focus:border-[#636EE1]
-                      "
+                        View
+                        <ArrowRight
+                          size={14}
+                          className="transition-transform duration-200 group-hover:translate-x-1"
                         />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-                        <button
-                          type="submit"
-                          className="
-                        rounded-lg
-                        bg-[#636EE1]
-                        px-4 py-2
-                        text-sm
-                        font-medium
-                        text-black
-                        hover:brightness-95
-                        transition
-                      "
-                        >
-                          Send invite
-                        </button>
-                      </form>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
+
 
           {/* ================= MOBILE UI ================= */}
           <div className="md:hidden space-y-3">
@@ -337,19 +299,19 @@ function Pill({ children }: { children: React.ReactNode }) {
   );
 }
 
-function StatusPill({ status }: { status: string }) {
+function StatusBadge({ status }: { status: string }) {
+  const colorMap: Record<string, string> = {
+    DRAFT: "bg-gray-500/20 text-gray-300",
+    SENT: "bg-yellow-500/10 text-yellow-300",
+    ACTIVE: "bg-blue-500/20 text-blue-300",
+    COMPLETED: "bg-green-500/20 text-green-400",
+    REJECTED: "bg-red-500/20 text-red-400",
+  };
+
   return (
     <span
-      className="
-        w-max
-        items-center
-        rounded-full
-        border
-        px-5 py-2 text-center
-        text-xs
-        opacity-80
-        border-[#636de180]
-      "
+      className={`text-xs px-2 py-1 rounded-full ${colorMap[status] ?? "bg-white/10"
+        }`}
     >
       {status}
     </span>

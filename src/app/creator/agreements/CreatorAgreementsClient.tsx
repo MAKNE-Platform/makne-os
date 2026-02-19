@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 type Agreement = {
   id: string;
@@ -21,10 +23,33 @@ type Props = {
   };
 };
 
+type TabType = "ALL" | "ACTIVE" | "COMPLETED" | "REJECTED";
+
 export default function CreatorAgreementsClient({
   agreements,
   metrics,
 }: Props) {
+  const [activeTab, setActiveTab] = useState<TabType>("ALL");
+
+  /* ================= FILTERING ================= */
+
+  const filteredAgreements = useMemo(() => {
+    if (activeTab === "ALL") return agreements;
+
+    if (activeTab === "ACTIVE")
+      return agreements.filter(
+        (a) => a.status === "SENT" || a.status === "ACTIVE"
+      );
+
+    if (activeTab === "COMPLETED")
+      return agreements.filter((a) => a.status === "COMPLETED");
+
+    if (activeTab === "REJECTED")
+      return agreements.filter((a) => a.status === "REJECTED");
+
+    return agreements;
+  }, [agreements, activeTab]);
+
   return (
     <div className="space-y-8">
 
@@ -44,11 +69,35 @@ export default function CreatorAgreementsClient({
 
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-white/10 pb-2">
+        <TabButton
+          label="All"
+          active={activeTab === "ALL"}
+          onClick={() => setActiveTab("ALL")}
+        />
+        <TabButton
+          label="Active"
+          active={activeTab === "ACTIVE"}
+          onClick={() => setActiveTab("ACTIVE")}
+        />
+        <TabButton
+          label="Completed"
+          active={activeTab === "COMPLETED"}
+          onClick={() => setActiveTab("COMPLETED")}
+        />
+        <TabButton
+          label="Rejected"
+          active={activeTab === "REJECTED"}
+          onClick={() => setActiveTab("REJECTED")}
+        />
+      </div>
+
       {/* Table */}
       <div className="rounded-xl border border-white/10 overflow-hidden">
 
         <table className="w-full text-sm">
-          <thead className="bg-white/5 text-white/60">
+          <thead className="bg-white/5 border-b-2 border-b-[#ffffff24] text-white/80">
             <tr>
               <th className="text-left px-6 py-4">Agreement</th>
               <th className="text-left px-6 py-4">Brand</th>
@@ -60,7 +109,7 @@ export default function CreatorAgreementsClient({
           </thead>
 
           <tbody>
-            {agreements.map((a) => (
+            {filteredAgreements.map((a) => (
               <tr
                 key={a.id}
                 className="border-t border-white/5 hover:bg-white/5 transition"
@@ -72,14 +121,35 @@ export default function CreatorAgreementsClient({
                 </td>
                 <td className="px-6 py-4">₹{a.amount}</td>
                 <td className="px-6 py-4 opacity-60">
-                  {new Date(a.updatedAt).toLocaleDateString()}
+                  {new Date(a.updatedAt).toDateString()}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <Link
                     href={`/agreements/${a.id}`}
-                    className="text-[#636EE1] hover:underline"
+                    className="
+      inline-flex
+      items-center
+      gap-1
+      rounded-full
+      border
+      border-[#636EE1]/40
+      bg-[#636EE1]/10
+      px-4
+      py-1.5
+      text-xs
+      font-medium
+      text-[#636EE1]
+      hover:bg-[#636EE1]
+      hover:text-black
+      transition-all
+      duration-200
+    "
                   >
-                    View →
+                    View
+                    <ArrowRight
+                      size={14}
+                      className="transition-transform duration-200 group-hover:translate-x-1"
+                    />
                   </Link>
                 </td>
               </tr>
@@ -87,9 +157,9 @@ export default function CreatorAgreementsClient({
           </tbody>
         </table>
 
-        {agreements.length === 0 && (
+        {filteredAgreements.length === 0 && (
           <div className="p-8 text-center opacity-60">
-            No agreements yet.
+            No agreements found.
           </div>
         )}
       </div>
@@ -101,7 +171,10 @@ export default function CreatorAgreementsClient({
 
 function MetricCard({ label, value }: { label: string; value: any }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-5">
+    <div className="rounded-xl border border-white/10 bg-gradient-to-br
+          from-[#636EE1]/10
+          via-transparent
+          to-transparent p-5">
       <div className="text-sm opacity-60">{label}</div>
       <div className="text-xl font-medium mt-1">{value}</div>
     </div>
@@ -119,11 +192,35 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`text-xs px-2 py-1 rounded-full ${
-        colorMap[status] ?? "bg-white/10"
-      }`}
+      className={`text-xs px-2 py-1 rounded-full ${colorMap[status] ?? "bg-white/10"
+        }`}
     >
       {status}
     </span>
+  );
+}
+
+function TabButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        text-sm pb-2 transition
+        ${active
+          ? "text-white border-b-2 border-[#636EE1]"
+          : "text-white/60 hover:text-white"
+        }
+      `}
+    >
+      {label}
+    </button>
   );
 }

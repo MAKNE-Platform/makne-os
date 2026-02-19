@@ -33,7 +33,8 @@ export default async function CreatorAgreementsPage() {
     creatorId: creatorObjectId,
   })
     .sort({ updatedAt: -1 })
-    .lean<any>();
+    .lean();
+
 
   const agreements = await Promise.all(
     agreementsRaw.map(async (a: any) => {
@@ -44,11 +45,14 @@ export default async function CreatorAgreementsPage() {
         title: a.title,
         brandName: brand?.email?.split("@")[0] ?? "Brand",
         status: a.status,
-        amount: a.totalAmount ?? 0,
+        amount: a.amount ?? 0,
         updatedAt: a.updatedAt?.toISOString(),
       };
     })
   );
+
+  console.log("AGREEMENTS RAW:", agreementsRaw[0]);
+
 
   /* ================= METRICS ================= */
 
