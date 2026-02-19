@@ -10,15 +10,16 @@ import { AuditLog } from "@/lib/db/models/AuditLog";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { Payment } from "@/lib/db/models/Payment";
 import { User } from "@/lib/db/models/User";
+import { InboxRead } from "@/lib/db/models/InboxRead";
 
 import CreatorSidebar from "@/components/creator/CreatorSidebar";
-import CreatorMobileTopNav from "@/components/creator/CreatorMobileTopNav";
 import CreatorInboxClient from "./CreatorInboxClient";
+import { log } from "console";
 
 export default async function CreatorInboxPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("auth_session")?.value;
-  const role = cookieStore.get("user_role")?.value;
+  const cookieStore = cookies();
+  const userId = (await cookieStore).get("auth_session")?.value;
+  const role = (await cookieStore).get("user_role")?.value;
 
   if (!userId || role !== "CREATOR") redirect("/auth/login");
 
@@ -36,15 +37,62 @@ export default async function CreatorInboxPage() {
     role: "CREATOR",
   }).lean();
 
-  const revisionLogs = await AuditLog.find({
-    action: "REVISION_REQUESTED",
-    "metadata.creatorId": userId,
+  // ✅ Only logs relevant to this creator
+  const auditLogs = await AuditLog.find({
+    "metadata.creatorId": creatorObjectId,
   }).lean();
 
   const pendingPayments = await Payment.find({
     creatorId: creatorObjectId,
     status: { $in: ["PENDING", "INITIATED"] },
   }).lean();
+
+  const readEntries = await InboxRead.find({
+    userId: creatorObjectId,
+  }).lean();
+
+  const readIds = new Set(readEntries.map((r: any) => r.itemId));
+
+  /* ================= COLLECT BRAND IDS ================= */
+
+  const auditBrandIds = auditLogs
+    .map((log: any) => log.metadata?.brandId?.toString())
+    .filter(Boolean);
+
+  const paymentAgreementIds = pendingPayments
+    .map((p: any) => p.agreementId?.toString())
+    .filter(Boolean);
+
+  /* ================= FETCH AGREEMENTS FOR PAYMENTS ================= */
+
+  const agreements = await Agreement.find({
+    _id: { $in: paymentAgreementIds },
+  }).lean();
+
+  const agreementMap = new Map(
+    agreements.map((a: any) => [a._id.toString(), a])
+  );
+
+  const agreementBrandIds = agreements.map((a: any) =>
+    a.brandId?.toString()
+  );
+
+  const allBrandIds = [
+    ...new Set([...auditBrandIds, ...agreementBrandIds]),
+  ];
+
+  /* ================= FETCH BRANDS ================= */
+
+  const brands = await User.find({
+    _id: { $in: allBrandIds },
+  }).lean();
+
+  const brandMap = new Map(
+    brands.map((b: any) => [
+      b._id.toString(),
+      b.email.split("@")[0],
+    ])
+  );
 
   /* ================= SERIALIZE ================= */
 
@@ -55,63 +103,62 @@ export default async function CreatorInboxPage() {
       type: "notification" as const,
       title: n.title ?? "Notification",
       description: n.message ?? "",
-      createdAt: n.createdAt ? n.createdAt.toISOString() : null,
+      brandName: undefined,
+      status: undefined,
+      createdAt: n.createdAt?.toISOString(),
       priority: "normal" as const,
-      read: !!n.readAt,
+      link: `/creator/agreements`,
+      read: readIds.has(n._id?.toString()),
     })),
 
-    // Urgent revisions
-    ...revisionLogs.map((log: any) => ({
-      id: log._id?.toString(),
-      type: "deliverable" as const,
-      title: "Revision requested",
-      description: "A brand requested changes on your submission.",
-      createdAt: log.createdAt ? log.createdAt.toISOString() : null,
-      priority: "urgent" as const,
-      link: log.metadata?.agreementId
-        ? `/agreements/${log.metadata.agreementId}`
-        : undefined,
-    })),
+    // Creator-relevant Audit Logs
+    ...auditLogs.map((log: any) => {
+      const brandId = log.metadata?.brandId?.toString();
+      const brandName = brandId
+        ? brandMap.get(brandId)
+        : undefined;
 
-    // Payments
-    ...pendingPayments.map((p: any) => ({
-      id: p._id?.toString(),
-      type: "payment" as const,
-      title: "Payment pending",
-      description: `₹${p.amount ?? 0} awaiting release`,
-      createdAt: p.createdAt ? p.createdAt.toISOString() : null,
-      priority: "normal" as const,
-    })),
+      const isRevision =
+        log.action === "REVISION_REQUESTED";
+
+      const priority: "normal" | "urgent" =
+        isRevision ? "urgent" : "normal";
+
+
+      return {
+        id: log._id?.toString(),
+        type: "deliverable" as const,
+        title: log.action.replace(/_/g, " "),
+        description:
+          log.metadata?.milestoneTitle ?? "",
+        brandName,
+        status: undefined,
+        createdAt: log.createdAt?.toISOString(),
+        priority,
+        link: log.metadata?.agreementId
+      ? `/agreements/${log.metadata.agreementId}`
+      : `/creator/agreements`,
+        read: readIds.has(log._id?.toString()),
+      };
+    }),
+
   ]
-    .filter((item) => item.createdAt) // remove bad items
+    .filter((item) => item.createdAt)
     .sort((a, b) => {
       const aTime = new Date(a.createdAt!).getTime();
       const bTime = new Date(b.createdAt!).getTime();
       return bTime - aTime;
     });
 
-  /* ================= COUNTS ================= */
-
   const agreementsCount = await Agreement.countDocuments({
     creatorId: creatorObjectId,
   });
 
-  const inboxCount = revisionLogs.length; // urgent only
+  const inboxCount = auditLogs.length;
   const pendingPaymentsCount = pendingPayments.length;
 
   return (
     <div className="min-h-screen bg-black text-white">
-
-      <div className="lg:hidden sticky top-0 z-[100]">
-        <CreatorMobileTopNav
-          displayName={user.email.split("@")[0]}
-          agreementsCount={agreementsCount}
-          inboxCount={inboxCount}
-          pendingPaymentsCount={pendingPaymentsCount}
-          pendingDeliverablesCount={revisionLogs.length}
-        />
-      </div>
-
       <div className="flex">
         <CreatorSidebar
           active="inbox"
@@ -122,10 +169,10 @@ export default async function CreatorInboxPage() {
           agreementsCount={agreementsCount}
           inboxCount={inboxCount}
           pendingPaymentsCount={pendingPaymentsCount}
-          pendingDeliverablesCount={revisionLogs.length}
+          pendingDeliverablesCount={auditLogs.length}
         />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 px-8 py-8">
           <CreatorInboxClient items={inboxItems} />
         </main>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type InboxItem = {
@@ -12,6 +12,8 @@ type InboxItem = {
   priority?: "urgent" | "normal";
   link?: string;
   read?: boolean;
+  brandName?: string;
+  status?: string;
 };
 
 export default function CreatorInboxClient({
@@ -20,12 +22,25 @@ export default function CreatorInboxClient({
   items: InboxItem[];
 }) {
   const [inboxItems, setInboxItems] = useState(items);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (items.length && !selectedId) {
+      setSelectedId(items[0].id ?? null);
+    }
+  }, [items]);
+
+  const selected = inboxItems.find(
+    (item) => item.id === selectedId
+  );
+
+
 
   async function markAsRead(id?: string) {
     if (!id) return;
 
     try {
-      await fetch(`/api/notifications/${id}/read`, {
+      await fetch(`/api/inbox/${id}/read`, {
         method: "POST",
       });
 
@@ -34,15 +49,31 @@ export default function CreatorInboxClient({
           item.id === id ? { ...item, read: true } : item
         )
       );
+
     } catch (err) {
-      console.error("Failed to mark as read", err);
+      console.error(err);
     }
+  }
+
+
+  useEffect(() => {
+    if (selected && !selected.read) {
+      markAsRead(selected.id);
+    }
+  }, [selected?.id]);
+
+
+  function formatTime(date: string) {
+    return new Date(date).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
   }
 
   if (!inboxItems.length) {
     return (
-      <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-8 text-center">
-        <div className="text-lg font-medium">You're all caught up 🎉</div>
+      <div className="rounded-2xl border border-white/10 bg-[#ffffff05] p-10 text-center">
+        <div className="text-lg font-medium">You're all caught up</div>
         <div className="text-sm opacity-60 mt-2">
           No notifications or urgent actions right now.
         </div>
@@ -51,69 +82,120 @@ export default function CreatorInboxClient({
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-medium">Inbox</h1>
+    <div className="flex h-[90vh] rounded-2xl border border-white/10 overflow-hidden">
 
-      <div className="space-y-4">
-        {inboxItems.map((item, i) => (
-          <div
-            key={item.id ?? i}
-            className={`
-              rounded-xl border p-5 space-y-4 transition
-              ${
-                item.priority === "urgent"
-                  ? "border-red-500/40 bg-red-500/5"
-                  : "border-white/10 bg-[#ffffff05]"
-              }
-              ${item.read ? "opacity-60" : ""}
-            `}
-          >
-            {/* Top Section */}
-            <div className="flex justify-between items-start gap-4">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">{item.title}</div>
+      {/* LEFT PANEL */}
+      <div className="w-[380px] border-r border-white/10 bg-[#0d0d0d] flex flex-col">
 
-                <div className="text-sm opacity-70">
-                  {item.description}
+        {/* Header */}
+        <div className="p-5 border-b border-white/10 space-y-4">
+          <h1 className="text-4xl font-medium">Inbox</h1>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto">
+          {inboxItems.map((item, i) => (
+            <button
+              key={item.id ?? i}
+              onClick={() => setSelectedId(item.id ?? null)}
+              className={`
+                w-full text-left px-5 py-4 border-b border-white/5
+                transition hover:bg-white/5
+                ${selectedId === item.id ? "bg-white/10" : ""}
+              `}
+            >
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <div className="text-sm font-medium flex items-center gap-2">
+                    {item.title}
+
+                    {!item.read && (
+                      <span className="w-2 h-2 rounded-full bg-[#636EE1]" />
+                    )}
+                  </div>
+
+                  <div className="text-xs opacity-60 line-clamp-1">
+                    {item.description}
+                  </div>
+                </div>
+
+                <div className="text-xs opacity-40">
+                  {formatTime(item.createdAt)}
                 </div>
               </div>
+            </button>
+          ))}
+        </div>
+      </div>
 
-              {item.priority === "urgent" && (
-                <span className="text-xs px-2 py-1 rounded-full bg-red-500/20 text-red-400 whitespace-nowrap">
-                  Action Required
-                </span>
-              )}
-            </div>
+      {/* RIGHT PANEL */}
+      <div className="flex-1 bg-black flex flex-col">
+        {!selected ? (
+          <div className="h-full flex items-center justify-center text-white/40">
+            Select a message to view details
+          </div>
+        ) : (
+          <>
+            {/* HEADER */}
+            <div className="p-6 border-b border-white/10 space-y-4">
 
-            {/* Footer */}
-            <div className="flex justify-between items-center pt-3 border-t border-white/10">
-              <span className="text-xs opacity-50">
-                {new Date(item.createdAt).toLocaleString()}
-              </span>
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-medium">
+                  {selected.title}
+                </h2>
 
-              <div className="flex items-center gap-4">
-                {!item.read && item.id && (
-                  <button
-                    onClick={() => markAsRead(item.id)}
-                    className="text-xs opacity-60 hover:opacity-100 transition"
-                  >
-                    Mark as read
-                  </button>
-                )}
-
-                {item.link && (
-                  <Link
-                    href={item.link}
-                    className="text-sm text-[#636EE1] hover:underline"
-                  >
-                    View →
-                  </Link>
+                {selected.priority === "urgent" && (
+                  <span className="px-3 py-1 text-xs rounded-full bg-red-500/20 text-red-400">
+                    Action Required
+                  </span>
                 )}
               </div>
+
+              <div className="flex items-center gap-4 text-xs opacity-60">
+
+                {selected.brandName && (
+                  <span>
+                    Brand: <span className="opacity-80">{selected.brandName}</span>
+                  </span>
+                )}
+
+                {selected.status && (
+                  <span className="px-2 py-1 rounded-full bg-white/10">
+                    {selected.status}
+                  </span>
+                )}
+
+                <span>
+                  {new Date(selected.createdAt).toLocaleString()}
+                </span>
+
+              </div>
             </div>
-          </div>
-        ))}
+
+            {/* BODY */}
+            <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+
+              <p className="text-sm opacity-80 leading-relaxed">
+                {selected.description}
+              </p>
+
+              {/* ACTION BUTTON */}
+              {selected.link && (
+                <div>
+                  <Link
+                    href={selected.link}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#636EE1] text-sm hover:opacity-90 transition"
+                  >
+                    Open Agreement →
+                  </Link>
+                </div>
+              )}
+
+            </div>
+          </>
+        )}
       </div>
+
     </div>
   );
 }

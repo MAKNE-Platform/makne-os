@@ -54,7 +54,7 @@ export default function CreatorAgreementsClient({
     <div className="space-y-8">
 
       {/* Heading */}
-      <h1 className="text-2xl font-medium">Agreements</h1>
+      <h1 className="text-4xl font-medium">Agreements</h1>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -183,9 +183,9 @@ function MetricCard({ label, value }: { label: string; value: any }) {
 
 function StatusBadge({ status }: { status: string }) {
   const colorMap: Record<string, string> = {
-    DRAFT: "bg-gray-500/20 text-gray-300",
-    SENT: "bg-yellow-500/20 text-yellow-400",
-    ACTIVE: "bg-blue-500/20 text-blue-400",
+    DRAFT: "bg-gray-500/10 text-gray-300",
+    SENT: "bg-yellow-500/10 text-yellow-400",
+    ACTIVE: "bg-blue-500/20 text-blue-300",
     COMPLETED: "bg-green-500/20 text-green-400",
     REJECTED: "bg-red-500/20 text-red-400",
   };
