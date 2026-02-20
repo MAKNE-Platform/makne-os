@@ -17,7 +17,7 @@ export async function savePoliciesAction(formData: FormData) {
   }
 
   if (!agreementId) {
-    redirect("/dashboard/brand");
+    redirect("/brand/dashboard");
   }
 
   const paymentTerms = formData.get("paymentTerms") as string;

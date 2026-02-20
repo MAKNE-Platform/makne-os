@@ -266,7 +266,7 @@ export default async function BrandDashboard() {
                 <div className="flex gap-3">
                   <Link
                     href="/agreements/create/meta"
-                    className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm font-medium text-black"
+                    className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm font-medium text-white"
                   >
                     Add agreement
                   </Link>
@@ -281,38 +281,84 @@ export default async function BrandDashboard() {
               </div>
 
               {/* Agreement cards */}
-              <div className="space-y-3">
-                {recentAgreements.map(a => (
-                  <Link
+              <div className="space-y-4">
+                {recentAgreements.map((a) => (
+                  <div
                     key={a._id.toString()}
-                    href={`/agreements/${a._id}`}
                     className="
-                  block rounded-xl
-                  border border-white/10
-                  bg-[#ffffff05]
-                  p-4
-                  transition
-                  hover:border-[#636EE1]/50
-                "
+        rounded-xl
+        border border-white/10
+        bg-white/[0.02]
+        p-4
+        space-y-3
+        transition
+        hover:border-[#636EE1]/40
+      "
                   >
-                    <div className="flex justify-between items-center gap-6">
-                      <div className="space-y-2">
+                    {/* Top Section */}
+                    <div className="flex justify-between items-start">
+                      <div>
                         <div className="font-medium">
                           {a.title}
                         </div>
-
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          <Pill>{a.createdAt.toDateString()}</Pill>
-                          {a.creatorEmail && <Pill>{a.creatorEmail}</Pill>}
-                          <Pill>{a.status}</Pill>
+                        <div className="text-xs text-white/50">
+                          {a.creatorEmail ?? "No creator assigned"}
                         </div>
                       </div>
 
-                      <div className="lg:h-8 lg:w-8 h-7 w-10 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-xs">
+                      {/* Status Pill */}
+                      <Pill>{a.status}</Pill>
+                    </div>
+
+                    {/* Amount Row (if exists) */}
+                    {a.amount && (
+                      <div className="flex justify-between text-sm text-white/70">
+                        <span>Amount</span>
+                        <span className="font-medium text-white">
+                          ₹{a.amount}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Date Row */}
+                    <div className="flex justify-between text-xs text-white/50">
+                      <span>Created</span>
+                      <span>{a.createdAt.toDateString()}</span>
+                    </div>
+
+                    {/* Bottom Section */}
+                    <div className="flex justify-between items-center pt-2">
+                      {/* Creator Avatar */}
+                      <div className="h-8 w-8 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-xs">
                         {a.creatorEmail?.[0]?.toUpperCase() ?? "C"}
                       </div>
+
+                      {/* View Button */}
+                      <Link
+                        href={`/agreements/${a._id}`}
+                        className="
+            inline-flex
+            items-center
+            gap-1
+            rounded-full
+            border
+            border-[#636EE1]/40
+            bg-[#636EE1]/10
+            px-4
+            py-1.5
+            text-xs
+            font-medium
+            text-[#636EE1]
+            hover:bg-[#636EE1]
+            hover:text-black
+            transition-all
+            duration-200
+          "
+                      >
+                        View
+                      </Link>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
@@ -436,8 +482,9 @@ function Pill({ children }: { children: React.ReactNode }) {
       rounded-full
       border-[#636de183]
       border 
-      px-2.5 py-1.5
+      px-2.5 py-1
       opacity-80
+      text-xs
     ">
       {children}
     </span>

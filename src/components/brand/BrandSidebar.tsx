@@ -1,5 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Mail,
+  NotebookTabs,
+  ChartSpline,
+  HandCoins,
+} from "lucide-react";
 
 type Props = {
   active:
@@ -34,7 +42,7 @@ export default function BrandSidebar({
     <aside className="hidden lg:flex h-screen sticky top-0 w-64 flex-col border-r border-white/10 bg-black px-6 py-6 shrink-0">
 
       {/* Logo */}
-      <a href="/dashboard/brand">
+      <a href="/brand/dashboard">
         <Image
           src="/makne-logo-lg.png"
           alt="Makne"
@@ -49,8 +57,9 @@ export default function BrandSidebar({
         <div className="space-y-1">
           <SidebarItem
             label="Dashboard"
-            href="/dashboard/brand"
+            href="/brand/dashboard"
             active={active === "dashboard"}
+            icon={LayoutDashboard}
           />
 
           <SidebarItem
@@ -58,6 +67,7 @@ export default function BrandSidebar({
             href="/agreements"
             active={active === "agreements"}
             badge={draftAgreementsCount}
+            icon={ClipboardList}
           />
 
           <SidebarItem
@@ -65,6 +75,7 @@ export default function BrandSidebar({
             href="/brand/notifications"
             active={active === "notifications"}
             badge={inboxCount}
+            icon={Mail}
           />
 
         </div>
@@ -74,12 +85,14 @@ export default function BrandSidebar({
             label="Activity"
             href="/system/activity"
             active={active === "activity"}
+            icon={NotebookTabs}
           />
 
           <SidebarItem
             label="Analytics"
             href="/brand/analytics"
             active={active === "analytics"}
+            icon={ChartSpline}
           />
 
           <SidebarItem
@@ -87,6 +100,7 @@ export default function BrandSidebar({
             href="/brand/payments"
             active={active === "payments"}
             badge={pendingPaymentsCount}
+            icon={HandCoins}
           />
         </div>
       </nav>
@@ -135,11 +149,13 @@ function SidebarItem({
   href,
   active,
   badge,
+  icon: Icon,
 }: {
   label: string;
   href?: string;
   active?: boolean;
   badge?: number;
+  icon?: React.ComponentType<{ size?: number }>;
 }) {
   const Comp = href ? Link : "div";
 
@@ -158,7 +174,10 @@ function SidebarItem({
         }
       `}
     >
-      <span>{label}</span>
+      <div className="flex items-center gap-3">
+        {Icon && <Icon size={16} />}
+        <span>{label}</span>
+      </div>
 
       {badge !== undefined && badge > 0 && (
         <span

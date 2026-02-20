@@ -15,6 +15,8 @@ import { InboxRead } from "@/lib/db/models/InboxRead";
 import CreatorSidebar from "@/components/creator/CreatorSidebar";
 import CreatorInboxClient from "./CreatorInboxClient";
 import { log } from "console";
+import CreatorMobileTopNav from "@/components/creator/CreatorMobileTopNav";
+import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
 
 export default async function CreatorInboxPage() {
   const cookieStore = cookies();
@@ -26,6 +28,10 @@ export default async function CreatorInboxPage() {
   await connectDB();
 
   const creatorObjectId = new mongoose.Types.ObjectId(userId);
+
+  const creatorProfile = await CreatorProfile
+    .findOne({ userId })
+    .lean<{ profileImage?: string; displayName?: string }>();
 
   const user = await User.findById(userId).lean<{ email: string }>();
   if (!user) redirect("/auth/login");
@@ -171,25 +177,15 @@ export default async function CreatorInboxPage() {
     unreadNotificationsCount + pendingDeliverablesCount;
   const pendingPaymentsCount = pendingPayments.length;
 
+  const displayName = user.email.split("@")[0];
+
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="flex">
-        <CreatorSidebar
-          active="inbox"
-          creatorProfile={{
-            name: user.email.split("@")[0],
-            email: user.email,
-          }}
-          agreementsCount={agreementsCount}
-          inboxCount={inboxCount}
-          pendingPaymentsCount={pendingPaymentsCount}
-          pendingDeliverablesCount={auditLogs.length}
-        />
 
-        <main className="flex-1 px-8 py-8">
-          <CreatorInboxClient items={inboxItems} />
-        </main>
-      </div>
+      <main className="flex-1 lg:px-8 lg:py-8">
+        <CreatorInboxClient items={inboxItems} />
+      </main>
+
     </div>
   );
 }

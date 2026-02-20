@@ -64,7 +64,7 @@ export default function MobileTopNav({
             <div className="flex items-center justify-between px-3 py-4 bg-[#00000032] backdrop-blur-lg">
 
                 {/* Logo */}
-                <a href="/dashboard/brand">
+                <a href="/brand/dashboard">
                     <Image
                     src="/makne-logo-lg.png"
                     alt="Makne"
@@ -152,7 +152,7 @@ export default function MobileTopNav({
                     >
 
                         {/* Navigation */}
-                        <NavItem label="Dashboard" href="/dashboard/brand" />
+                        <NavItem label="Dashboard" href="/brand/dashboard" />
                         <NavItem label="Agreements" href="/agreements" badge={draftAgreementsCount} />
                         <NavItem label="Activity" href="/system/activity" />
                         <NavItem label="Inbox" href="/brand/notifications" badge={inboxCount} />

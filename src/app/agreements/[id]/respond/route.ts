@@ -95,6 +95,6 @@ export async function POST(
   });
 
   return NextResponse.redirect(
-    new URL("/dashboard/creator", request.url)
+    new URL("/creator/dashboard", request.url)
   );
 }

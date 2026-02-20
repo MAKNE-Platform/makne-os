@@ -51,5 +51,5 @@ export async function loginUserAction(formData: FormData) {
     path: "/",
   });
 
-  redirect(`/dashboard/${user.role.toLowerCase()}`);
+  redirect(`/${user.role.toLowerCase()}/dashboard`);
 }

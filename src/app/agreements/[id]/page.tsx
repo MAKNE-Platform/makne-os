@@ -8,7 +8,7 @@ import { Milestone } from "@/lib/db/models/Milestone";
 import { Payment } from "@/lib/db/models/Payment";
 import DeliverMilestoneForm from "./_components/DeliverMilestoneForm";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
-import { Download } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 
 export default async function AgreementDetailPage({
     params,
@@ -69,7 +69,7 @@ export default async function AgreementDetailPage({
 
 
     return (
-        <div className="min-h-screen bg-[#0B0B0D] text-white">
+        <div className="min-h-screen bg-[#0b0b0d27] text-white">
             
             <div className="max-w-5xl mx-auto px-8 py-12 space-y-10">
 
@@ -79,7 +79,7 @@ export default async function AgreementDetailPage({
                         href={backHref}
                         className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/5 bg-[#121214] hover:border-[#636EE1] hover:text-white text-sm text-zinc-400 transition"
                     >
-                        ← Back
+                        <ArrowLeft /> Back
                     </a>
                     <img className="h-10" src="/makne-logo-lg.png" alt="" />
                 </div>

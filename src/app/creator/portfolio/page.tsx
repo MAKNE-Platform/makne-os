@@ -81,6 +81,11 @@ export default async function CreatorPortfolioPage() {
     };
   };
 
+  const displayName = user.email.split("@")[0];
+
+  const creatorProfile = await CreatorProfile
+    .findOne({ userId })
+    .lean<{ profileImage?: string; displayName?: string }>();
 
 
   if (!profileDoc) redirect("/onboarding/creator");
@@ -368,38 +373,10 @@ export default async function CreatorPortfolioPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Mobile nav */}
-      <div className="lg:hidden sticky top-0 z-[100]">
-        <CreatorMobileTopNav
-          displayName={profile.displayName}
-          agreementsCount={agreementsCount}
-          inboxCount={inboxCount}
-          pendingPaymentsCount={pendingPaymentsCount}
-          pendingDeliverablesCount={0}
-        />
-      </div>
-
-      <div className="flex">
-        {/* Sidebar */}
-        <CreatorSidebar
-          active="portfolio"
-          creatorProfile={{
-            name: profile.displayName,
-            email: user.email,
-          }}
-          agreementsCount={agreementsCount}
-          inboxCount={inboxCount}
-          pendingPaymentsCount={pendingPaymentsCount}
-          pendingDeliverablesCount={0}
-        />
-
-
-        {/* Main */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-          <CreatorPortfolioClient profile={profile} />
-        </main>
-
-      </div>
+      {/* Main */}
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+        <CreatorPortfolioClient profile={profile} />
+      </main>
     </div>
   );
 }

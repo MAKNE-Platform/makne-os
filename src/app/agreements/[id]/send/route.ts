@@ -80,6 +80,6 @@ export async function POST(
   });
 
   return NextResponse.redirect(
-    new URL("/dashboard/brand", request.url)
+    new URL("/brand/dashboard", request.url)
   );
 }

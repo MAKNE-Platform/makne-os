@@ -12,7 +12,7 @@ export default async function PoliciesPage() {
   }
 
   if (!agreementId) {
-    redirect("/dashboard/brand");
+    redirect("/brand/dashboard");
   }
 
   return (

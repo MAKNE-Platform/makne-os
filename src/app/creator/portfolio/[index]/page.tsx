@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/connect";
 import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
 import { User } from "@/lib/db/models/User";
+import { ArrowLeft } from "lucide-react";
 
 type Params = {
   params: Promise<{
@@ -74,9 +75,9 @@ export default async function ProjectDetailPage({ params }: Params) {
         <div>
           <a
             href="/creator/portfolio"
-            className="text-sm text-[#636EE1] hover:underline"
+            className="text-sm text-[#636EE1] hover:underline flex items-center gap-1"
           >
-            ← Back to portfolio
+            <ArrowLeft /> Back to portfolio
           </a>
         </div>
 

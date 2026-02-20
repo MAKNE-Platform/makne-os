@@ -51,26 +51,29 @@ export default function CreatorAgreementsClient({
   }, [agreements, activeTab]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full">
 
       {/* Heading */}
-      <h1 className="text-4xl font-medium">Agreements</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
+          Agreements
+        </h1>
+        <div className="text-xs sm:text-sm text-white/50">
+          {metrics.total} total agreements
+        </div>
+      </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard label="Total" value={metrics.total} />
         <MetricCard label="Active" value={metrics.active} />
         <MetricCard label="Completed" value={metrics.completed} />
-        <MetricCard
-          label="Total Earnings"
-          value={`₹${metrics.totalEarnings}`}
-        />
-
+        <MetricCard label="Earnings" value={`₹${metrics.totalEarnings}`} />
       </div>
 
+
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-white/10 pb-2">
+      <div className="flex gap-4 border-b border-white/10 pb-2 overflow-x-auto">
         <TabButton
           label="All"
           active={activeTab === "ALL"}
@@ -94,10 +97,51 @@ export default function CreatorAgreementsClient({
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-white/10 overflow-hidden">
+      {/* ================= MOBILE VIEW ================= */}
+      <div className="space-y-4 md:hidden">
+        {filteredAgreements.map((a) => (
+          <div
+            key={a.id}
+            className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3"
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="font-medium">{a.title}</div>
+                <div className="text-xs text-white/50">{a.brandName}</div>
+              </div>
+              <StatusBadge status={a.status} />
+            </div>
 
-        <table className="w-full text-sm">
-          <thead className="bg-white/5 border-b-2 border-b-[#ffffff24] text-white/80">
+            <div className="flex justify-between text-sm text-white/70">
+              <span>Amount</span>
+              <span className="font-medium text-white">₹{a.amount}</span>
+            </div>
+
+            <div className="flex justify-between text-xs text-white/50">
+              <span>Updated</span>
+              <span>{new Date(a.updatedAt).toDateString()}</span>
+            </div>
+
+            <Link
+              href={`/agreements/${a.id}`}
+              className="block w-full text-center rounded-lg bg-[#636EE1] py-2 text-sm font-medium text-black"
+            >
+              View Agreement
+            </Link>
+          </div>
+        ))}
+
+        {filteredAgreements.length === 0 && (
+          <div className="text-center opacity-60 py-6">
+            No agreements found.
+          </div>
+        )}
+      </div>
+
+      {/* ================= DESKTOP TABLE ================= */}
+      <div className="hidden md:block rounded-xl border border-white/10 overflow-x-auto">
+        <table className="min-w-[720px] w-full text-sm">
+          <thead className="bg-white/5 border-b border-white/10 text-white/80">
             <tr>
               <th className="text-left px-6 py-4">Agreement</th>
               <th className="text-left px-6 py-4">Brand</th>
@@ -107,7 +151,6 @@ export default function CreatorAgreementsClient({
               <th className="px-6 py-4"></th>
             </tr>
           </thead>
-
           <tbody>
             {filteredAgreements.map((a) => (
               <tr
@@ -126,42 +169,16 @@ export default function CreatorAgreementsClient({
                 <td className="px-6 py-4 text-right">
                   <Link
                     href={`/agreements/${a.id}`}
-                    className="
-      inline-flex
-      items-center
-      gap-1
-      rounded-full
-      border
-      border-[#636EE1]/40
-      bg-[#636EE1]/10
-      px-4
-      py-1.5
-      text-xs
-      font-medium
-      text-[#636EE1]
-      hover:bg-[#636EE1]
-      hover:text-black
-      transition-all
-      duration-200
-    "
+                    className="inline-flex items-center gap-1 rounded-full border border-[#636EE1]/40 bg-[#636EE1]/10 px-4 py-1.5 text-xs font-medium text-[#636EE1] hover:bg-[#636EE1] hover:text-black transition"
                   >
                     View
-                    <ArrowRight
-                      size={14}
-                      className="transition-transform duration-200 group-hover:translate-x-1"
-                    />
+                    <ArrowRight size={14} />
                   </Link>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-
-        {filteredAgreements.length === 0 && (
-          <div className="p-8 text-center opacity-60">
-            No agreements found.
-          </div>
-        )}
       </div>
     </div>
   );

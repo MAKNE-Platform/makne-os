@@ -60,6 +60,10 @@ export default async function CreatorDashboardPage() {
 
   const creatorObjectId = new mongoose.Types.ObjectId(userId);
 
+  const creatorProfile = await CreatorProfile
+    .findOne({ userId })
+    .lean<{ profileImage?: string; displayName?: string }>();
+
   const user = (await User.findById(creatorObjectId, {
     email: 1,
   }).lean()) as LeanUser | null;
@@ -158,6 +162,7 @@ export default async function CreatorDashboardPage() {
       <div className="lg:hidden sticky top-0 z-[100]">
         <CreatorMobileTopNav
           displayName={displayName}
+          profileImage={creatorProfile?.profileImage}
           agreementsCount={agreementsCount}
           inboxCount={inboxCount}
           pendingPaymentsCount={pendingPaymentsCount}
@@ -167,12 +172,12 @@ export default async function CreatorDashboardPage() {
 
       <div className="flex">
         <CreatorSidebar
-          active="dashboard"
-          creatorProfile={{ name: displayName }}
+          creatorProfile={{ name: displayName, profileImage: creatorProfile?.profileImage, email: user.email }}
           inboxCount={inboxCount}
           agreementsCount={agreementsCount}
           pendingDeliverablesCount={pendingDeliverables.length}
           pendingPaymentsCount={pendingPaymentsCount}
+
         />
 
         <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 space-y-10">
@@ -252,11 +257,11 @@ export default async function CreatorDashboardPage() {
                       <div>
                         {a.updatedAt
                           ? `Updated on ${new Date(
-                              a.updatedAt
-                            ).toLocaleDateString()}`
+                            a.updatedAt
+                          ).toLocaleDateString()}`
                           : `Created on ${new Date(
-                              a.createdAt
-                            ).toLocaleDateString()}`}
+                            a.createdAt
+                          ).toLocaleDateString()}`}
                       </div>
 
                       <div className="font-medium text-[#636EE1]">
@@ -305,7 +310,7 @@ function Metric({
   return (
     <div className="rounded-xl border border-white/10 bg-gradient-to-br from-[#636EE1]/10 to-transparent p-4">
       <div className="text-xs opacity-70">{label}</div>
-      <div className="mt-2 text-3xl font-medium">{value}</div>
+      <div className="mt-2 lg:text-3xl text-2xl font-medium">{value}</div>
     </div>
   );
 }

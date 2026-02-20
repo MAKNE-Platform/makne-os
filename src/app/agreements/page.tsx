@@ -111,11 +111,19 @@ export default async function AgreementsPage() {
         <div className="space-y-10 px-4 sm:px-6 lg:px-8 py-6 w-full">
 
           {/* Header */}
-          <div>
-            <h1 className="text-4xl font-medium">Agreements</h1>
-            <p className="mt-1 text-md opacity-70">
-              All collaborations created by your brand
-            </p>
+          <div className="flex items-end justify-between">
+            <div>
+              <h1 className="text-4xl font-medium">Agreements</h1>
+              <p className="mt-1 text-md opacity-70">
+                All collaborations created by your brand
+              </p>
+            </div>
+            <Link
+              href="/agreements/create/meta"
+              className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm font-medium text-white"
+            >
+              Add agreement
+            </Link>
           </div>
 
           {/* ================= AGREEMENTS OVERVIEW ================= */}
@@ -240,39 +248,60 @@ export default async function AgreementsPage() {
           </div>
 
 
-          {/* ================= MOBILE UI ================= */}
-          <div className="md:hidden space-y-3">
+          {/* ================= MOBILE VIEW ================= */}
+          <div className="space-y-4 md:hidden">
             {agreements.map((agreement: any) => (
-              <Link
+              <div
                 key={agreement._id}
-                href={`/agreements/${agreement._id}`}
-                className="
-              block
-              rounded-xl
-              border border-white/10
-              bg-[#ffffff05]
-              p-4
-              space-y-3
-              hover:border-[#636EE1]/40
-              transition
-            "
+                className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3"
               >
-                <div className="font-medium">
-                  {agreement.title}
+                {/* Top Section */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-medium">
+                      {agreement.title}
+                    </div>
+                    <div className="text-xs text-white/50">
+                      {agreement.creatorEmail ?? "No creator assigned"}
+                    </div>
+                  </div>
+
+                  <StatusBadge status={agreement.status} />
                 </div>
 
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <Pill>{agreement.status}</Pill>
-                  <Pill>
+                {/* Optional Amount Row (if exists) */}
+                {agreement.amount && (
+                  <div className="flex justify-between text-sm text-white/70">
+                    <span>Amount</span>
+                    <span className="font-medium text-white">
+                      ₹{agreement.amount}
+                    </span>
+                  </div>
+                )}
+
+                {/* Date Row */}
+                <div className="flex justify-between text-xs text-white/50">
+                  <span>Created</span>
+                  <span>
                     {new Date(agreement.createdAt).toDateString()}
-                  </Pill>
+                  </span>
                 </div>
 
-                <div className="text-sm opacity-70 truncate">
-                  {agreement.creatorEmail ?? "No creator assigned"}
-                </div>
-              </Link>
+                {/* CTA Button */}
+                <Link
+                  href={`/agreements/${agreement._id}`}
+                  className="block w-full text-center rounded-lg bg-[#636EE1] py-2 text-sm font-medium text-black hover:opacity-90 transition"
+                >
+                  View Agreement
+                </Link>
+              </div>
             ))}
+
+            {agreements.length === 0 && (
+              <div className="text-center opacity-60 py-6">
+                No agreements found.
+              </div>
+            )}
           </div>
 
         </div>

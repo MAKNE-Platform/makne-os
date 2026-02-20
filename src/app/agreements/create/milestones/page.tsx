@@ -29,7 +29,7 @@ export default async function MilestonesPage() {
     }
 
     if (!agreementId) {
-        redirect("/dashboard/brand");
+        redirect("/brand/dashboard");
     }
 
     // --- DATA FETCH ---

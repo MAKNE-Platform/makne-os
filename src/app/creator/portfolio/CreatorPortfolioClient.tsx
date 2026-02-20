@@ -75,45 +75,95 @@ export default function CreatorPortfolioClient({ profile }: Props) {
 
             {/* ===== PROFILE HEADER ===== */}
             {/* <h1 className="text-4xl">My Portfolio</h1> */}
-            <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-5">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+
+                {/* ===== LEFT SIDE (Avatar + Name) ===== */}
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+
                     {/* Avatar */}
-                    <div className="relative">
+                    <div className="relative shrink-0">
                         {profile.profileImage ? (
                             <img
                                 src={profile.profileImage}
                                 alt={profile.displayName}
-                                className="h-20 w-20 rounded-full object-cover border border-white/10"
+                                className="
+            h-24 w-24
+            sm:h-20 sm:w-20
+            rounded-full
+            object-cover
+            border border-white/10
+            shadow-lg
+          "
                             />
                         ) : (
-                            <div className="h-20 w-20 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-2xl font-medium">
-                                {profile.displayName[0].toUpperCase()}
+                            <div className="
+          h-24 w-24
+          sm:h-20 sm:w-20
+          rounded-full
+          bg-[#636EE1]/20
+          flex items-center justify-center
+          text-3xl sm:text-2xl
+          font-medium
+          border border-white/10
+        ">
+                                {profile.displayName?.[0]?.toUpperCase() ?? "C"}
                             </div>
                         )}
+
+                        {/* Edit Button */}
                         <Link
                             href="/creator/profile"
-                            className="absolute -bottom-1 -right-1 rounded-full bg-[#636EE1] py-1 px-1.5 text-xs text-black"
+                            className="
+          absolute bottom-0 right-0
+          rounded-full
+          bg-[#636EE1]
+          p-1 px-1.5
+          text-xs
+          text-black
+          shadow-md
+          hover:scale-105
+          transition
+        "
                         >
                             ✎
                         </Link>
                     </div>
 
-                    {/* Name */}
-                    <div>
-                        <h1 className="text-3xl font-medium">{profile.displayName}</h1>
-                        <div className="text-sm opacity-70">{profile.niche}</div>
+                    {/* Name + Niche */}
+                    <div className="space-y-1">
+                        <h1 className="text-3xl sm:text-2xl lg:text-3xl font-semibold tracking-tight">
+                            {profile.displayName}
+                        </h1>
+
+                        {profile.niche && (
+                            <div className="text-sm opacity-70">
+                                {profile.niche}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* ===== PROFILE COMPLETION ===== */}
-                <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-5 space-y-3">
-                    <div className="flex justify-between items-center gap-1">
-                        <span className="text-sm opacity-70">Profile completion:</span>
-                        <span className="text-sm font-medium">
+                {/* ===== PROFILE COMPLETION CARD ===== */}
+                <div className="
+    w-full sm:w-[340px]
+    rounded-2xl
+    border border-white/10
+    bg-[#ffffff08]
+    p-5
+    space-y-4
+    shadow-md
+  ">
+
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm opacity-70">
+                            Profile completion
+                        </span>
+                        <span className="text-sm font-semibold">
                             {profile.profileCompletion}%
                         </span>
                     </div>
 
+                    {/* Progress Bar */}
                     <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                         <div
                             className="h-full bg-[#636EE1] transition-all duration-500"
@@ -122,8 +172,10 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                     </div>
 
                     {profile.profileCompletion < 100 && (
-                        <div className="text-xs opacity-70 space-y-1">
-                            <div>Complete your profile to increase brand visibility.</div>
+                        <div className="text-xs opacity-70 space-y-2 leading-relaxed">
+                            <div>
+                                Complete your profile to increase brand visibility.
+                            </div>
 
                             {!profile.hasPublishedProject && (
                                 <div className="text-[#636EE1]">
@@ -132,11 +184,9 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                             )}
                         </div>
                     )}
-
                 </div>
 
             </div>
-
 
             {/* ================= OVERVIEW KPIs ================= */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">

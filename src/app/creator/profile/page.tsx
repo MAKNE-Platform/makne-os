@@ -46,34 +46,9 @@ export default async function CreatorProfilePage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Mobile nav */}
-      <div className="lg:hidden sticky top-0 z-[100]">
-        <CreatorMobileTopNav
-          displayName={initialProfile.displayName}
-          agreementsCount={0}
-          inboxCount={0}
-          pendingPaymentsCount={0}
-          pendingDeliverablesCount={0}
-        />
-      </div>
-
-      <div className="flex">
-        <CreatorSidebar
-          active="profile"
-          creatorProfile={{
-            name: initialProfile.displayName,
-            email: user.email,
-          }}
-          agreementsCount={0}
-          inboxCount={0}
-          pendingPaymentsCount={0}
-          pendingDeliverablesCount={0}
-        />
-
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-          <EditProfileClient initialProfile={initialProfile} />
-        </main>
-      </div>
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+        <EditProfileClient initialProfile={initialProfile} />
+      </main>
     </div>
   );
 }

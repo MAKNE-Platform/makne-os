@@ -17,7 +17,7 @@ export async function saveDeliverablesAction(formData: FormData) {
   }
 
   if (!agreementId) {
-    redirect("/dashboard/brand");
+    redirect("/brand/dashboard");
   }
 
   const titles = formData.getAll("deliverable_title") as string[];

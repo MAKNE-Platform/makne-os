@@ -74,38 +74,11 @@ export default async function ManagePortfolioPage() {
     }))
     : [];
 
-
-
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Mobile nav */}
-      <div className="lg:hidden sticky top-0 z-[100]">
-        <CreatorMobileTopNav
-          displayName={user.email.split("@")[0]}
-          agreementsCount={0}
-          inboxCount={0}
-          pendingPaymentsCount={0}
-          pendingDeliverablesCount={0}
-        />
-      </div>
-
-      <div className="flex">
-        <CreatorSidebar
-          active="portfolio"
-          creatorProfile={{
-            name: user.email.split("@")[0],
-            email: user.email,
-          }}
-          agreementsCount={0}
-          inboxCount={0}
-          pendingPaymentsCount={0}
-          pendingDeliverablesCount={0}
-        />
-
         <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
           <ManagePortfolioClient initialPortfolio={portfolio} />
         </main>
-      </div>
     </div>
   );
 }

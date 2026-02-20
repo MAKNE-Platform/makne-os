@@ -16,6 +16,7 @@ import CreatorAgreementsClient from "./CreatorAgreementsClient";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
 import { AuditLog } from "@/lib/db/models/AuditLog";
 import { Notification } from "@/lib/db/models/Notification";
+import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
 
 
 export default async function CreatorAgreementsPage() {
@@ -29,8 +30,14 @@ export default async function CreatorAgreementsPage() {
 
   const creatorObjectId = new mongoose.Types.ObjectId(userId);
 
+  const creatorProfile = await CreatorProfile
+    .findOne({ userId })
+    .lean<{ profileImage?: string; displayName?: string }>();
+
   const user = await User.findById(userId).lean<{ email: string }>();
   if (!user) redirect("/auth/login");
+
+  const displayName = user.email.split("@")[0];
 
   /* ================= FETCH AGREEMENTS ================= */
 
@@ -97,20 +104,20 @@ export default async function CreatorAgreementsPage() {
   /* ================= COUNTS FOR SIDEBAR ================= */
 
   const unreadNotificationsCount =
-      await Notification.countDocuments({
-        userId: creatorObjectId,
-        role: "CREATOR",
-        readAt: { $exists: false },
-      });
-  
-    const pendingDeliverablesCount =
-      await AuditLog.countDocuments({
-        action: "DELIVERABLE_SUBMITTED",
-        "metadata.creatorId": userId,
-      });
+    await Notification.countDocuments({
+      userId: creatorObjectId,
+      role: "CREATOR",
+      readAt: { $exists: false },
+    });
+
+  const pendingDeliverablesCount =
+    await AuditLog.countDocuments({
+      action: "DELIVERABLE_SUBMITTED",
+      "metadata.creatorId": userId,
+    });
 
   const inboxCount = unreadNotificationsCount + pendingDeliverablesCount;
-  
+
   const pendingPaymentsCount = await Payment.countDocuments({
     creatorId: creatorObjectId,
     status: { $in: ["PENDING", "INITIATED"] },
@@ -118,32 +125,10 @@ export default async function CreatorAgreementsPage() {
 
 
   return (
-    <div className="min-h-screen bg-black text-white">
-
-      <div className="lg:hidden sticky top-0 z-[100]">
-        <CreatorMobileTopNav
-          displayName={user.email.split("@")[0]}
-          agreementsCount={total}
-          inboxCount={inboxCount}
-          pendingPaymentsCount={pendingPaymentsCount}
-          pendingDeliverablesCount={0}
-        />
-      </div>
-
-      <div className="flex">
-        <CreatorSidebar
-          active="agreements"
-          creatorProfile={{
-            name: user.email.split("@")[0],
-            email: user.email,
-          }}
-          agreementsCount={total}
-          inboxCount={inboxCount}
-          pendingPaymentsCount={pendingPaymentsCount}
-          pendingDeliverablesCount={0}
-        />
-
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+    <div className=" bg-black text-white w-full">
+      {/* Main Content */}
+      <main className="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto overflow-x-auto">
           <CreatorAgreementsClient
             agreements={agreements}
             metrics={{
@@ -153,8 +138,9 @@ export default async function CreatorAgreementsPage() {
               totalEarnings,
             }}
           />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
+
 }

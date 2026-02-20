@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 type InboxItem = {
   id?: string;
@@ -24,11 +25,11 @@ export default function CreatorInboxClient({
   const [inboxItems, setInboxItems] = useState(items);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (items.length && !selectedId) {
-      setSelectedId(items[0].id ?? null);
-    }
-  }, [items]);
+  // useEffect(() => {
+  //   if (items.length && !selectedId) {
+  //     setSelectedId(items[0].id ?? null);
+  //   }
+  // }, [items]);
 
   const selected = inboxItems.find(
     (item) => item.id === selectedId
@@ -82,17 +83,18 @@ export default function CreatorInboxClient({
   }
 
   return (
-    <div className="flex flex-col lg:flex-row h-[90vh] lg:h-[90vh] rounded-2xl border border-white/10 overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-screen lg:h-[90vh] lg:rounded-2xl lg:border lg:border-white/10 overflow-hidden">
+
 
       {/* ================= LEFT PANEL ================= */}
       <div
         className={`
-        w-full lg:w-[380px] lg:border-r border-white/10 bg-[#0d0d0d] flex flex-col
+        w-full lg:w-[380px] overflow-y-auto lg:border-r border-white/10 bg-[#000000] flex flex-col
         ${selected ? "hidden lg:flex" : "flex"}
       `}
       >
         {/* Header */}
-        <div className="p-5 border-b border-white/10 space-y-4">
+        <div className="p-5 border-b-2 border-white/10 space-y-4 sticky top-0 bg-[#000000] z-10">
           <h1 className="text-2xl lg:text-4xl font-medium">Inbox</h1>
         </div>
 
@@ -103,7 +105,10 @@ export default function CreatorInboxClient({
               key={item.id ?? i}
               onClick={() => setSelectedId(item.id ?? null)}
               className={`
-              w-full text-left px-4 lg:px-5 py-4 border-b border-white/5
+              w-full text-left px-4 py-5 lg:px-5 lg:py-4 
+border-b border-white/5 
+active:bg-white/10 
+transition
               transition hover:bg-white/5
               ${selectedId === item.id ? "bg-white/10" : ""}
             `}
@@ -153,7 +158,7 @@ export default function CreatorInboxClient({
                   onClick={() => setSelectedId(null)}
                   className="text-sm opacity-60 hover:opacity-100 transition"
                 >
-                  ← Back
+                  <ArrowLeft /> Back
                 </button>
               </div>
 
@@ -204,7 +209,7 @@ export default function CreatorInboxClient({
                     href={selected.link}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#636EE1] text-sm hover:opacity-90 transition"
                   >
-                    Open Agreement →
+                    Open Agreement <ExternalLink />
                   </Link>
                 </div>
               )}

@@ -47,5 +47,5 @@ export async function onboardBrandAction(formData: FormData) {
     path: "/",
   });
 
-  redirect("/dashboard/brand");
+  redirect("/brand/dashboard");
 }

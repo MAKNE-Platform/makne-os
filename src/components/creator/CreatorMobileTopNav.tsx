@@ -4,17 +4,20 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { Bell } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 type Props = {
   active?:
-    | "dashboard"
-    | "agreements"
-    | "portfolio"
-    | "inbox"
-    | "payments"
-    | "analytics";
+  | "dashboard"
+  | "agreements"
+  | "portfolio"
+  | "inbox"
+  | "payments"
+  | "analytics";
 
   displayName?: string;
+  profileImage?: string;
 
   agreementsCount?: number;
   inboxCount: number;
@@ -24,6 +27,7 @@ type Props = {
 
 export default function CreatorMobileTopNav({
   displayName,
+  profileImage,
   agreementsCount,
   inboxCount,
   pendingPaymentsCount,
@@ -33,6 +37,12 @@ export default function CreatorMobileTopNav({
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -56,7 +66,7 @@ export default function CreatorMobileTopNav({
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 py-4 bg-[#00000032] backdrop-blur-lg">
 
-        <Link href="/dashboard/creator">
+        <Link href="/creator/dashboard">
           <Image
             src="/makne-logo-lg.png"
             alt="Makne"
@@ -73,7 +83,7 @@ export default function CreatorMobileTopNav({
             href="/creator/inbox"
             className="relative h-9 w-9 rounded-full border border-white/10 flex items-center justify-center"
           >
-            📥
+            <Bell />
             {inboxCount > 0 && (
               <span className="absolute -top-1 -right-1 h-5 min-w-[20px] rounded-full bg-[#636EE1] text-black text-[11px] font-medium flex items-center justify-center px-1">
                 {inboxCount}
@@ -85,9 +95,19 @@ export default function CreatorMobileTopNav({
           <button
             ref={buttonRef}
             onClick={() => setOpen(v => !v)}
-            className="h-9 w-9 rounded-full border border-white/10 bg-[#636EE1]/20 flex items-center justify-center text-sm font-medium"
+            className="h-9 w-9 rounded-full border border-white/10 overflow-hidden bg-white/10 flex items-center justify-center"
           >
-            {displayName?.[0]?.toUpperCase() ?? "C"}
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt={displayName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-sm font-medium text-white/70">
+                {displayName?.[0]?.toUpperCase() ?? "C"}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -103,7 +123,7 @@ export default function CreatorMobileTopNav({
             transition={{ duration: 0.18 }}
             className="absolute top-full mt-3 w-full rounded-2xl border border-white/10 bg-[#0e111770] px-4 py-4 space-y-2 backdrop-blur-2xl"
           >
-            <NavItem label="Dashboard" href="/dashboard/creator" />
+            <NavItem label="Dashboard" href="/creator/dashboard" />
             <NavItem label="Agreements" href="/creator/agreements" badge={agreementsCount} />
             <NavItem label="Inbox" href="/creator/inbox" badge={inboxCount} />
             <NavItem label="Portfolio" href="/creator/portfolio" />

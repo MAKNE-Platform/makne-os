@@ -35,7 +35,7 @@ export default async function ReviewAgreementPage() {
     const agreementId = cookieStore.get("draft_agreement_id")?.value;
 
     if (role !== "BRAND") redirect("/auth/login");
-    if (!agreementId) redirect("/dashboard/brand");
+    if (!agreementId) redirect("/brand/dashboard");
 
     await connectDB();
 
@@ -43,7 +43,7 @@ export default async function ReviewAgreementPage() {
         new mongoose.Types.ObjectId(agreementId)
     ).lean()) as unknown as ReviewAgreementType | null;
 
-    if (!agreement) redirect("/dashboard/brand");
+    if (!agreement) redirect("/brand/dashboard");
 
     const missingCreator = !agreement.creatorEmail;
     const missingPolicy = !agreement.policies;

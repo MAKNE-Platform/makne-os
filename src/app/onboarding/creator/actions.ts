@@ -52,5 +52,5 @@ export async function onboardCreatorAction(formData: FormData) {
     path: "/",
   });
 
-  redirect("/dashboard/creator");
+  redirect("/creator/dashboard");
 }

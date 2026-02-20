@@ -18,7 +18,7 @@ export async function saveMilestonesAction(formData: FormData) {
   }
 
   if (!agreementId) {
-    redirect("/dashboard/brand");
+    redirect("/brand/dashboard");
   }
 
   const titles = formData.getAll("milestone_title") as string[];

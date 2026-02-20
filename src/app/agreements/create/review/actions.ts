@@ -19,7 +19,7 @@ async function finalizeAgreement(mode: "CREATE" | "SEND") {
   }
 
   if (!agreementId) {
-    redirect("/dashboard/brand");
+    redirect("/brand/dashboard");
   }
 
   await connectDB();
@@ -32,7 +32,7 @@ async function finalizeAgreement(mode: "CREATE" | "SEND") {
   const brandUser = await User.findById(brandId).lean<{ email: string }>();
 
   if (!agreement) {
-    redirect("/dashboard/brand");
+    redirect("/brand/dashboard");
   }
 
   if (mode === "SEND") {
