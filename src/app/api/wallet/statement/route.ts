@@ -104,7 +104,7 @@ export async function GET() {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition":
-        "attachment; filename=makne-statement.pdf",
+        "attachment; filename=makne-earnings-statement.pdf",
     },
   });
 }
