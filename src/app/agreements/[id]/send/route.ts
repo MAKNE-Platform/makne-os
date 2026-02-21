@@ -79,6 +79,12 @@ export async function POST(
     creatorEmail: creator.email,
   });
 
+  const acceptHeader = request.headers.get("accept");
+
+  if (acceptHeader?.includes("application/json")) {
+    return NextResponse.json({ success: true });
+  }
+
   return NextResponse.redirect(
     new URL("/brand/dashboard", request.url)
   );

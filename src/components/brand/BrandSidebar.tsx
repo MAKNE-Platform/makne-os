@@ -16,7 +16,8 @@ type Props = {
   | "activity"
   | "notifications"
   | "analytics"
-  | "payments";
+  | "payments"
+  | "creators";
 
   brandProfile: {
     brandName: string;
@@ -102,6 +103,15 @@ export default function BrandSidebar({
             badge={pendingPaymentsCount}
             icon={HandCoins}
           />
+
+          <SidebarItem
+            label="Creators"
+            href="/brand/creators"
+            active={active === "creators"}
+            badge={pendingPaymentsCount}
+            icon={HandCoins}
+          />
+          
         </div>
       </nav>
 

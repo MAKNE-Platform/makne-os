@@ -168,14 +168,6 @@ export default async function BrandDashboard() {
   const draftAgreementsCount = drafts.length;
   const pendingPaymentsCount = pendingPayments;
 
-  console.log(
-    recentAgreements.map(a => ({
-      title: a.title,
-      creator: a.creatorId
-    }))
-  );
-
-
   return (
     <div className="flex min-h-screen bg-black text-white">
 

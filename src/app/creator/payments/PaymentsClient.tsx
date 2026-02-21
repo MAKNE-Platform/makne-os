@@ -117,10 +117,10 @@ export default function PaymentsClient({
 
                         {/* Download Report */}
                         <a
-                            href="/api/wallet/export"
-                            className="px-4 py-2 rounded-lg border backdrop-blur-2xl border-white/20 text-sm hover:bg-white/5 transition flex items-center gap-2"
+                            href="/api/wallet/statement"
+                            className="px-4 py-2 rounded-lg border backdrop-blur-2xl border-white/20 text-sm hover:bg-white/5 transition"
                         >
-                            Download Report
+                            Download Statement
                         </a>
 
                     </div>
