@@ -21,6 +21,13 @@ export default function CreatorOnboardingPage() {
         </h1>
 
         <input
+          name="displayName"
+          required
+          placeholder="Your display name (e.g. Vaidika Kaul)"
+          className="w-full rounded-xl bg-[#161618] px-4 py-3 text-sm text-white outline-none"
+        />
+
+        <input
           name="niche"
           required
           placeholder="Your niche (e.g. Tech, Fitness)"

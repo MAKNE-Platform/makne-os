@@ -14,6 +14,12 @@ export async function onboardCreatorAction(formData: FormData) {
   const platforms = formData.get("platforms") as string;
   const portfolio = formData.get("portfolio") as string | null;
 
+  const displayName = formData.get("displayName") as string;
+
+  if (!displayName || !niche || !platforms) {
+    throw new Error("Required fields missing");
+  }
+
   if (!niche || !platforms) {
     throw new Error("Required fields missing");
   }
@@ -28,11 +34,19 @@ export async function onboardCreatorAction(formData: FormData) {
   await connectDB();
 
   // 1️⃣ Save creator profile
+  const username = displayName
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
+
   const profile = await CreatorProfile.create({
     userId: new mongoose.Types.ObjectId(userId),
+    displayName,
+    username,
     niche,
     platforms,
-    portfolio,
+    bio: "",
+    portfolio: [],
   });
 
   console.log("CREATOR PROFILE SAVED:", profile._id);

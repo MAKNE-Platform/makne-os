@@ -63,9 +63,10 @@ export default async function CreatorPortfolioPage() {
 
   /* ================= PROFILE ================= */
 
-  const profileDoc = (await CreatorProfile.findOne({
+  const profileDoc = await CreatorProfile.findOne({
     userId: new mongoose.Types.ObjectId(userId),
-  }).lean()) as unknown as {
+  }).lean<{
+    displayName?: string;
     bio?: string;
     location?: string;
     profileImage?: string;
@@ -79,14 +80,10 @@ export default async function CreatorPortfolioPage() {
       languages?: string[];
       strengths?: string[];
     };
-  };
+  }>();
 
-  const displayName = user.email.split("@")[0];
-
-  const creatorProfile = await CreatorProfile
-    .findOne({ userId })
-    .lean<{ profileImage?: string; displayName?: string }>();
-
+  const displayName =
+  profileDoc?.displayName || user.email.split("@")[0];
 
   if (!profileDoc) redirect("/onboarding/creator");
 
@@ -226,7 +223,7 @@ export default async function CreatorPortfolioPage() {
     : [];
 
   const hasImage = !!profileDoc.profileImage;
-  const hasDisplayName = !!user.email; // or profileDoc.displayName if you store it
+  const hasDisplayName = !!user.email;
   const hasBio = !!profileDoc.bio;
   const hasLocation = !!profileDoc.location;
   const hasNiche = !!profileDoc.niche;
@@ -334,7 +331,7 @@ export default async function CreatorPortfolioPage() {
   /* ================= SERIALIZED PROFILE ================= */
 
   const profile = {
-    displayName: user.email.split("@")[0],
+    displayName,
     email: user.email,
     niche: profileDoc.niche ?? "",
     platforms: profileDoc.platforms ?? "",

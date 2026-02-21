@@ -7,6 +7,7 @@ import {
   NotebookTabs,
   ChartSpline,
   HandCoins,
+  UserRoundSearch,
 } from "lucide-react";
 
 type Props = {
@@ -28,6 +29,7 @@ type Props = {
   inboxCount?: number;
   draftAgreementsCount?: number;
   pendingPaymentsCount?: number;
+  creatorsCount?:number;
 };
 
 
@@ -37,6 +39,7 @@ export default function BrandSidebar({
   inboxCount = 0,
   draftAgreementsCount = 0,
   pendingPaymentsCount = 0,
+  creatorsCount,
 }: Props) {
 
   return (
@@ -109,7 +112,7 @@ export default function BrandSidebar({
             href="/brand/creators"
             active={active === "creators"}
             badge={pendingPaymentsCount}
-            icon={HandCoins}
+            icon={UserRoundSearch}
           />
           
         </div>

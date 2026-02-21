@@ -10,61 +10,63 @@ import BrandCreatorsGrid from "@/components/brand/BrandCreatorsGrid";
 import "@/lib/db/models/User";
 
 export default async function BrandCreatorsPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("auth_session")?.value;
-  const role = cookieStore.get("user_role")?.value;
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("auth_session")?.value;
+    const role = cookieStore.get("user_role")?.value;
 
-  if (!userId || role !== "BRAND") {
-    redirect("/auth/login");
-  }
+    if (!userId || role !== "BRAND") {
+        redirect("/auth/login");
+    }
 
-  await connectDB();
+    await connectDB();
 
-  const creators = await CreatorProfile.find()
-    .populate("userId", "email")
-    .lean();
+    const creators = await CreatorProfile.find()
+        .populate("userId", "email name")
+        .lean();
 
-  const safeCreators = creators.map((c: any) => ({
-    _id: c._id.toString(),
-    username: c.username,
-    niche: c.niche,
-    platforms: c.platforms,
-    location: c.location || "",
-    profileImage: c.profileImage || "",
-    bio: c.bio || "",
-    contentFormats: c.skills?.contentFormats || [],
-    portfolioCount: c.portfolio?.length || 0,
-    email: c.userId?.email || "",
-  }));
+    const safeCreators = creators.map((c: any) => ({
+        _id: c._id.toString(),
+        username: c.displayName || c.username || "Creator",
+        niche: c.niche || "General",
+        platforms: c.platforms || "",
+        location: c.location || "",
+        profileImage: c.profileImage || "",
+        bio: c.bio || "",
+        contentFormats: c.skills?.contentFormats || [],
+        portfolioCount: c.portfolio?.length || 0,
+        email: c.userId?.email || "",
+    }));
 
-  return (
-    <div className="min-h-screen bg-black text-white lg:px-0 px-2">
-      <div className="flex">
-        <BrandSidebar active="creators" brandProfile={{} as any} />
+    console.log("CREATORS:", creators);
 
-        <main className="flex-1 px-6 py-8 space-y-10">
+    return (
+        <div className="min-h-screen bg-black text-white lg:px-0 px-2">
+            <div className="flex">
+                <BrandSidebar active="creators" brandProfile={{} as any} />
 
-          {/* Hero */}
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#636EE1]/20 via-[#1a1a1a] to-black p-8 lg:p-12">
+                <main className="flex-1 px-6 py-8 space-y-10">
 
-            <div className="text-sm text-white/60">
-              Discover Talent
+                    {/* Hero */}
+                    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#636EE1]/20 via-[#1a1a1a] to-black p-8 lg:p-12">
+
+                        <div className="text-sm text-white/60">
+                            Discover Talent
+                        </div>
+
+                        <div className="mt-3 text-4xl font-semibold">
+                            {safeCreators.length} Creators on MAKNE
+                        </div>
+
+                        <div className="mt-3 text-sm text-white/60">
+                            Explore verified creators and their portfolios
+                        </div>
+                    </div>
+
+                    {/* Grid */}
+                    <BrandCreatorsGrid creators={safeCreators} />
+
+                </main>
             </div>
-
-            <div className="mt-3 text-4xl font-semibold">
-              {safeCreators.length} Creators on MAKNE
-            </div>
-
-            <div className="mt-3 text-sm text-white/60">
-              Explore verified creators and their portfolios
-            </div>
-          </div>
-
-          {/* Grid */}
-          <BrandCreatorsGrid creators={safeCreators} />
-
-        </main>
-      </div>
-    </div>
-  );
+        </div>
+    );
 }

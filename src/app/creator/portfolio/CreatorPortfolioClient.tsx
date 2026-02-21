@@ -70,126 +70,119 @@ export default function CreatorPortfolioClient({ profile }: Props) {
 
     const hasMoreThanMax = allProjects.length > maxVisible;
 
+
+    console.log(profile.displayName);
+
     return (
         <div className="space-y-12">
 
-            {/* ===== PROFILE HEADER ===== */}
-            {/* <h1 className="text-4xl">My Portfolio</h1> */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            {/* ================= HERO ================= */}
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0b1020] via-[#0f172a] to-[#1e1b4b] p-6 sm:p-8 lg:p-10">
 
-                {/* ===== LEFT SIDE (Avatar + Name) ===== */}
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-10">
 
-                    {/* Avatar */}
-                    <div className="relative shrink-0">
-                        {profile.profileImage ? (
-                            <img
-                                src={profile.profileImage}
-                                alt={profile.displayName}
-                                className="
-            h-24 w-24
-            sm:h-20 sm:w-20
-            rounded-full
-            object-cover
-            border border-white/10
-            shadow-lg
-          "
-                            />
-                        ) : (
-                            <div className="
-          h-24 w-24
-          sm:h-20 sm:w-20
-          rounded-full
-          bg-[#636EE1]/20
-          flex items-center justify-center
-          text-3xl sm:text-2xl
-          font-medium
-          border border-white/10
-        ">
-                                {profile.displayName?.[0]?.toUpperCase() ?? "C"}
-                            </div>
-                        )}
+                    {/* LEFT: Identity */}
+                    <div className="flex flex-col sm:flex-row sm:items-center items-center sm:items-start gap-6 w-full">
 
-                        {/* Edit Button */}
-                        <Link
-                            href="/creator/profile"
-                            className="
-          absolute bottom-0 right-0
-          rounded-full
-          bg-[#636EE1]
-          p-1 px-1.5
-          text-xs
-          text-black
-          shadow-md
-          hover:scale-105
-          transition
-        "
-                        >
-                            ✎
-                        </Link>
-                    </div>
-
-                    {/* Name + Niche */}
-                    <div className="space-y-1">
-                        <h1 className="text-3xl sm:text-2xl lg:text-3xl font-semibold tracking-tight">
-                            {profile.displayName}
-                        </h1>
-
-                        {profile.niche && (
-                            <div className="text-sm opacity-70">
-                                {profile.niche}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* ===== PROFILE COMPLETION CARD ===== */}
-                <div className="
-    w-full sm:w-[340px]
-    rounded-2xl
-    border border-white/10
-    bg-[#ffffff08]
-    p-5
-    space-y-4
-    shadow-md
-  ">
-
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm opacity-70">
-                            Profile completion
-                        </span>
-                        <span className="text-sm font-semibold">
-                            {profile.profileCompletion}%
-                        </span>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-[#636EE1] transition-all duration-500"
-                            style={{ width: `${profile.profileCompletion}%` }}
-                        />
-                    </div>
-
-                    {profile.profileCompletion < 100 && (
-                        <div className="text-xs opacity-70 space-y-2 leading-relaxed">
-                            <div>
-                                Complete your profile to increase brand visibility.
-                            </div>
-
-                            {!profile.hasPublishedProject && (
-                                <div className="text-[#636EE1]">
-                                    • Publish at least one project to unlock full visibility.
+                        {/* Avatar Wrapper */}
+                        <div className="relative flex justify-center sm:justify-start w-full sm:w-auto">
+                            {profile.profileImage ? (
+                                <img
+                                    src={profile.profileImage}
+                                    alt={profile.displayName}
+                                    className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 rounded-2xl object-cover shadow-xl ring-2 ring-[#636EE1]/40"
+                                />
+                            ) : (
+                                <div className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 rounded-2xl bg-[#636EE1]/20 flex items-center justify-center text-xl sm:text-2xl lg:text-3xl font-semibold">
+                                    {profile.displayName?.[0]?.toUpperCase() ?? "C"}
                                 </div>
                             )}
-                        </div>
-                    )}
-                </div>
 
+                            <Link
+                                href="/creator/profile"
+                                className="
+    absolute -bottom-4
+    h-9 w-9
+    flex items-center justify-center
+    rounded-full
+    bg-white/10
+    backdrop-blur-md
+    border border-white/20
+    shadow-lg
+    hover:bg-[#636EE1]
+    hover:text-black
+    transition-all duration-200
+  "
+                            >
+                                ✎
+                            </Link>
+                        </div>
+
+                        {/* Name + Meta */}
+                        <div className="space-y-2 text-center sm:text-left">
+
+                            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+                                {profile.displayName}
+                            </h1>
+
+                            {profile.niche && (
+                                <div className="text-sm opacity-70 break-words">
+                                    {profile.niche}
+                                </div>
+                            )}
+
+                            {profile.location && (
+                                <div className="text-xs opacity-50 break-words">
+                                    {profile.location}
+                                </div>
+                            )}
+
+                            {/* Availability Pill */}
+                            <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs">
+                                <div
+                                    className={`h-2 w-2 rounded-full ${profile.availability === "AVAILABLE"
+                                        ? "bg-green-400"
+                                        : profile.availability === "LIMITED"
+                                            ? "bg-yellow-400"
+                                            : "bg-red-400"
+                                        }`}
+                                />
+                                {profile.availability === "AVAILABLE" && "Available for work"}
+                                {profile.availability === "LIMITED" && "Limited availability"}
+                                {profile.availability === "UNAVAILABLE" && "Not available"}
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {/* RIGHT: Profile Completion */}
+                    <div className="w-full sm:max-w-md lg:max-w-sm rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 sm:p-6 space-y-4">
+
+                        <div className="flex justify-between text-xs opacity-70">
+                            <span>Profile completion</span>
+                            <span>{profile.profileCompletion}%</span>
+                        </div>
+
+                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-[#636EE1] transition-all"
+                                style={{ width: `${profile.profileCompletion}%` }}
+                            />
+                        </div>
+
+                        {profile.profileCompletion < 100 && (
+                            <div className="text-xs opacity-60">
+                                Complete your profile to boost brand trust.
+                            </div>
+                        )}
+
+                    </div>
+
+                </div>
             </div>
 
             {/* ================= OVERVIEW KPIs ================= */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 -mt-4">
                 <PortfolioOverviewCard
                     label="Total campaigns"
                     value={profile.overview.totalCampaigns}
@@ -240,7 +233,7 @@ export default function CreatorPortfolioClient({ profile }: Props) {
             />
 
             {/* ================= AVAILABILITY ================= */}
-            <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-4 flex items-center justify-between">
+            {/* <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-4 flex items-center justify-between">
                 <div>
                     <div className="text-xs opacity-70">Availability</div>
                     <div className="mt-1 text-sm font-medium">
@@ -258,11 +251,11 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                             : "bg-red-400"
                         }`}
                 />
-            </div>
+            </div> */}
 
             {/* ================= PERFORMANCE ================= */}
             <div className="space-y-3">
-                <h2 className="text-sm font-medium opacity-70">Performance</h2>
+                <h2 className="text-lg font-medium opacity-70">Performance</h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <PerfCard label="Collaborations" value={profile.performance.collaborations} />
@@ -421,7 +414,7 @@ export default function CreatorPortfolioClient({ profile }: Props) {
 
 function PerfCard({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className="rounded-xl border border-white/10 bg-[#ffffff05] p-4">
+        <div className="rounded-2xl border border-white/10 bg-[#0B0F19]/60 backdrop-blur p-5 hover:border-[#636EE1]/30 transition">
             <div className="text-xs opacity-60">{label}</div>
             <div className="mt-1 text-lg font-medium">{value}</div>
         </div>

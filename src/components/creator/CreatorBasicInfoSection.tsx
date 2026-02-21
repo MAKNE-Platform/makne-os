@@ -19,7 +19,7 @@ export default function CreatorBasicInfoSection({
     <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 mt-10">
 
       {/* ================= LEFT: BASIC INFO ================= */}
-      <div className="space-y-5 text-sm">
+      <div className="space-y-5 text-md">
 
         <div>
           <span className="opacity-60">Display name:</span>{" "}
@@ -29,7 +29,7 @@ export default function CreatorBasicInfoSection({
         {bio && (
           <div>
             <span className="opacity-60">Bio:</span>{" "}
-            <span className="font-medium">{bio}</span>
+            <span className="font-medium whitespace-pre-line">{bio}</span>
           </div>
         )}
 
@@ -42,7 +42,18 @@ export default function CreatorBasicInfoSection({
 
         <div>
           <span className="opacity-60">Primary category:</span>{" "}
-          <span className="font-medium">{niche}</span>
+          {niche ? (
+            niche.split(",").map((n, i) => (
+              <span
+                key={`${n.trim()}-${i}`}
+                className="inline-block ml-2 rounded-full border border-white/15 px-3 py-1 text-xs font-medium"
+              >
+                {n.trim()}
+              </span>
+            ))
+          ) : (
+            <span className="font-medium opacity-40">Not added</span>
+          )}
         </div>
 
         <div>
@@ -50,9 +61,9 @@ export default function CreatorBasicInfoSection({
           <span className="font-medium">{platforms}</span>
         </div>
 
-        <div className="opacity-40 text-xs">
+        {/* <div className="opacity-40 text-xs">
           Verification badge coming soon
-        </div>
+        </div> */}
       </div>
 
       {/* ================= RIGHT: AVATAR ================= */}
@@ -62,7 +73,7 @@ export default function CreatorBasicInfoSection({
           border border-white/15
           bg-[#ffffff05]
           flex items-center justify-center
-          h-[40vh] overflow-hidden
+          h-[60vh] overflow-hidden
         "
       >
         {profileImage ? (

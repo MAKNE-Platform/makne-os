@@ -82,9 +82,12 @@ export default function EarningsClient({
               Go to Wallet
             </a>
 
-            <button className="px-4 py-2 rounded-lg border border-white/20 backdrop-blur-xl text-sm">
-              Download Report
-            </button>
+            <a
+              href="/api/wallet/statement"
+              className="px-4 py-2 rounded-lg border backdrop-blur-2xl border-white/20 text-sm hover:bg-white/5 transition"
+            >
+              Download Statement
+            </a>
           </div>
         </div>
       </div>

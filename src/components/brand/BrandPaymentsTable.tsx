@@ -161,7 +161,7 @@ export default function BrandPaymentsTable({
 
 function StatusPill({ status }: { status: string }) {
   const base =
-    "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium";
+    "inline-flex w-max items-center rounded-full border px-3 py-1 text-xs font-medium";
 
   const style =
     status === "RELEASED"

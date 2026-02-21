@@ -18,13 +18,13 @@ export async function POST(req: Request) {
   await CreatorProfile.findOneAndUpdate(
     { userId: new mongoose.Types.ObjectId(userId) },
     {
+      displayName: body.displayName,
       bio: body.bio,
       location: body.location,
       niche: body.niche,
       platforms: body.platforms,
       profileImage: body.profileImage,
       skills: body.skills,
-
     },
     { new: true }
   );

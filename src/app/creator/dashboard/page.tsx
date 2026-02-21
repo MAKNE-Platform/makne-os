@@ -159,7 +159,7 @@ export default async function CreatorDashboardPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Mobile Nav */}
-      <div className="lg:hidden sticky top-0 z-[100]">
+      {/* <div className="lg:hidden sticky top-0 z-[100]">
         <CreatorMobileTopNav
           displayName={displayName}
           profileImage={creatorProfile?.profileImage}
@@ -168,17 +168,17 @@ export default async function CreatorDashboardPage() {
           pendingPaymentsCount={pendingPaymentsCount}
           pendingDeliverablesCount={pendingDeliverablesCount}
         />
-      </div>
+      </div> */}
 
       <div className="flex">
-        <CreatorSidebar
+        {/* <CreatorSidebar
           creatorProfile={{ name: displayName, profileImage: creatorProfile?.profileImage, email: user.email }}
           inboxCount={inboxCount}
           agreementsCount={agreementsCount}
           pendingDeliverablesCount={pendingDeliverables.length}
           pendingPaymentsCount={pendingPaymentsCount}
 
-        />
+        /> */}
 
         <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 space-y-10">
           {/* Header */}
