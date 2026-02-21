@@ -13,6 +13,8 @@ import BrandSidebar from "@/components/brand/BrandSidebar";
 import { AuditLog } from "@/lib/db/models/AuditLog";
 import { Notification } from "@/lib/db/models/Notification";
 import { Payment } from "@/lib/db/models/Payment";
+import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
+import { User } from "@/lib/db/models/User";
 
 
 type AgreementType = {
@@ -48,13 +50,42 @@ export default async function BrandDashboard() {
   }
 
 
-  const agreements = (await Agreement.find(
-    { brandId: new mongoose.Types.ObjectId(userId) },
-    { title: 1, status: 1, creatorEmail: 1, createdAt: 1 }
+  const agreements = await Agreement.find(
+    { brandId: new mongoose.Types.ObjectId(userId) }
   )
+    .populate({
+      path: "creatorId",
+      select: "email",
+    })
     .sort({ createdAt: -1 })
-    .lean()) as unknown as AgreementType[];
+    .lean();
 
+  // Extract creator userIds
+  const creatorIds = agreements
+    .map((a: any) => a.creatorId?._id)
+    .filter(Boolean);
+
+  // Fetch profiles
+  const creatorProfiles = await CreatorProfile.find({
+    userId: { $in: creatorIds },
+  })
+    .select("userId profileImage")
+    .lean();
+
+  // Create lookup map
+  const creatorProfileMap = new Map(
+    creatorProfiles.map((profile: any) => [
+      profile.userId.toString(),
+      profile.profileImage,
+    ])
+  );
+
+  const recentAgreements = agreements.slice(0, 5).map((a: any) => ({
+    ...a,
+    creatorProfileImage:
+      a.creatorId?._id &&
+      creatorProfileMap.get(a.creatorId._id.toString()),
+  }));
 
   /* ================= COUNTS FOR SIDEBAR ================= */
 
@@ -98,35 +129,51 @@ export default async function BrandDashboard() {
   );
   const drafts = agreements.filter(a => a.status === "DRAFT");
 
-  const recentAgreements = agreements.slice(0, 4);
+  const recentCreatorsMap = new Map<string, any>();
 
-  const recentCreatorsMap = new Map<string, AgreementType>();
+  agreements.forEach((agreement: any) => {
+    const email =
+      agreement.creatorId?.email || agreement.creatorEmail;
 
-  agreements.forEach((agreement) => {
-    if (!agreement.creatorEmail) return;
+    if (!email) return;
 
-    const existing = recentCreatorsMap.get(agreement.creatorEmail);
+    const existing = recentCreatorsMap.get(email);
 
     if (
       !existing ||
-      new Date(agreement.createdAt) > new Date(existing.createdAt)
+      new Date(agreement.createdAt) >
+      new Date(existing.createdAt)
     ) {
-      recentCreatorsMap.set(agreement.creatorEmail, agreement);
+      recentCreatorsMap.set(email, agreement);
     }
   });
 
   const recentCreators = Array.from(recentCreatorsMap.values())
+    .map((a: any) => ({
+      ...a,
+      creatorProfileImage:
+        a.creatorId?._id &&
+        creatorProfileMap.get(a.creatorId._id.toString()),
+    }))
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         new Date(b.createdAt).getTime() -
         new Date(a.createdAt).getTime()
     )
     .slice(0, 4);
 
+
   /* ================= FINAL COUNTS (USED BY NAV) ================= */
 
   const draftAgreementsCount = drafts.length;
   const pendingPaymentsCount = pendingPayments;
+
+  console.log(
+    recentAgreements.map(a => ({
+      title: a.title,
+      creator: a.creatorId
+    }))
+  );
 
 
   return (
@@ -282,84 +329,108 @@ export default async function BrandDashboard() {
 
               {/* Agreement cards */}
               <div className="space-y-4">
-                {recentAgreements.map((a) => (
-                  <div
-                    key={a._id.toString()}
-                    className="
-        rounded-xl
-        border border-white/10
-        bg-white/[0.02]
-        p-4
-        space-y-3
-        transition
-        hover:border-[#636EE1]/40
-      "
-                  >
-                    {/* Top Section */}
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-medium">
-                          {a.title}
+                {recentAgreements.map((a: any) => {
+                  const createdDate = a.createdAt
+                    ? new Date(a.createdAt).toDateString()
+                    : "—";
+
+                  const creatorEmail =
+                    a.creatorId?.email || a.creatorEmail || "No creator assigned";
+
+                  const creatorInitial =
+                    creatorEmail?.[0]?.toUpperCase() || "C";
+
+                  return (
+                    <div
+                      key={a._id.toString()}
+                      className="
+          rounded-xl
+          border border-white/10
+          bg-white/[0.02]
+          p-4
+          space-y-3
+          transition
+          hover:border-[#636EE1]/40
+        "
+                    >
+                      {/* Top Section */}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium">
+                            {a.title || "Untitled Agreement"}
+                          </div>
+
+                          <div className="text-xs text-white/50">
+                            {creatorEmail}
+                          </div>
                         </div>
-                        <div className="text-xs text-white/50">
-                          {a.creatorEmail ?? "No creator assigned"}
-                        </div>
+
+                        <Pill>{a.status}</Pill>
                       </div>
 
-                      {/* Status Pill */}
-                      <Pill>{a.status}</Pill>
-                    </div>
-
-                    {/* Amount Row (if exists) */}
-                    {a.amount && (
-                      <div className="flex justify-between text-sm text-white/70">
-                        <span>Amount</span>
+                      {/* Amount Row */}
+                      <div className="flex justify-start gap-2 text-sm text-white/70">
+                        <span>Amount:</span>
                         <span className="font-medium text-white">
-                          ₹{a.amount}
+                          {a.amount ? `₹${a.amount}` : "—"}
                         </span>
                       </div>
-                    )}
 
-                    {/* Date Row */}
-                    <div className="flex justify-between text-xs text-white/50">
-                      <span>Created</span>
-                      <span>{a.createdAt.toDateString()}</span>
-                    </div>
-
-                    {/* Bottom Section */}
-                    <div className="flex justify-between items-center pt-2">
-                      {/* Creator Avatar */}
-                      <div className="h-8 w-8 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-xs">
-                        {a.creatorEmail?.[0]?.toUpperCase() ?? "C"}
+                      {/* Created Row */}
+                      <div className="flex justify-start gap-1 text-xs text-white/50">
+                        <span>Created:</span>
+                        <span>{createdDate}</span>
                       </div>
 
-                      {/* View Button */}
-                      <Link
-                        href={`/agreements/${a._id}`}
-                        className="
-            inline-flex
-            items-center
-            gap-1
-            rounded-full
-            border
-            border-[#636EE1]/40
-            bg-[#636EE1]/10
-            px-4
-            py-1.5
-            text-xs
-            font-medium
-            text-[#636EE1]
-            hover:bg-[#636EE1]
-            hover:text-black
-            transition-all
-            duration-200
-          "
-                      >
-                        View
-                      </Link>
+                      {/* Bottom Section */}
+                      <div className="flex justify-between items-center pt-2">
+                        {/* Avatar */}
+                        <div className="relative h-8 w-8 rounded-full overflow-hidden bg-[#636EE1]/20 flex items-center justify-center text-xs font-medium">
+                          {a.creatorProfileImage ? (
+                            <Image
+                              src={a.creatorProfileImage}
+                              alt="Creator avatar"
+                              fill
+                              sizes="32px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <span>
+                              {(a.creatorId?.email ||
+                                a.creatorEmail ||
+                                "C")[0]?.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* View Button */}
+                        <Link
+                          href={`/agreements/${a._id}`}
+                          className="
+              inline-flex
+              items-center
+              gap-1
+              rounded-full
+              border
+              border-[#636EE1]/40
+              bg-[#636EE1]/10
+              px-4
+              py-1.5
+              text-xs
+              font-medium
+              text-[#636EE1]
+              hover:bg-[#636EE1]
+              hover:text-black
+              transition-all
+              duration-200
+            "
+                        >
+                          View
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -369,33 +440,67 @@ export default async function BrandDashboard() {
                 Recent creators
               </h3>
 
-              {recentCreators.map((a) => (
-                <div
-                  key={a._id.toString()}
-                  className="
-        rounded-lg
-        border border-white/10
-        p-3
-        flex items-center justify-between
-      "
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="h-8 w-8 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-xs">
-                      {a.creatorEmail?.[0]?.toUpperCase()}
-                    </div>
+              {recentCreators.map((a: any) => {
+                const email =
+                  a.creatorId?.email || a.creatorEmail || "Unknown creator";
 
-                    <div>
-                      <div className="text-sm font-medium truncate max-w-[180px]">
-                        {a.creatorEmail}
+                const profileImage =
+                  a.creatorProfileImage;
+
+                const createdDate = a.createdAt
+                  ? new Date(a.createdAt).toDateString()
+                  : "—";
+
+                return (
+                  <div
+                    key={a._id.toString()}
+                    className="
+          rounded-lg
+          border border-white/10
+          p-3
+          flex items-center justify-between
+          hover:border-[#636EE1]/40
+          transition
+        "
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Avatar */}
+                      <div
+                        className={`
+              relative h-8 w-8 rounded-full overflow-hidden
+              bg-[#636EE1]/20 flex items-center justify-center
+              text-xs font-medium
+              ${a.status === "ACTIVE" ? "ring ring-[#636EE1]" : ""}
+            `}
+                      >
+                        {profileImage ? (
+                          <Image
+                            src={profileImage}
+                            alt="Creator avatar"
+                            fill
+                            sizes="32px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <span>
+                            {email[0]?.toUpperCase()}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs opacity-60">
-                        Last collab {a.createdAt.toDateString()}
+
+                      <div>
+                        <div className="text-sm font-medium truncate max-w-[180px]">
+                          {email}
+                        </div>
+
+                        <div className="text-xs opacity-60">
+                          Last collab {createdDate}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

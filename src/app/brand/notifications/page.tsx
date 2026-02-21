@@ -14,6 +14,10 @@ import { Payment } from "@/lib/db/models/Payment";
 import BrandSidebar from "@/components/brand/BrandSidebar";
 import MobileTopNav from "@/components/dashboard/MobileTopNav";
 import DeleteNotificationButton from "@/components/brand/DeleteNotificationButton";
+import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
+
+import NextImage from "next/image";
+import { MoveRight } from "lucide-react";
 
 /* ================= TYPES ================= */
 
@@ -65,6 +69,10 @@ type InboxNotification = {
   isUnread: boolean;
 };
 
+type EnrichedInboxDeliverable = InboxDeliverable & {
+  creatorProfileImage?: string;
+};
+
 /* ================= PAGE ================= */
 
 export default async function BrandInboxPage() {
@@ -85,6 +93,7 @@ export default async function BrandInboxPage() {
   }).lean()) as BrandProfileType | null;
 
   if (!brandProfile) redirect("/onboarding/brand");
+
 
   /* ================= DELIVERABLE AUDIT LOGS ================= */
 
@@ -128,6 +137,55 @@ export default async function BrandInboxPage() {
       files: milestone.submission?.files ?? [],
     });
   }
+
+
+  /* ================= ENRICH DELIVERABLES WITH CREATOR IMAGE ================= */
+
+// Collect creator emails
+const creatorEmails = inboxDeliverables
+  .map((d) => d.creatorEmail)
+  .filter(Boolean) as string[];
+
+// Find Users by email
+const users = await mongoose
+  .model("User")
+  .find({ email: { $in: creatorEmails } })
+  .select("_id email")
+  .lean();
+
+// Map email → userId
+const emailToUserId = new Map(
+  users.map((u: any) => [u.email, u._id.toString()])
+);
+
+// Fetch CreatorProfiles using userIds
+const creatorProfiles = await CreatorProfile.find({
+  userId: { $in: users.map((u: any) => u._id) },
+})
+  .select("userId profileImage")
+  .lean();
+
+// Map userId → profileImage
+const userIdToProfileImage = new Map(
+  creatorProfiles.map((p: any) => [
+    p.userId.toString(),
+    p.profileImage,
+  ])
+);
+
+// Final enriched deliverables
+const enrichedDeliverables: EnrichedInboxDeliverable[] =
+  inboxDeliverables.map((d) => {
+    const userId = d.creatorEmail
+      ? emailToUserId.get(d.creatorEmail)
+      : undefined;
+
+    return {
+      ...d,
+      creatorProfileImage:
+        userId && userIdToProfileImage.get(userId),
+    };
+  });
 
   /* ================= NOTIFICATIONS ================= */
 
@@ -223,7 +281,7 @@ export default async function BrandInboxPage() {
                 </div>
               )}
 
-              {inboxDeliverables.map((d) => (
+              {enrichedDeliverables.map((d) => (
                 <Link
                   key={d.auditId}
                   href={`/agreements/${d.agreementId}`}
@@ -274,7 +332,19 @@ export default async function BrandInboxPage() {
                         </div>
                       </div>
 
-                      <UserAvatar email={d.creatorEmail} />
+                      <div className="relative h-12 w-12 rounded-md overflow-hidden bg-[#636EE1]/20 flex items-center justify-center text-xs font-medium">
+                        {d.creatorProfileImage ? (
+                          <img
+                            src={d.creatorProfileImage}
+                            alt="Creator avatar"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span>
+                            {(d.creatorEmail || "C")[0]?.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="text-sm opacity-60">
@@ -296,9 +366,9 @@ export default async function BrandInboxPage() {
                         {new Date(d.submittedAt).toLocaleString()}
                       </div>
 
-                      <a className="px-3 pb-1 border border-[#636EE1] text-[#ffffff] rounded-lg text-xl bg-[#636EE1] hover:bg-[#636EE1]/40 transition-all"
+                      <a className="px-3 py-1 border border-[#636EE1] text-[#ffffff] rounded-md text-xl bg-[#636EE1] hover:bg-[#636EE1]/40 transition-all"
                         href={`/agreements/${d.agreementId}`}>
-                        →
+                        <MoveRight />
                       </a>
                     </div>
                   </div>

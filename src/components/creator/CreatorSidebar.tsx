@@ -9,6 +9,7 @@ import {
     Contact,
     ChartSpline,
     HandCoins,
+    Wallet,
 } from "lucide-react";
 
 type Props = {
@@ -92,12 +93,19 @@ export default function CreatorSidebar({
                         icon={ChartSpline}
                     />
                     <SidebarItem
-                        label="Payments"
+                        label="Wallet"
                         href="/creator/payments"
                         active={pathname.startsWith("/creator/payments")}
                         badge={pendingPaymentsCount}
+                        icon={Wallet}
+                    />
+                    <SidebarItem
+                        label="Earnings"
+                        href="/creator/earnings"
+                        active={pathname.startsWith("/creator/earnings")}
                         icon={HandCoins}
                     />
+                    
                 </div>
             </nav>
 

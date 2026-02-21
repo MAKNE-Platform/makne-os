@@ -8,6 +8,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     enum: ["CREATOR", "BRAND", "AGENCY"],
   },
+
+  profileImage: {
+    type: String, 
+  },
+
   isEmailVerified: {
     type: Boolean,
     default: false,

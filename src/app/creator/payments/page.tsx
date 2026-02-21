@@ -23,11 +23,35 @@ export default async function CreatorPaymentsPage() {
 
     const balance = await getCreatorBalance(creatorObjectId);
 
-    const payments = await Payment.find({
-        creatorId: creatorObjectId,
+    const creatorId = new mongoose.Types.ObjectId(userId);
+
+    const paymentsRaw = await Payment.find({
+        creatorId,
+        status: "RELEASED",
     })
-        .sort({ updatedAt: -1 })
-        .lean();
+        .lean<{
+            _id: mongoose.Types.ObjectId;
+            agreementId: mongoose.Types.ObjectId;
+            milestoneId: mongoose.Types.ObjectId;
+            brandId: mongoose.Types.ObjectId;
+            creatorId: mongoose.Types.ObjectId;
+            amount: number;
+            status: "PENDING" | "INITIATED" | "RELEASED" | "FAILED";
+            createdAt: Date;
+            updatedAt: Date;
+        }[]>();
+
+    const payments = paymentsRaw.map((p) => ({
+        id: p._id.toString(),
+        agreementId: p.agreementId?.toString(),
+        milestoneId: p.milestoneId?.toString(),
+        brandId: p.brandId?.toString(),
+        creatorId: p.creatorId?.toString(),
+        amount: p.amount,
+        status: p.status,
+        createdAt: p.createdAt?.toISOString(),
+        updatedAt: p.updatedAt?.toISOString(),
+    }));
 
     const released = payments.filter(p => p.status === "RELEASED");
     const pending = payments.filter(
