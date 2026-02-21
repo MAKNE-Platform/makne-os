@@ -95,7 +95,7 @@ export default async function BrandPaymentsPage() {
         .lean<{ _id: mongoose.Types.ObjectId; title: string }[]>();
 
 
-    const agreementMap = new Map(
+    const agreementMap = Object.fromEntries(
         agreements.map(a => [a._id.toString(), a.title])
     );
 
@@ -108,9 +108,21 @@ export default async function BrandPaymentsPage() {
         .lean<{ _id: mongoose.Types.ObjectId; email: string }[]>();
 
 
-    const creatorMap = new Map(
+    const creatorMap = Object.fromEntries(
         creators.map(c => [c._id.toString(), c.email])
     );
+
+    const safePayments = payments.map((p: any) => ({
+        _id: p._id.toString(),
+        agreementId: p.agreementId?.toString(),
+        milestoneId: p.milestoneId?.toString(),
+        brandId: p.brandId?.toString(),
+        creatorId: p.creatorId?.toString(),
+        amount: p.amount,
+        status: p.status,
+        createdAt: p.createdAt?.toISOString(),
+        updatedAt: p.updatedAt?.toISOString(),
+    }));
 
 
     return (
@@ -199,9 +211,9 @@ export default async function BrandPaymentsPage() {
 
                     {/* ================= PAYMENTS TABLE ================= */}
                     <BrandPaymentsTable
-                        payments={payments}
-                        agreementMap={Object.fromEntries(agreementMap)}
-                        creatorMap={Object.fromEntries(creatorMap)}
+                        payments={safePayments}
+                        agreementMap={agreementMap}
+                        creatorMap={creatorMap}
                     />
                 </main>
             </div>

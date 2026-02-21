@@ -52,10 +52,26 @@ export default async function CreatorEarningsPage() {
     })
   );
 
+  const safePayments = payments.map((p) => ({
+    _id: p._id.toString(),
+    agreementId: p.agreementId?.toString(),
+    milestoneId: p.milestoneId?.toString(),
+    brandId: p.brandId?.toString(),
+    creatorId: p.creatorId?.toString(),
+    amount: p.amount,
+    status: p.status,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  }));
+
   return (
     <EarningsClient
-      balance={balance}
-      payments={payments}
+      balance={{
+        availableBalance: balance.availableBalance,
+        lockedAmount: balance.lockedAmount,
+        paidOut: balance.paidOut,
+      }}
+      payments={safePayments}
       totalEarnings={totalEarnings}
       earningsChart={earningsChart}
     />
