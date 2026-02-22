@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import LogoutButton from "@/components/LogoutButton";
+
 import {
   LayoutDashboard,
   ClipboardList,
@@ -138,8 +140,8 @@ export default function BrandSidebar({
         <Link
           href="/brand/settings"
           className="
-            mt-2 inline-flex items-center gap-1
-            text-xs
+            mt-2 inline-flex items-center justify-center gap-1
+            text-xs w-full 
             border p-2 rounded-md
             border-[#636EE1]
             text-[#636EE1]
@@ -149,6 +151,9 @@ export default function BrandSidebar({
         >
           Manage Brand
         </Link>
+
+        <LogoutButton />
+        
       </div>
 
     </aside>

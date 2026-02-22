@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/landing/Navbar";
 import Timeline from "@/components/landing/Timeline";
+import Image from "next/image";
 
 export default function LandingPage() {
   return (

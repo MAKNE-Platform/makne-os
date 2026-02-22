@@ -55,18 +55,22 @@ export default function BrandCreatorsGrid({
             {/* ================= FILTER BAR ================= */}
             <div className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
 
-                <input
-                    type="text"
-                    placeholder="Search creators..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="
+                <div className="flex items-center gap-5">
+                    <input
+                        type="text"
+                        placeholder="Search creators..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="
             w-full lg:w-80
             bg-black border border-white/10
             rounded-xl px-4 py-2 text-sm
             focus:outline-none focus:ring-2 focus:ring-[#636EE1]
           "
-                />
+                    />
+
+                    <SavedCreatorsRouteButton />
+                </div>
 
                 <div className="flex gap-3 flex-wrap">
 
@@ -210,5 +214,33 @@ export default function BrandCreatorsGrid({
 
             </div>
         </div>
+    );
+}
+
+
+function SavedCreatorsRouteButton({
+    count = 0,
+}: {
+    count?: number;
+}) {
+
+    return (
+        <Link
+            href="/brand/saved-creators"
+            className="group relative inline-flex items-center gap-3 rounded-xl 
+                 border border-white/15 bg-white/5 px-5 py-2 
+                 text-sm font-medium text-white transition 
+                 hover:border-[#636EE1] hover:bg-[#636EE1]/10"
+        >
+            <span className="absolute inset-0 rounded-xl bg-[#636EE1]/20 blur-md opacity-0 transition group-hover:opacity-40" />
+
+            <span className="relative w-max">Saved Creators</span>
+
+            {count > 0 && (
+                <span className="relative text-xs px-2 py-0.5 rounded-full bg-[#636EE1]/20 text-[#636EE1]">
+                    {count}
+                </span>
+            )}
+        </Link>
     );
 }

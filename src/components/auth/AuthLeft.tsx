@@ -5,7 +5,7 @@ export default function AuthLeft() {
   return (
     <>
       <Image
-        src="/makne-logo.png"
+        src="/makne-logo-lg.png"
         alt="MAKNE"
         width={120}
         height={120}

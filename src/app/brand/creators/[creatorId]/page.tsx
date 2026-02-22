@@ -17,6 +17,7 @@ type UserLean = {
 };
 
 type CreatorLean = {
+    displayName: string;
     userId: any;
     _id: any;
     username: string;
@@ -90,6 +91,7 @@ export default async function BrandViewCreatorPage({
     
     const safeCreator = {
         _id: c._id.toString(),
+        displayName: c.displayName || c.username || "Creator",
         username: c.username,
         email: creatorUser.email,
         niche: c.niche,

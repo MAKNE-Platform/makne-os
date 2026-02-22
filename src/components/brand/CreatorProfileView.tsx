@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
+import CreatorContactCTAs from "../creator/CreatorContactCTAs";
 
 type Draft = {
     _id: string;
@@ -34,6 +36,10 @@ export default function CreatorProfileView({
 
         setSaved(true);
     }
+
+    // const creator = await CreatorProfile.findOne({
+    //     userId: params.id,
+    // }).lean();
 
     async function handleSendAgreement() {
         if (!selectedAgreement) return;
@@ -90,8 +96,12 @@ export default function CreatorProfileView({
 
                         <div className="space-y-2">
                             <h1 className="text-4xl font-semibold tracking-tight">
-                                {creator.displayName}
+                                {creator.displayName || creator.username || "Creator"}
                             </h1>
+
+                            <p className="font-semibold text-[#ffffffbc] tracking-tight">
+                                {creator.email}
+                            </p>
 
                             <div className="text-white/60 text-sm">
                                 {creator.niche}
@@ -146,6 +156,12 @@ export default function CreatorProfileView({
 
                 </div>
             </div>
+
+            {/* ================= CONTACT CTAs ================= */}
+            <CreatorContactCTAs
+                email={creator.email}
+                portfolioLink={creator.portfolio[0]?.link}
+            />
 
             {/* ================= PORTFOLIO ================= */}
             <div className="space-y-10">

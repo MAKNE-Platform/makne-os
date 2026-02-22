@@ -45,6 +45,7 @@ type Props = {
 /* ================= COMPONENT ================= */
 
 export default function CreatorPortfolioClient({ profile }: Props) {
+    
 
     const [showAllProjects, setShowAllProjects] = useState(false);
 
@@ -70,8 +71,6 @@ export default function CreatorPortfolioClient({ profile }: Props) {
 
     const hasMoreThanMax = allProjects.length > maxVisible;
 
-
-    console.log(profile.displayName);
 
     return (
         <div className="space-y-12">
@@ -224,12 +223,6 @@ export default function CreatorPortfolioClient({ profile }: Props) {
                 profileImage={profile.profileImage}
                 bio={profile.bio}
                 location={profile.location}
-            />
-
-            {/* ================= CONTACT CTAs ================= */}
-            <CreatorContactCTAs
-                email={profile.email}
-                portfolioLink={profile.portfolio[0]?.link}
             />
 
             {/* ================= AVAILABILITY ================= */}

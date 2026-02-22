@@ -23,10 +23,19 @@ export default function EditProfileClient({
 }: {
   initialProfile: Profile;
 }) {
-  const [form, setForm] = useState(initialProfile);
+  const [form, setForm] = useState<Profile>({
+    ...initialProfile,
+    displayName:
+      initialProfile.displayName &&
+        !initialProfile.displayName.includes("@")
+        ? initialProfile.displayName
+        : "",
+  });
   const [saving, setSaving] = useState(false);
 
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  console.log("Initial profile:", initialProfile);
 
   async function saveProfile() {
     setSaving(true);
@@ -64,6 +73,8 @@ export default function EditProfileClient({
     languages: form.skills?.languages?.join(", ") || "",
     strengths: form.skills?.strengths?.join(", ") || "",
   });
+
+  console.log("Current form state:", form.displayName);
 
 
   return (
@@ -157,7 +168,11 @@ export default function EditProfileClient({
           <div className="space-y-2">
             <label className="text-sm opacity-70">Display Name</label>
             <input
-              value={form.displayName ?? ""}
+              value={
+                form.displayName && !form.displayName.includes("@")
+                  ? form.displayName
+                  : ""
+              }
               onChange={(e) =>
                 setForm((prev) => ({
                   ...prev,

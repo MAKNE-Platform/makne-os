@@ -15,6 +15,12 @@ export default function CreatorBasicInfoSection({
   bio,
   location,
 }: Props) {
+
+  const safeDisplayName =
+  displayName && !displayName.includes("@")
+    ? displayName
+    : "";
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 mt-10">
 
@@ -22,8 +28,8 @@ export default function CreatorBasicInfoSection({
       <div className="space-y-5 text-md">
 
         <div>
-          <span className="opacity-60">Display name:</span>{" "}
-          <span className="font-medium">{displayName}</span>
+          <span className="opacity-60">Display name: </span>{" "}
+          <span className="font-medium">{safeDisplayName}</span>
         </div>
 
         {bio && (
@@ -79,12 +85,12 @@ export default function CreatorBasicInfoSection({
         {profileImage ? (
           <img
             src={profileImage}
-            alt={displayName}
+            alt={safeDisplayName}
             className="h-full w-full rounded object-cover border border-white/10"
           />
         ) : (
           <div className="h-40 w-40 rounded-full bg-[#636EE1]/20 flex items-center justify-center text-4xl font-medium">
-            {displayName?.[0]?.toUpperCase() ?? "C"}
+            {safeDisplayName?.[0]?.toUpperCase() ?? "C"}
           </div>
         )}
       </div>

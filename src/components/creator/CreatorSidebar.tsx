@@ -11,6 +11,7 @@ import {
     HandCoins,
     Wallet,
 } from "lucide-react";
+import LogoutButton from "../LogoutButton";
 
 type Props = {
     // active: "dashboard" | "agreements" | "portfolio" | "profile" | "payments" | "activity" | "inbox" | "analytics";
@@ -159,6 +160,7 @@ export default function CreatorSidebar({
                     Manage profile
                 </Link>
             </div>
+            <LogoutButton />
         </aside>
     );
 }
