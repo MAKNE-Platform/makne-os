@@ -49,12 +49,12 @@ export default async function BrandCreatorsPage() {
                     {/* Hero */}
                     <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#636EE1]/20 via-[#1a1a1a] to-black p-8 lg:p-12">
 
-                        <div className="text-sm text-white/60">
-                            Discover Talent
+                        <div className="text-md text-white/60">
+                            {safeCreators.length} Creators on MAKNE
                         </div>
 
                         <div className="mt-3 text-4xl font-semibold">
-                            {safeCreators.length} Creators on MAKNE
+                            Discover Talent
                         </div>
 
                         <div className="mt-3 text-sm text-white/60">

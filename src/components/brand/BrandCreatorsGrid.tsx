@@ -125,7 +125,7 @@ export default function BrandCreatorsGrid({
               rounded-3xl
               bg-[#ffffff08]
               border border-white/10
-              p-5
+              p-2
               shadow-[0_10px_30px_rgba(0,0,0,0.4)]
               hover:shadow-[0_20px_50px_rgba(0,0,0,0.6)]
               transition-all duration-300

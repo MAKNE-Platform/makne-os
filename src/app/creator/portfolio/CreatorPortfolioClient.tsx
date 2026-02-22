@@ -77,7 +77,7 @@ export default function CreatorPortfolioClient({ profile }: Props) {
         <div className="space-y-12">
 
             {/* ================= HERO ================= */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0b1020] via-[#0f172a] to-[#1e1b4b] p-6 sm:p-8 lg:p-10">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0b1020] via-[#0f172a] to-[#1e1b4b] sm:p-8 lg:p-10">
 
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-10">
 
@@ -422,68 +422,96 @@ function PerfCard({ label, value }: { label: string; value: string | number }) {
 }
 
 function FeaturedProjectCard({ item }: { item: PortfolioItem }) {
-    return (
-        <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff05] transition hover:border-[#636EE1]/40">
 
-            {/* Featured Badge */}
-            {item.meta?.featured && (
-                <div className="absolute top-3 right-3 z-10 rounded-full border bg-[#0000005f] border-[#636EE1] px-3 py-1 text-[10px] font-medium text-white shadow-md">
-                    Featured
-                </div>
-            )}
+  // Normalize deliverables (support legacy + new schema)
+  const normalizedDeliverables = (item.deliverables || []).map((d: any) => {
+    if (typeof d === "string") {
+      return { title: d };
+    }
+    return d;
+  });
 
-            {/* Thumbnail */}
-            <div className="aspect-[16/9] bg-black/30 relative overflow-hidden">
-                {item.thumbnail ? (
-                    <img
-                        src={item.thumbnail}
-                        alt={item.title}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs opacity-50">
-                        No thumbnail
-                    </div>
-                )}
-            </div>
+  return (
+    <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff05] transition hover:border-[#636EE1]/40">
 
-            {/* Content */}
-            <div className="p-4 space-y-2">
-
-                {/* Title */}
-                <div className="text-sm font-medium">{item.title}</div>
-
-                {/* Brand + Campaign */}
-                <div className="text-xs opacity-70">
-                    {item.brandName || "Brand collaboration"}
-                    {item.campaignType && ` • ${item.campaignType}`}
-                </div>
-
-                {/* Duration */}
-                {item.duration?.start && (
-                    <div className="text-xs opacity-60">
-                        {item.duration.start}
-                        {item.duration.end && ` – ${item.duration.end}`}
-                    </div>
-                )}
-
-                {/* Deliverables Count */}
-                {item.deliverables && item.deliverables.length > 0 && (
-                    <div className="text-xs opacity-60">
-                        {item.deliverables.length} deliverable
-                        {item.deliverables.length > 1 && "s"}
-                    </div>
-                )}
-
-                {/* Outcome Summary */}
-                {item.outcome?.summary && (
-                    <div className="pt-1 text-xs text-[#636EE1] font-medium line-clamp-2">
-                        {item.outcome.summary}
-                    </div>
-                )}
-            </div>
+      {/* Featured Badge */}
+      {item.meta?.featured && (
+        <div className="absolute top-3 right-3 z-10 rounded-full border bg-[#0000005f] border-[#636EE1] px-3 py-1 text-[10px] font-medium text-white shadow-md">
+          Featured
         </div>
-    );
+      )}
+
+      {/* Thumbnail */}
+      <div className="aspect-[16/9] bg-black/30 relative overflow-hidden">
+        {item.thumbnail ? (
+          <img
+            src={item.thumbnail}
+            alt={item.title}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-xs opacity-50">
+            No thumbnail
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-4 space-y-3">
+
+        {/* Title */}
+        <div className="text-sm font-medium">
+          {item.title}
+        </div>
+
+        {/* Brand + Campaign */}
+        <div className="text-xs opacity-70">
+          {item.brandName || "Brand collaboration"}
+          {item.campaignType && ` • ${item.campaignType}`}
+        </div>
+
+        {/* Duration */}
+        {item.duration?.start && (
+          <div className="text-xs opacity-60">
+            {item.duration.start}
+            {item.duration.end && ` – ${item.duration.end}`}
+          </div>
+        )}
+
+        {/* Deliverables Preview (NEW) */}
+        {normalizedDeliverables.length > 0 && (
+          <div className="space-y-2">
+
+            <div className="flex flex-wrap gap-2">
+              {normalizedDeliverables.slice(0, 2).map((d: any, i: number) => (
+                <span
+                  key={i}
+                  className="text-[10px] px-2 py-1 rounded-full border border-white/15 bg-black/40"
+                >
+                  {d.title}
+                </span>
+              ))}
+
+              {normalizedDeliverables.length > 2 && (
+                <span className="text-[10px] px-2 py-1 rounded-full border border-white/10 opacity-50">
+                  +{normalizedDeliverables.length - 2} more
+                </span>
+              )}
+            </div>
+
+          </div>
+        )}
+
+        {/* Outcome Summary */}
+        {item.outcome?.summary && (
+          <div className="pt-1 text-xs text-[#636EE1] font-medium line-clamp-2">
+            {item.outcome.summary}
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
 }
 
 

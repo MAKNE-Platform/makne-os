@@ -33,7 +33,15 @@ export type PortfolioItem = {
 
   // Description & scope
   description?: string;
-  deliverables?: string[];
+  deliverables?: (
+    | string
+    | {
+      title: string;
+      description?: string;
+      format?: string;
+      platform?: string;
+    }
+  )[];
   role?: string;
 
   // Outcome / results

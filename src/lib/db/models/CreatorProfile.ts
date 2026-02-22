@@ -69,7 +69,15 @@ const CreatorProfileSchema = new mongoose.Schema(
             end: { type: String },
           },
 
-          deliverables: [{ type: String }],
+          deliverables: [
+            {
+              _id: false,
+              title: { type: String, required: true },
+              description: { type: String },
+              format: { type: String }, // Reel, Video, Carousel, Blog
+              platform: { type: String }, // Instagram, YouTube, LinkedIn
+            },
+          ],
 
           links: [
             {
@@ -111,7 +119,7 @@ const CreatorProfileSchema = new mongoose.Schema(
             updatedAt: { type: String },
           },
         },
-        { _id: true } // 🔥 ENABLE PROJECT ID
+        { _id: true }
       ),
     ],
 

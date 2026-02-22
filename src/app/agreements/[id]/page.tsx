@@ -9,6 +9,7 @@ import { Payment } from "@/lib/db/models/Payment";
 import DeliverMilestoneForm from "./_components/DeliverMilestoneForm";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
 import { ArrowLeft, Download } from "lucide-react";
+import DraftActions from "./_components/DraftActions";
 
 export default async function AgreementDetailPage({
     params,
@@ -30,6 +31,16 @@ export default async function AgreementDetailPage({
     const isBrand = agreement.brandId.toString() === userId;
     const isCreator = agreement.creatorId?.toString() === userId;
 
+    const isDraft = agreement.status === "DRAFT";
+    const isSent = agreement.status === "SENT";
+    const isActive = agreement.status === "ACTIVE";
+
+    const canEditDeliverables = isBrand && agreement.status === "DRAFT";
+    const canEditMilestones = isBrand && agreement.status === "DRAFT";
+
+    const canAddMilestone = isBrand && agreement.status === "DRAFT";
+    const canSendAgreement = isBrand && agreement.status === "DRAFT";
+
     const backHref = isBrand
         ? "/agreements"
         : "/creator/agreements";
@@ -48,6 +59,8 @@ export default async function AgreementDetailPage({
     const payments = await Payment.find({
         agreementId: agreement._id,
     }).lean();
+
+    const deliverables = agreement.deliverables || [];
 
     const paymentByMilestoneId = new Map(
         payments.map((p) => [p.milestoneId.toString(), p])
@@ -70,7 +83,7 @@ export default async function AgreementDetailPage({
 
     return (
         <div className="min-h-screen bg-[#0b0b0d27] text-white">
-            
+
             <div className="max-w-5xl mx-auto px-8 py-12 space-y-10">
 
                 {/* BACK BUTTON */}
@@ -86,25 +99,288 @@ export default async function AgreementDetailPage({
 
 
                 {/* HEADER */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
                         <h1 className="lg:text-4xl text-2xl font-semibold tracking-tight">
                             {agreement.title}
                         </h1>
-                        {/* <p className="text-sm text-zinc-500 mt-1">
-                            Agreement ID • {agreement._id.toString().slice(-6)}
-                        </p> */}
                     </div>
 
-                    <span className="px-3 py-1 rounded-md text-sm bg-[#141418] border border-white/10 text-zinc-300">
-                        {agreement.status}
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <span className="px-3 py-1 rounded-md text-sm bg-[#141418] border border-white/10 text-zinc-300">
+                            {agreement.status}
+                        </span>
+
+                        {/* ================= CREATOR - SENT ACTIONS ================= */}
+                        {isCreator && isSent && (
+                            <div className="flex gap-3">
+
+                                {/* Reject */}
+                                <form
+                                    method="POST"
+                                    action={`/agreements/${agreement._id}/respond`}
+                                >
+                                    <input type="hidden" name="action" value="REJECT" />
+                                    <button
+                                        type="submit"
+                                        className="rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 px-4 py-2 text-sm hover:bg-red-500/20 transition"
+                                    >
+                                        Reject
+                                    </button>
+                                </form>
+
+                                {/* Accept */}
+                                <form
+                                    method="POST"
+                                    action={`/agreements/${agreement._id}/respond`}
+                                >
+                                    <input type="hidden" name="action" value="ACCEPT" />
+                                    <button
+                                        type="submit"
+                                        className="group relative rounded-lg bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+                                    >
+                                        Accept Agreement
+                                    </button>
+                                </form>
+
+                            </div>
+                        )}
+
+                    </div>
                 </div>
 
                 <div className="border-t border-white/5" />
 
 
-                <div className="bg-[#121214] border border-white/5 rounded-xl p-6 space-y-4">
+                {isBrand && isDraft ? (
+                        <section className="rounded-2xl bg-[#ffffff08] border border-[#ffffff1e]  p-8 space-y-10">
+
+                            <h2 className="text-lg font-semibold text-white">
+                                Edit Agreement (Draft Mode)
+                            </h2>
+
+                            {/* ================= DELIVERABLES ================= */}
+                            <div className="space-y-6">
+                                <h3 className="text-sm font-semibold text-zinc-400 uppercase">
+                                    Deliverables
+                                </h3>
+
+                                {deliverables.length === 0 && (
+                                    <p className="text-sm text-zinc-400">
+                                        No deliverables added yet.
+                                    </p>
+                                )}
+
+                                {deliverables.map((d: any) => (
+                                    <div
+                                        key={d._id}
+                                        className="rounded-xl border border-white/10 bg-[#161618] p-5 space-y-4"
+                                    >
+                                        {/* UPDATE */}
+                                        <form
+                                            action={`/agreements/${agreement._id}/deliverables/update`}
+                                            method="POST"
+                                            className="space-y-3"
+                                        >
+                                            <input type="hidden" name="deliverableId" value={d._id.toString()} />
+
+                                            <input
+                                                name="title"
+                                                defaultValue={d.title}
+                                                className="w-full rounded-lg bg-[#0f0f12] px-4 py-2 text-sm text-white"
+                                            />
+
+                                            <textarea
+                                                name="description"
+                                                defaultValue={d.description}
+                                                className="w-full rounded-lg bg-[#0f0f12] px-4 py-2 text-sm text-white"
+                                            />
+
+                                            <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                                Update Deliverable
+                                            </button>
+                                        </form>
+
+                                        {/* DELETE */}
+                                        <form
+                                            action={`/agreements/${agreement._id}/deliverables/delete`}
+                                            method="POST"
+                                        >
+                                            <input type="hidden" name="deliverableId" value={d._id.toString()} />
+                                            <button className="text-xs border border-red p-2 rounded-md text-red-400">
+                                                Delete deliverable
+                                            </button>
+                                        </form>
+                                    </div>
+                                ))}
+
+                                {/* ADD NEW DELIVERABLE */}
+                                <div className="rounded-xl border border-dashed border-white/20 p-5 space-y-3">
+                                    <h4 className="text-sm font-medium text-white">
+                                        Add new deliverable
+                                    </h4>
+
+                                    <form
+                                        action={`/agreements/${agreement._id}/deliverables/create`}
+                                        method="POST"
+                                        className="space-y-3"
+                                    >
+                                        <input
+                                            name="title"
+                                            placeholder="Deliverable title"
+                                            required
+                                            className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                        />
+
+                                        <textarea
+                                            name="description"
+                                            placeholder="Description (optional)"
+                                            className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                        />
+
+                                        <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                            Add Deliverable
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            {/* ================= ADD MILESTONE ================= */}
+                            {canAddMilestone && (
+                                <div className="rounded-xl border border-white/10 bg-[#161618] p-6 space-y-4">
+                                    <h3 className="text-sm font-medium text-white">
+                                        Add Milestone
+                                    </h3>
+
+                                    {deliverables.length === 0 ? (
+                                        <p className="text-sm text-zinc-400">
+                                            Add deliverables before creating milestones.
+                                        </p>
+                                    ) : (
+                                        <form
+                                            action={`/agreements/${agreement._id}/milestones/create`}
+                                            method="POST"
+                                            className="space-y-4"
+                                        >
+                                            <input
+                                                name="title"
+                                                placeholder="Milestone title"
+                                                required
+                                                className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                            />
+
+                                            <input
+                                                name="amount"
+                                                type="number"
+                                                placeholder="Amount (₹)"
+                                                required
+                                                className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                            />
+
+                                            <div className="space-y-2">
+                                                <p className="text-sm text-zinc-400">
+                                                    Covers deliverables:
+                                                </p>
+
+                                                {deliverables.map((d: any) => (
+                                                    <label
+                                                        key={d._id}
+                                                        className="flex items-center gap-2 text-sm text-zinc-300"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            name="deliverableIds[]"
+                                                            value={d._id.toString()}
+                                                        />
+                                                        {d.title}
+                                                    </label>
+                                                ))}
+                                            </div>
+
+                                            <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
+                                                Add Milestone
+                                            </button>
+                                        </form>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* ================= POLICIES ================= */}
+                            <div className="rounded-xl border border-white/10 bg-[#161618] p-6 space-y-4">
+                                <h3 className="text-sm font-medium text-white">
+                                    Policies
+                                </h3>
+
+                                <form
+                                    action={`/agreements/${agreement._id}/policies`}
+                                    method="POST"
+                                    className="space-y-3"
+                                >
+                                    <textarea
+                                        name="paymentTerms"
+                                        defaultValue={agreement.policies?.paymentTerms}
+                                        placeholder="Payment terms"
+                                        className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    />
+                                    <textarea
+                                        name="cancellationPolicy"
+                                        defaultValue={agreement.policies?.cancellationPolicy}
+                                        placeholder="Cancellation policy"
+                                        className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    />
+                                    <textarea
+                                        name="revisionPolicy"
+                                        defaultValue={agreement.policies?.revisionPolicy}
+                                        placeholder="Revision policy"
+                                        className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    />
+                                    <textarea
+                                        name="usageRights"
+                                        defaultValue={agreement.policies?.usageRights}
+                                        placeholder="Usage rights"
+                                        className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    />
+
+                                    <button className="rounded-lg bg-[#636EE1] px-5 py-2 text-sm text-white">
+                                        Save Policies
+                                    </button>
+                                </form>
+                            </div>
+
+                            {/* ================= SEND AGREEMENT ================= */}
+                            <div className="rounded-xl border border-white/10 bg-[#161618] p-6 space-y-4">
+                                <h3 className="text-sm font-medium text-white">
+                                    Send Agreement
+                                </h3>
+
+                                <form
+                                    action={`/agreements/${agreement._id}/send`}
+                                    method="POST"
+                                    className="space-y-3"
+                                >
+                                    <input
+                                        name="creatorEmail"
+                                        type="email"
+                                        required
+                                        defaultValue={agreement.creatorEmail || ""}
+                                        placeholder="Creator email"
+                                        className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    />
+
+                                    <p className="text-xs text-zinc-400">
+                                        Sending the agreement will lock deliverables, milestones, and policies.
+                                    </p>
+
+                                    <button className="rounded-lg bg-[#636EE1] px-6 py-2 text-sm text-white">
+                                        Send to Creator
+                                    </button>
+                                </form>
+                            </div>
+
+                        </section>
+                ) : null}
+
+                <div className="bg-[#ffffff08] border border-[#ffffff1e] rounded-xl p-6 space-y-4">
                     <div className="flex justify-between items-center">
                         <p className="text-sm font-medium">
                             Milestone Progress
@@ -125,7 +401,6 @@ export default async function AgreementDetailPage({
                         {progressPercent}% completed
                     </p>
                 </div>
-
 
                 {/* BASIC INFO */}
                 <section className="space-y-6">
