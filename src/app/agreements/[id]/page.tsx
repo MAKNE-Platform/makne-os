@@ -10,6 +10,7 @@ import DeliverMilestoneForm from "./_components/DeliverMilestoneForm";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
 import { ArrowLeft, Download } from "lucide-react";
 import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
+import AgreementToastHandler from "./_components/AgreementToastHandler";
 
 
 type CreatorProfileType = {
@@ -19,10 +20,13 @@ type CreatorProfileType = {
 
 export default async function AgreementDetailPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ id: string }>;
+    searchParams: { status?: string };
 }) {
     const { id } = await params;
+    const status = searchParams?.status ?? null;
 
     const cookieStore = await cookies();
     const userId = cookieStore.get("auth_session")?.value;
@@ -95,6 +99,7 @@ export default async function AgreementDetailPage({
 
     return (
         <div className="min-h-screen bg-[#0b0b0d27] text-white">
+            <AgreementToastHandler status={status} />
 
             <div className="max-w-5xl mx-auto px-8 py-12 space-y-10">
 

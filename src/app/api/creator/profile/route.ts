@@ -26,7 +26,9 @@ export async function POST(req: Request) {
       profileImage: body.profileImage,
       skills: body.skills,
     },
-    { new: true }
+    { new: true,
+      upsert: true, 
+     }
   );
 
   return Response.json({ success: true });

@@ -79,10 +79,10 @@ async function finalizeAgreement(mode: "CREATE" | "SEND") {
 
   cookieStore.delete("draft_agreement_id");
 
-  redirect(`/agreements/${agreement._id}`);
+  redirect(`/agreements/${agreement._id}?status=${mode}`);
 }
 
-// ✅ EXPORTED SERVER ACTIONS
+// EXPORTED SERVER ACTIONS
 export async function createAgreementAction() {
   await finalizeAgreement("CREATE");
 }

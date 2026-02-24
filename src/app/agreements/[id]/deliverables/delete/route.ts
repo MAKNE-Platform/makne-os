@@ -24,7 +24,7 @@ export async function POST(
 
   await connectDB();
 
-  // ❗ Prevent deletion if used by milestones
+  // Prevent deletion if used by milestones
   const used = await Milestone.findOne({
     agreementId: new mongoose.Types.ObjectId(id),
     deliverableIds: new mongoose.Types.ObjectId(deliverableId),
@@ -58,6 +58,6 @@ export async function POST(
   }
 
   return NextResponse.redirect(
-    new URL(`/agreements/${id}`, request.url)
+    new URL(`/agreements/${id}?status=DELIVERABLE_DELETED`, request.url)
   );
 }

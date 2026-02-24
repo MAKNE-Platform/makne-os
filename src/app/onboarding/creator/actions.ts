@@ -66,5 +66,10 @@ export async function onboardCreatorAction(formData: FormData) {
     path: "/",
   });
 
+  cookieStore.set("toast", "SIGNUP_SUCCESS", {
+    path: "/",
+    maxAge: 5,
+  });
+
   redirect("/creator/dashboard");
 }

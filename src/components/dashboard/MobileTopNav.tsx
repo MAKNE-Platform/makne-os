@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import LogoutButton from "../LogoutButton";
 
 type Props = {
   brandName?: string;
@@ -181,6 +182,7 @@ export default function MobileTopNav({
                             >
                                 Manage brand
                             </Link>
+                            <LogoutButton />
                         </div>
 
                     </motion.div>

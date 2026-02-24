@@ -47,5 +47,10 @@ export async function onboardAgencyAction(formData: FormData) {
     path: "/",
   });
 
+  cookieStore.set("toast", "SIGNUP_SUCCESS", {
+    path: "/",
+    maxAge: 5,
+  });
+
   redirect("/dashboard/agency");
 }

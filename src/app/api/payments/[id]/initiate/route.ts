@@ -49,11 +49,11 @@ export async function POST(
     );
   }
 
-  // 🔁 Helper: redirect back safely
+  // Helper: redirect back safely
   const redirectBack = () => {
     const response = NextResponse.redirect(
       new URL(
-        `/agreements/${agreement._id}?refresh=${Date.now()}`,
+        `/agreements/${agreement._id}?status=PAYMENT_INITIATED`,
         request.url
       )
     );

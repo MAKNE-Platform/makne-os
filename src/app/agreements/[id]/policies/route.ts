@@ -38,6 +38,6 @@ export async function POST(
   );
 
   return NextResponse.redirect(
-    new URL(`/agreements/${id}`, request.url)
+    new URL(`/agreements/${id}?status=POLICIES_SAVED`, request.url)
   );
 }

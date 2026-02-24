@@ -5,6 +5,7 @@ import { Otp } from "@/lib/db/models/Otp";
 import { generateOtp, otpExpiry } from "@/lib/auth/otp";
 import { sendOtpEmail } from "@/lib/email/sendOtpEmail";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 export async function createTempUserAction(formData: FormData) {
   const email = formData.get("email") as string;
@@ -23,6 +24,12 @@ export async function createTempUserAction(formData: FormData) {
   });
 
   await sendOtpEmail(email, code);
+
+  const cookieStore = await cookies();
+  cookieStore.set("toast", "OTP_SENT", {
+    path: "/",
+    maxAge: 5,
+  });
 
   redirect("/auth/signup/verify");
 }

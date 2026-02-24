@@ -15,6 +15,7 @@ export default function LogoutButton() {
       method: "POST",
       headers: { Accept: "application/json" },
     });
+    
 
     router.push("/");
     router.refresh();

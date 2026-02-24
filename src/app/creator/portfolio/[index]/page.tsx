@@ -156,55 +156,55 @@ export default async function ProjectDetailPage({ params }: Params) {
         )}
 
         {/* ===== DELIVERABLES ===== */}
-{serializedProject.deliverables?.length > 0 && (
-  <div className="space-y-6">
-    <h2 className="text-xl font-medium">Deliverables</h2>
+        {serializedProject.deliverables?.length > 0 && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-medium">Deliverables</h2>
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      {serializedProject.deliverables.map((rawDeliverable: any, i: number) => {
-        const d =
-          typeof rawDeliverable === "string"
-            ? { title: rawDeliverable }
-            : rawDeliverable;
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {serializedProject.deliverables.map((rawDeliverable: any, i: number) => {
+                const d =
+                  typeof rawDeliverable === "string"
+                    ? { title: rawDeliverable }
+                    : rawDeliverable;
 
-        return (
-          <div
-            key={i}
-            className="rounded-2xl border border-white/10 bg-[#ffffff05] p-5 space-y-3 hover:border-[#636EE1]/40 transition"
-          >
-            {/* Title */}
-            <div className="text-sm font-semibold">
-              {d.title}
+                return (
+                  <div
+                    key={i}
+                    className="rounded-2xl border border-white/10 bg-[#ffffff05] p-5 space-y-3 hover:border-[#636EE1]/40 transition"
+                  >
+                    {/* Title */}
+                    <div className="text-sm font-semibold">
+                      {d.title}
+                    </div>
+
+                    {/* Format + Platform Pills */}
+                    {(d.format || d.platform) && (
+                      <div className="flex flex-wrap gap-2">
+                        {d.format && (
+                          <span className="text-xs px-3 py-1 rounded-full border border-white/15 opacity-80">
+                            {d.format}
+                          </span>
+                        )}
+                        {d.platform && (
+                          <span className="text-xs px-3 py-1 rounded-full border border-[#636EE1]/40 text-[#636EE1]">
+                            {d.platform}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    {d.description && (
+                      <p className="text-xs opacity-70 leading-relaxed">
+                        {d.description}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Format + Platform Pills */}
-            {(d.format || d.platform) && (
-              <div className="flex flex-wrap gap-2">
-                {d.format && (
-                  <span className="text-xs px-3 py-1 rounded-full border border-white/15 opacity-80">
-                    {d.format}
-                  </span>
-                )}
-                {d.platform && (
-                  <span className="text-xs px-3 py-1 rounded-full border border-[#636EE1]/40 text-[#636EE1]">
-                    {d.platform}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Description */}
-            {d.description && (
-              <p className="text-xs opacity-70 leading-relaxed">
-                {d.description}
-              </p>
-            )}
           </div>
-        );
-      })}
-    </div>
-  </div>
-)}
+        )}
 
         {/* ===== OUTCOME ===== */}
         {serializedProject.outcome?.summary && (

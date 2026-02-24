@@ -7,6 +7,11 @@ export async function POST(request: Request) {
   cookieStore.delete("auth_session");
   cookieStore.delete("user_role");
 
+  cookieStore.set("toast", "LOGOUT_SUCCESS", {
+    path: "/",
+    maxAge: 5,
+  });
+
   const acceptHeader = request.headers.get("accept");
 
   if (acceptHeader?.includes("application/json")) {

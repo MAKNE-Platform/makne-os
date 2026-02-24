@@ -95,6 +95,12 @@ export async function POST(
   });
 
   return NextResponse.redirect(
-    new URL("/creator/dashboard", request.url)
+    new URL(
+      `/agreements/${agreement._id}?status=${action === "ACCEPT"
+        ? "AGREEMENT_ACCEPTED"
+        : "AGREEMENT_REJECTED"
+      }`,
+      request.url
+    )
   );
 }

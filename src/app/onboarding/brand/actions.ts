@@ -47,5 +47,10 @@ export async function onboardBrandAction(formData: FormData) {
     path: "/",
   });
 
+  cookieStore.set("toast", "SIGNUP_SUCCESS", {
+    path: "/",
+    maxAge: 5,
+  });
+
   redirect("/brand/dashboard");
 }

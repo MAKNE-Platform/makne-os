@@ -59,6 +59,6 @@ export async function POST(
   });
 
   return NextResponse.redirect(
-    new URL(`/agreements/${id}`, request.url)
+    new URL(`/agreements/${id}?status=MILESTONE_CREATED`, request.url)
   );
 }

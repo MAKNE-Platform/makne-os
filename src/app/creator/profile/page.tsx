@@ -30,7 +30,8 @@ export default async function CreatorProfilePage() {
   if (!profile) redirect("/onboarding/creator");
 
   const initialProfile = {
-    displayName: user.email.split("@")[0],
+    displayName: profile.displayName ??
+      user.email.split("@")[0],
     bio: profile.bio ?? "",
     location: profile.location ?? "",
     niche: profile.niche ?? "",

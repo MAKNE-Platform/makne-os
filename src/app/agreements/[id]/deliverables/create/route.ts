@@ -50,6 +50,6 @@ export async function POST(
   await agreement.save();
 
   return NextResponse.redirect(
-    new URL(`/agreements/${id}`, request.url)
+    new URL(`/agreements/${id}?status=DELIVERABLE_CREATED`, request.url)
   );
 }

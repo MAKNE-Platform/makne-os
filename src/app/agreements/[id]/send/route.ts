@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import mongoose from "mongoose";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { sendAgreement } from "@/lib/domain/agreements/sendAgreement";
+import { toast } from "sonner";
 
 export async function POST(
   request: Request,
@@ -86,6 +87,9 @@ export async function POST(
   }
 
   return NextResponse.redirect(
-    new URL("/brand/dashboard", request.url)
-  );
+  new URL(
+    `/agreements/${id}?status=AGREEMENT_SENT`,
+    request.url
+  )
+);
 }

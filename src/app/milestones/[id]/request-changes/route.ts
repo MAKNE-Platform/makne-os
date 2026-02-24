@@ -65,9 +65,9 @@ export async function POST(
     entityId: milestone._id,
     metadata: {
       creatorId: agreement.creatorId.toString(),
-      creatorEmail: creator.email,         
+      creatorEmail: creator.email,
       milestoneTitle: milestone.title,
-      agreementId: agreement._id.toString(), 
+      agreementId: agreement._id.toString(),
     },
   });
 
@@ -81,9 +81,9 @@ export async function POST(
     },
   });
 
-  // 🔥 Force page reload
+  // Force page reload
   const response = NextResponse.redirect(
-    new URL(`/agreements/${agreement._id}?refresh=${Date.now()}`, request.url)
+    new URL(`/agreements/${agreement._id}?status=MILESTONE_REVISION`, request.url)
   );
   response.headers.set("Cache-Control", "no-store");
 

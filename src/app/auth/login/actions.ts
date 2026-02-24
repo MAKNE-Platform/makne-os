@@ -51,5 +51,10 @@ export async function loginUserAction(formData: FormData) {
     path: "/",
   });
 
+  cookieStore.set("toast", "LOGIN_SUCCESS", {
+    path: "/",
+    maxAge: 5,
+  });
+
   redirect(`/${user.role.toLowerCase()}/dashboard`);
 }

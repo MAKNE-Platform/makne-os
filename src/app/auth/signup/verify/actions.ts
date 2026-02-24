@@ -28,5 +28,10 @@ export async function verifySignupCodeAction(formData: FormData) {
     path: "/",
   });
 
+  cookieStore.set("toast", "VERIFICATION_SUCCESS", {
+    path: "/",
+    maxAge: 5,
+  });
+
   redirect("/auth/signup/set-password");
 }

@@ -2,6 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type Profile = {
   displayName: string;
@@ -38,16 +39,34 @@ export default function EditProfileClient({
   console.log("Initial profile:", initialProfile);
 
   async function saveProfile() {
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    await fetch("/api/creator/profile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+      const res = await fetch("/api/creator/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    setSaving(false);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update profile");
+      }
+
+      toast.success("Profile updated successfully 🎉");
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setSaving(false);
+    }
   }
+
+  const [displayName, setDisplayName] = useState(
+    initialProfile.displayName?.includes("@")
+      ? ""
+      : initialProfile.displayName || ""
+  );
 
   const [contentFormatsInput, setContentFormatsInput] = useState(
     form.skills.contentFormats.join(", ")
@@ -168,11 +187,7 @@ export default function EditProfileClient({
           <div className="space-y-2">
             <label className="text-sm opacity-70">Display Name</label>
             <input
-              value={
-                form.displayName && !form.displayName.includes("@")
-                  ? form.displayName
-                  : ""
-              }
+              value={form.displayName || ""}
               onChange={(e) =>
                 setForm((prev) => ({
                   ...prev,

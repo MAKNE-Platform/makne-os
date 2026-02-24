@@ -39,6 +39,11 @@ export async function setPasswordAction(formData: FormData) {
     path: "/",
   });
 
+  cookieStore.set("toast", "PASSWORD_SET", {
+    path: "/",
+    maxAge: 5,
+  });
+
   // cleanup temp cookie
   cookieStore.delete("verified_email");
 

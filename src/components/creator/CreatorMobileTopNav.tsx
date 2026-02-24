@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell } from "lucide-react";
 import { usePathname } from "next/navigation";
+import LogoutButton from "../LogoutButton";
 
 type Props = {
   active?:
@@ -121,7 +122,7 @@ export default function CreatorMobileTopNav({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.18 }}
-            className="absolute top-full mt-3 w-full rounded-2xl border border-white/10 bg-[#0e111770] px-4 py-4 space-y-2 backdrop-blur-2xl"
+            className="absolute top-full mt-3 w-[95%] left-[50%] translate-x-[-50%] rounded-2xl border border-white/10 bg-[#0e111770] px-4 py-4 space-y-2 backdrop-blur-2xl"
           >
             <NavItem label="Dashboard" href="/creator/dashboard" />
             <NavItem label="Agreements" href="/creator/agreements" badge={agreementsCount} />
@@ -129,6 +130,7 @@ export default function CreatorMobileTopNav({
             <NavItem label="Portfolio" href="/creator/portfolio" />
             <NavItem label="Analytics" href="/creator/analytics" />
             <NavItem label="Payments" href="/creator/payments" badge={pendingPaymentsCount} />
+            <LogoutButton />
           </motion.div>
         )}
       </AnimatePresence>
