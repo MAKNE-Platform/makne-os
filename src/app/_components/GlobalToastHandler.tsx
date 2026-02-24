@@ -28,12 +28,16 @@ export default function GlobalToastHandler({
                 toast.success("Email verified successfully 🚀");
                 break;
 
-                case "PASSWORD_SET":
+            case "PASSWORD_SET":
                 toast.success("Account password set successfully 🚀");
                 break;
 
             case "SIGNUP_SUCCESS":
                 toast.success("Account created successfully 🚀");
+                break;
+
+            case "AGREEMENT_SENT":
+                toast.success("Agreement sent successfully 🚀");
                 break;
         }
 

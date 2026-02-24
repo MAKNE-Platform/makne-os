@@ -113,7 +113,7 @@ export default function BrandSidebar({
             label="Creators"
             href="/brand/creators"
             active={active === "creators"}
-            badge={pendingPaymentsCount}
+            badge={creatorsCount}
             icon={UserRoundSearch}
           />
           

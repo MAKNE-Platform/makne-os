@@ -6,7 +6,6 @@ import { cookies } from "next/headers";
 import mongoose from "mongoose";
 import { Milestone } from "@/lib/db/models/Milestone";
 import { sendAgreement } from "@/lib/domain/agreements/sendAgreement";
-import { toast } from "sonner";
 
 export async function POST(
   request: Request,
@@ -72,7 +71,7 @@ export async function POST(
     );
   }
 
-  // ✅ SINGLE source of truth
+  // SINGLE source of truth
   await sendAgreement({
     agreementId: new mongoose.Types.ObjectId(id),
     brandId: new mongoose.Types.ObjectId(brandId),
@@ -86,10 +85,14 @@ export async function POST(
     return NextResponse.json({ success: true });
   }
 
-  return NextResponse.redirect(
-  new URL(
-    `/agreements/${id}?status=AGREEMENT_SENT`,
-    request.url
-  )
-);
+  const response = NextResponse.redirect(
+    new URL(`/agreements/${id}`, request.url)
+  );
+
+  response.cookies.set("toast", "AGREEMENT_SENT", {
+    path: "/",
+    maxAge: 5,
+  });
+
+  return response;
 }
