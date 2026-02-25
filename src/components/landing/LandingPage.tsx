@@ -1,9 +1,23 @@
+"use client";
 import Link from "next/link";
 import Navbar from "@/components/landing/Navbar";
 import Timeline from "@/components/landing/Timeline";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function LandingPage() {
+
+
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
   return (
     <main className="relative min-h-screen bg-black text-zinc-100 overflow-hidden">
 
@@ -25,7 +39,7 @@ export default function LandingPage() {
           {/* Pill badge */}
           <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-white/10 text-xs text-zinc-400">
             <span className="h-1.5 w-1.5 rounded-full bg-[#636EE1]" />
-            Structured collaboration platform
+            <p>Structured collaboration platform</p>
           </div>
 
           {/* Headline */}
@@ -73,10 +87,10 @@ export default function LandingPage() {
       </section>
 
       {/* ================= FEATURES — BENTO STYLE ================= */}
-      <section id="features" className="relative px-6 py-40 border-t border-white/5">
+      <section id="features" className="px-6 py-40 border-t border-white/5">
         <div className="mx-auto max-w-7xl">
 
-          {/* Section intro */}
+          {/* Section Intro */}
           <div className="mb-20 max-w-2xl">
             <div className="mb-3 text-xs uppercase tracking-wide text-zinc-500">
               Features
@@ -85,157 +99,245 @@ export default function LandingPage() {
               Built for clarity, not chaos
             </h2>
             <p className="mt-4 text-lg text-zinc-400">
-              MAKNE turns collaborations into deterministic systems — agreements,
-              execution, and payments working as one.
+              MAKNE turns collaborations into deterministic systems —
+              agreements, execution, and payments working as one.
             </p>
           </div>
 
-          {/* Bento grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Bento Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 bg-black p-4 lg:auto-rows-[220px]">
 
-            {/* Anchor feature */}
-            <div className="
-  lg:col-span-2 lg:row-span-2
-  rounded-2xl
-  border border-white/10
-  bg-[#0E1117]
-  p-8
-  flex flex-col justify-between
-  transition duration-300 ease-out
-  lg:hover:-translate-y-[2px]
-  lg:hover:border-white/20
-">
+            {/* ================= STRUCTURED AGREEMENTS ================= */}
+            <div
+              onMouseMove={handleMouseMove}
+              className="lg:col-span-1 lg:row-span-2
+    rounded-3xl bg-[#0f141b4f]
+    p-6 sm:p-8
+    group relative overflow-hidden
+    transition-all duration-300"
+            >
+              {/* Glow */}
+              <div
+                className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99,110,225,0.15), transparent 40%)`,
+                }}
+              />
 
-              <div>
-                <h3 className="text-2xl font-medium text-zinc-100">
-                  Structured agreements
+              {/* Text */}
+              <div className="relative lg:absolute lg:bottom-6 lg:left-6 lg:w-2/3 z-10">
+                <h3 className="text-xl sm:text-2xl text-zinc-100 font-medium">
+                  Structured Agreements
                 </h3>
-                <p className="mt-4 max-w-xl text-zinc-400 leading-relaxed">
-                  Every collaboration starts with a clearly defined agreement.
-                  Deliverables, milestones, timelines, and payment terms are explicit
-                  from day one — so expectations are aligned before any work begins.
+                <p className="mt-3 sm:mt-4 text-sm sm:text-base text-zinc-400">
+                  Deliverables, milestones and payment terms clearly defined from day one.
                 </p>
               </div>
 
-              {/* Future real UI */}
+              {/* Image */}
               <div className="
-  rounded-2xl
-  border border-white/10
-  bg-[#0E1117]
-  p-6
-  transition duration-300 ease-out
-  lg:hover:-translate-y-[2px]
-  lg:hover:border-white/20
-" />
-
+      relative mt-6
+      w-32 h-32 sm:w-40 sm:h-40
+      lg:absolute lg:top-0 lg:left-2 lg:w-56 lg:h-56
+      opacity-90">
+                <Image
+                  src="/images/structured_agreements.png"
+                  fill
+                  className="object-contain"
+                  alt=""
+                />
+              </div>
             </div>
 
-            {/* Feature 2 */}
-            <div className="
-  rounded-2xl
-  border border-white/10
-  bg-[#0E1117]
-  p-6
-  transition duration-300 ease-out
-  lg:hover:-translate-y-[2px]
-  lg:hover:border-white/20
-">
+            {/* ================= EVENT TIMELINE ================= */}
+            <div
+              onMouseMove={handleMouseMove}
+              className="lg:col-span-3
+    rounded-3xl bg-[#0f141b4f]
+    p-6 sm:p-8
+    group relative overflow-hidden
+    transition-all duration-300"
+            >
+              <div
+                className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99,110,225,0.15), transparent 40%)`,
+                }}
+              />
 
-              <h3 className="text-lg font-medium text-zinc-100">
-                Event-based timeline
-              </h3>
-              <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-                Every action is recorded as a permanent event — assignments,
-                approvals, submissions, and payments.
-              </p>
+              <div className="lg:mt-15">
+                <h3 className="text-xl sm:text-2xl text-zinc-100 font-medium">
+                  Event-Based Timeline
+                </h3>
+                <p className="mt-3 sm:mt-4 text-sm sm:text-base text-zinc-400 max-w-md">
+                  Every action recorded permanently and chronologically structured.
+                </p>
 
-              <div className="mt-6 h-24 rounded-lg border border-white/5 bg-black/30" />
+              </div>
+
+              <div className="
+      relative mt-6 lg:h-58 lg:w-58 
+     sm:w-36 sm:h-36
+      lg:absolute lg:bottom-6 lg:right-6 
+      opacity-90">
+                <Image
+                  src="/images/event_based_timeline.png"
+                  fill
+                  className="object-contain"
+                  alt=""
+                />
+              </div>
             </div>
 
-            {/* Feature 3 */}
-            <div className="
-  rounded-2xl
-  border border-white/10
-  bg-[#0E1117]
-  p-6
-  transition duration-300 ease-out
-  lg:hover:-translate-y-[2px]
-  lg:hover:border-white/20
-">
+            {/* ================= DETERMINISTIC EXECUTION ================= */}
+            <div
+              onMouseMove={handleMouseMove}
+              className="lg:col-span-2
+    rounded-3xl bg-[#0f141b4f]
+    p-6
+    group relative overflow-hidden
+    transition-all duration-300"
+            >
+              <div
+                className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99,110,225,0.15), transparent 40%)`,
+                }}
+              />
 
-              <h3 className="text-lg font-medium text-zinc-100">
-                Acceptance-based payments
+              <h3 className="text-lg lg:text-2xl sm:text-xl text-zinc-100 font-medium">
+                Deterministic Execution
               </h3>
-              <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-                Payments are released only when milestones are completed and approved.
-                No ambiguity. No chasing.
+              <p className="mt-3 lg:text-md text-sm text-zinc-400">
+                No state moves forward without conditions met.
               </p>
 
-              <div className="mt-6 h-24 rounded-lg border border-white/5 bg-black/30" />
+              <div className="
+      relative mt-6
+      w-20 h-20 sm:w-24 sm:h-24
+      lg:absolute lg:bottom-4 lg:right-4 lg:w-48 lg:h-48 lg:mr-10
+      opacity-90">
+                <Image
+                  src="/images/deterministic_execution.png"
+                  fill
+                  className="object-contain"
+                  alt=""
+                />
+              </div>
             </div>
 
-            {/* Feature 4 */}
-            <div className="
-  rounded-2xl
-  border border-white/10
-  bg-[#0E1117]
-  p-6
-  transition duration-300 ease-out
-  lg:hover:-translate-y-[2px]
-  lg:hover:border-white/20
-">
+            {/* ================= ACCEPTANCE PAYMENTS ================= */}
+            <div
+              onMouseMove={handleMouseMove}
+              className="rounded-3xl bg-[#0f141b4f]
+    p-6
+    group relative overflow-hidden
+    transition-all duration-300"
+            >
+              <div
+                className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99,110,225,0.15), transparent 40%)`,
+                }}
+              />
 
-              <h3 className="text-lg font-medium text-zinc-100">
-                Deterministic execution
+              <h3 className="text-lg sm:text-xl text-zinc-100 font-medium">
+                Acceptance-Based Payments
               </h3>
-              <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-                State transitions and payouts follow predefined rules.
-                Nothing moves forward unless conditions are met.
+              <p className="mt-3 text-sm text-zinc-400 lg:w-30">
+                Release only after milestone approval.
               </p>
+
+              <div className="
+      relative mt-6 sm:right-2
+      lg:w-40 lg:h-40 sm:w-24 sm:h-24
+      lg:absolute lg:bottom-4 lg:-right-2
+      opacity-90">
+                <Image
+                  src="/images/acceptance_based_payments.png"
+                  fill
+                  className="object-contain"
+                  alt=""
+                />
+              </div>
             </div>
 
-            {/* Feature 5 */}
-            <div className="
-  rounded-2xl
-  border border-white/10
-  bg-[#0E1117]
-  p-6
-  transition duration-300 ease-out
-  lg:hover:-translate-y-[2px]
-  lg:hover:border-white/20
-">
+            {/* ================= AUDIT HISTORY ================= */}
+            <div
+              onMouseMove={handleMouseMove}
+              className="rounded-3xl bg-[#0f141b4f]
+    p-6
+    group relative overflow-hidden
+    transition-all duration-300"
+            >
+              <div
+                className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99,110,225,0.15), transparent 40%)`,
+                }}
+              />
 
-              <h3 className="text-lg font-medium text-zinc-100">
-                Built for scale
+              <div className="lg:mt-22">
+                <h3 className="text-lg sm:text-xl lg:w-1/2 text-zinc-100 font-medium">
+                Audit-Ready History
               </h3>
-              <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-                Manage multiple creators, campaigns, and agreements
-                without losing structure or clarity.
+              <p className="mt-2 text-sm text-zinc-400">
+                Every decision permanently recorded.
               </p>
+              </div>
+
+              <div className="
+      relative mt-6
+      lg:w-40 lg:h-40 sm:w-24 sm:h-24
+      lg:absolute lg:-top-2 lg:-right-2
+      opacity-90">
+                <Image
+                  src="/images/audit_ready_history.png"
+                  fill
+                  className="object-contain"
+                  alt=""
+                />
+              </div>
             </div>
 
-            {/* Feature 6 — closes the rectangle */}
-            <div className="
-  rounded-2xl
-  border border-white/10
-  bg-[#0E1117]
-  p-6
-  transition duration-300 ease-out
-  lg:hover:-translate-y-[2px]
-  lg:hover:border-white/20
-">
+            {/* ================= BUILT FOR SCALE ================= */}
+            <div
+              onMouseMove={handleMouseMove}
+              className="lg:col-span-3
+    rounded-3xl bg-[#0f141b4f]
+    p-6 sm:p-8
+    group relative overflow-hidden
+    transition-all duration-300"
+            >
+              <div
+                className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99,110,225,0.15), transparent 40%)`,
+                }}
+              />
 
-              <h3 className="text-lg font-medium text-zinc-100">
-                Audit-ready history
+              <h3 className="text-xl sm:text-2xl text-zinc-100 font-medium">
+                Built for Scale
               </h3>
-              <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-                Every decision, submission, and approval is permanently recorded,
-                making agreements transparent, traceable, and dispute-resistant.
+              <p className="mt-3 sm:mt-4 text-sm sm:text-base text-zinc-400 max-w-md">
+                Manage multiple creators, campaigns and agreements without losing clarity.
               </p>
+
+              <div className="
+      relative mt-6 lg:h-55 lg:w-55
+      w-28 h-28 sm:w-36 sm:h-36
+      lg:absolute lg:-bottom-5 lg:right-6 
+      opacity-90">
+                <Image
+                  src="/images/built_for_scale.png"
+                  fill
+                  className="object-contain"
+                  alt=""
+                />
+              </div>
             </div>
 
           </div>
-
         </div>
       </section>
 
@@ -243,7 +345,7 @@ export default function LandingPage() {
       {/* ================= TIMELINE ================= */}
       <Timeline />
 
-      {/* ================= PRICING (OBVIOUS DIFFERENCE) ================= */}
+      {/* ================= PRICING ================= */}
       <section id="pricing" className="py-32 px-6 border-t border-zinc-800">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-medium">Pricing</h2>

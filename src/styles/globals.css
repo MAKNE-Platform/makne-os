@@ -11,3 +11,9 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
+
+
+h1::selection, h2::selection, p::selection, h3::selection, a::selection {
+  background-color: #636de134;
+  color: #636EE1;
+}
