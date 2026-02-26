@@ -42,11 +42,10 @@ export default function HowItWorksPage() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 whileHover={{ scale: 1.05 }}
-                className={`relative text-sm uppercase tracking-wider transition ${
-                  activeTab === tab
+                className={`relative text-sm uppercase tracking-wider transition ${activeTab === tab
                     ? "text-white"
                     : "text-white/50 hover:text-white"
-                }`}
+                  }`}
               >
                 {tab}
 

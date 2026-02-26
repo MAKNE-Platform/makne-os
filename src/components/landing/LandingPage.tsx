@@ -25,7 +25,7 @@ export default function LandingPage() {
       <Navbar />
 
       {/* ================= HERO ================= */}
-      <section className="relative min-h-screen px-6 pt-48 flex items-start justify-center overflow-hidden">
+      <section className="relative min-h-screen px-6 pt-40 flex items-start justify-center overflow-hidden">
 
         {/* Background vignette */}
         <div className="pointer-events-none absolute inset-0 -z-10">
@@ -61,14 +61,14 @@ export default function LandingPage() {
           </h1>
 
           {/* Subheading */}
-          <p className="mt-8 max-w-[42rem] mx-auto text-base md:text-lg text-zinc-400 leading-relaxed">
+          <p className="mt-6 max-w-[42rem] mx-auto text-base md:text-lg text-zinc-400 leading-relaxed">
             MAKNE helps brands, creators, and agencies collaborate through structured
             agreements, tracked execution, and acceptance-based payments — built for
             clarity, not chaos.
           </p>
 
           {/* CTA */}
-          <div className="mt-12 flex justify-center gap-4">
+          <div className="mt-10 flex justify-center gap-4">
             <a
               href="/auth/signup"
               className="rounded-full bg-white px-6 py-3 text-sm font-medium text-black hover:brightness-95 transition"
@@ -85,6 +85,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <img className="w-[95%] ml-[50%] -mt-22 translate-x-[-50%] border border-[#636de173] rounded-[50px]" src="brand-dashboard.png" alt="Brand Dashboard" />
 
       {/* ================= FEATURES — BENTO STYLE ================= */}
       <section id="features" className="px-6 py-40 border-t border-white/5">
