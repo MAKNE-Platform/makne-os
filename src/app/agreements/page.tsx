@@ -15,6 +15,8 @@ import { Notification } from "@/lib/db/models/Notification";
 import { Payment } from "@/lib/db/models/Payment";
 import { AuditLog } from "@/lib/db/models/AuditLog";
 
+import ViewAgreementButton from "@/components/agreements/ViewAgreementButton";
+
 type BrandProfileType = {
   brandName: string;
   industry: string;
@@ -212,33 +214,7 @@ export default async function AgreementsPage() {
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/agreements/${agreement._id}`}
-                        className="
-      inline-flex
-      items-center
-      gap-1
-      rounded-full
-      border
-      border-[#636EE1]/40
-      bg-[#636EE1]/10
-      px-4
-      py-1.5
-      text-xs
-      font-medium
-      text-[#636EE1]
-      hover:bg-[#636EE1]
-      hover:text-black
-      transition-all
-      duration-200
-    "
-                      >
-                        View
-                        <ArrowRight
-                          size={14}
-                          className="transition-transform duration-200 group-hover:translate-x-1"
-                        />
-                      </Link>
+                      <ViewAgreementButton id={agreement._id.toString()} />
                     </td>
                   </tr>
                 ))}

@@ -279,11 +279,11 @@ export default function LandingPage() {
 
               <div className="lg:mt-22">
                 <h3 className="text-lg sm:text-xl lg:w-1/2 text-zinc-100 font-medium">
-                Audit-Ready History
-              </h3>
-              <p className="mt-2 text-sm text-zinc-400">
-                Every decision permanently recorded.
-              </p>
+                  Audit-Ready History
+                </h3>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Every decision permanently recorded.
+                </p>
               </div>
 
               <div className="

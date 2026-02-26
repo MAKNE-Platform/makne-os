@@ -3,17 +3,33 @@
 import { loginUserAction } from "./actions";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
+
   return (
     <div className="w-full max-w-sm">
       <form
-        action={async (formData) => {
+        onSubmit={async (e) => {
+          e.preventDefault();
+
           setLoading(true);
-          await loginUserAction(formData);
-          setLoading(false);
+
+          const formData = new FormData(e.currentTarget);
+
+          try {
+            await loginUserAction(formData);
+
+            router.refresh();  
+            router.push("/");    
+          } catch (err) {
+            console.error(err);
+          } finally {
+            setLoading(false);
+          }
         }}
         className="space-y-4"
       >
