@@ -27,26 +27,28 @@ export default function LandingPage() {
       {/* ================= HERO ================= */}
       <section className="relative min-h-screen px-6 pt-40 flex items-start justify-center overflow-hidden">
 
-        {/* Background vignette */}
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          {/* Soft dark vignette */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(99,110,225,0.08),transparent_60%)]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0B0E14] to-black" />
-        </div>
+        <div className="flex-col items-center justify-center ">
+          <div className="flex justify-center items-center">
+            {/* Background vignette */}
+            <div className="pointer-events-none absolute inset-0 -z-10">
+              {/* Soft dark vignette */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(99,110,225,0.08),transparent_60%)]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0B0E14] to-black" />
+            </div>
 
-        <div className="max-w-3xl text-center">
+            <div className="max-w-3xl text-center">
 
-          {/* Pill badge */}
-          <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-white/10 text-xs text-zinc-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#636EE1]" />
-            <p>Structured collaboration platform</p>
-          </div>
+              {/* Pill badge */}
+              <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-white/10 text-xs text-zinc-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#636EE1]" />
+                <p>Structured collaboration platform</p>
+              </div>
 
-          {/* Headline */}
-          <h1 className="text-4xl md:text-6xl font-medium leading-tight tracking-tight text-zinc-100">
-            Trust, execute, and get paid{" "}
-            <span
-              className="
+              {/* Headline */}
+              <h1 className="text-4xl md:text-6xl font-medium leading-tight tracking-tight text-zinc-100">
+                Trust, execute, and get paid{" "}
+                <span
+                  className="
       bg-gradient-to-r
       from-[#A5B4FC]
       via-[#636EE1]
@@ -55,41 +57,44 @@ export default function LandingPage() {
       text-transparent
       opacity-90
     "
-            >
-              without ambiguity
-            </span>
-          </h1>
+                >
+                  without ambiguity
+                </span>
+              </h1>
 
-          {/* Subheading */}
-          <p className="mt-6 max-w-[42rem] mx-auto text-base md:text-lg text-zinc-400 leading-relaxed">
-            MAKNE helps brands, creators, and agencies collaborate through structured
-            agreements, tracked execution, and acceptance-based payments — built for
-            clarity, not chaos.
-          </p>
+              {/* Subheading */}
+              <p className="mt-6 max-w-[42rem] mx-auto text-base md:text-lg text-zinc-400 leading-relaxed">
+                MAKNE helps brands, creators, and agencies collaborate through structured
+                agreements, tracked execution, and acceptance-based payments — built for
+                clarity, not chaos.
+              </p>
 
-          {/* CTA */}
-          <div className="mt-10 flex justify-center gap-4">
-            <a
-              href="/auth/signup"
-              className="rounded-full bg-white px-6 py-3 text-sm font-medium text-black hover:brightness-95 transition"
-            >
-              Get started
-            </a>
+              {/* CTA */}
+              <div className="mt-10 flex justify-center gap-4">
+                <a
+                  href="/auth/signup"
+                  className="rounded-full bg-white px-6 py-3 text-sm font-medium text-black hover:brightness-95 transition"
+                >
+                  Get started
+                </a>
 
-            <a
-              href="/auth/login"
-              className="rounded-full border border-white/10 px-6 py-3 text-sm text-zinc-300 hover:text-white transition"
-            >
-              Login
-            </a>
+                <a
+                  href="/auth/login"
+                  className="rounded-full border border-white/10 px-6 py-3 text-sm text-zinc-300 hover:text-white transition"
+                >
+                  Login
+                </a>
+              </div>
+            </div>
           </div>
+
+          <img className="lg:w-[95%] md:w-[95%] w-[90%] ml-[50%] mt-10 lg:mt-14 translate-x-[-50%] border border-[#636de173] lg:rounded-[50px] md:rounded-2xl rounded-2xl mb-20 " src="brand-dashboard.png" alt="Brand Dashboard" />
         </div>
       </section>
 
-      <img className="w-[95%] ml-[50%] -mt-22 translate-x-[-50%] border border-[#636de173] rounded-[50px]" src="brand-dashboard.png" alt="Brand Dashboard" />
 
       {/* ================= FEATURES — BENTO STYLE ================= */}
-      <section id="features" className="px-6 py-40 border-t border-white/5">
+      <section id="features" className="px-6 py-30 border-t border-white/20">
         <div className="mx-auto max-w-7xl">
 
           {/* Section Intro */}
@@ -113,7 +118,7 @@ export default function LandingPage() {
             <div
               onMouseMove={handleMouseMove}
               className="lg:col-span-1 lg:row-span-2
-    rounded-3xl bg-[#0f141b4f]
+    rounded-3xl bg-[#0f141bce]
     p-6 sm:p-8
     group relative overflow-hidden
     transition-all duration-300"
@@ -155,7 +160,7 @@ export default function LandingPage() {
             <div
               onMouseMove={handleMouseMove}
               className="lg:col-span-3
-    rounded-3xl bg-[#0f141b4f]
+    rounded-3xl bg-[#0f141bce]
     p-6 sm:p-8
     group relative overflow-hidden
     transition-all duration-300"
@@ -195,7 +200,7 @@ export default function LandingPage() {
             <div
               onMouseMove={handleMouseMove}
               className="lg:col-span-2
-    rounded-3xl bg-[#0f141b4f]
+    rounded-3xl bg-[#0f141bce]
     p-6
     group relative overflow-hidden
     transition-all duration-300"
@@ -231,7 +236,7 @@ export default function LandingPage() {
             {/* ================= ACCEPTANCE PAYMENTS ================= */}
             <div
               onMouseMove={handleMouseMove}
-              className="rounded-3xl bg-[#0f141b4f]
+              className="rounded-3xl bg-[#0f141bce]
     p-6
     group relative overflow-hidden
     transition-all duration-300"
@@ -267,7 +272,7 @@ export default function LandingPage() {
             {/* ================= AUDIT HISTORY ================= */}
             <div
               onMouseMove={handleMouseMove}
-              className="rounded-3xl bg-[#0f141b4f]
+              className="rounded-3xl bg-[#0f141bce]
     p-6
     group relative overflow-hidden
     transition-all duration-300"
@@ -306,7 +311,7 @@ export default function LandingPage() {
             <div
               onMouseMove={handleMouseMove}
               className="lg:col-span-3
-    rounded-3xl bg-[#0f141b4f]
+    rounded-3xl bg-[#0f141bce]
     p-6 sm:p-8
     group relative overflow-hidden
     transition-all duration-300"
@@ -382,7 +387,7 @@ export default function LandingPage() {
       </section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="border-t mt-10 border-white/5 px-6 py-10">
+      <footer className="border-t mt-10 border-white/20 px-6 py-10">
         <div className="mx-auto max-w-7xl">
 
           <div className="grid gap-16 md:grid-cols-2 lg:grid-cols-[2fr_3fr_2fr]">
@@ -466,7 +471,7 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom bar */}
-          <div className="mt-16 flex flex-col gap-4 border-t border-white/5 pt-6 text-xs text-zinc-500 sm:flex-row sm:justify-between">
+          <div className="mt-16 flex flex-col gap-4 border-t border-white/20 pt-6 text-xs text-zinc-500 sm:flex-row sm:justify-between">
             <div>
               © {new Date().getFullYear()} MAKNE. All rights reserved.
             </div>

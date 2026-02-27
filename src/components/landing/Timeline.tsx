@@ -71,7 +71,7 @@ export default function Timeline() {
     return (
         <section
             ref={containerRef}
-            className="relative px-6 py-40 border-t border-white/5"
+            className="relative px-6 py-30 border-t border-white/20"
         >
             <div className="mx-auto max-w-7xl">
 

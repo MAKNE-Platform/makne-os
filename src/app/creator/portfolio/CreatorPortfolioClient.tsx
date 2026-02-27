@@ -76,7 +76,7 @@ export default function CreatorPortfolioClient({ profile }: Props) {
         <div className="space-y-12">
 
             {/* ================= HERO ================= */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0b1020] via-[#0f172a] to-[#1e1b4b] sm:p-8 lg:p-10">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0b1020] via-[#0f172a] to-[#1e1b4b] p-4">
 
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-10">
 

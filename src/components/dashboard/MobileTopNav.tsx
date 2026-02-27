@@ -13,6 +13,7 @@ type Props = {
   inboxCount?: number;
   draftAgreementsCount?: number;
   pendingPaymentsCount?: number;
+  creatorsCount?:number;
 };
 
 
@@ -22,6 +23,7 @@ export default function MobileTopNav({
   inboxCount = 0,
   draftAgreementsCount = 0,
   pendingPaymentsCount = 0,
+  creatorsCount,
 }: Props) {
 
     const [open, setOpen] = useState(false);
@@ -159,6 +161,7 @@ export default function MobileTopNav({
                         <NavItem label="Inbox" href="/brand/notifications" badge={inboxCount} />
                         <NavItem label="Analytics" href="/brand/analytics" />
                         <NavItem label="Payments" href="/brand/payments" badge={pendingPaymentsCount} />
+                        <NavItem label="Creators" href="/brand/creators" badge={creatorsCount} />
 
                         {/* Divider */}
                         <div className="pt-3 border-t border-white/10 space-y-2">

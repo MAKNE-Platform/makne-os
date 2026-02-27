@@ -49,7 +49,7 @@ export default function Preloader() {
                   duration: 0.6,
                   ease: "easeOut",
                 }}
-                className="text-[120px] font-bold tracking-tight text-white"
+                className="lg:text-[120px] md:text-[80px] sm:text-[40px] font-bold tracking-tight text-white"
               >
                 {letter}
               </motion.span>
