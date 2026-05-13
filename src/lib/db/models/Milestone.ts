@@ -17,6 +17,10 @@ const MilestoneSchema = new mongoose.Schema(
       type: String,
     },
 
+    aiExpectationSummary: {
+      type: String,
+    },
+
     amount: {
       type: Number,
       required: true,
@@ -31,7 +35,11 @@ const MilestoneSchema = new mongoose.Schema(
     deliveryNote: {
       type: String,
     },
-
+    
+    revisionFeedback: {
+      type: String,
+    },
+    
     deliveredAt: {
       type: Date,
     },
@@ -39,6 +47,7 @@ const MilestoneSchema = new mongoose.Schema(
     approvedAt: {
       type: Date,
     },
+
 
     dueDate: {
       type: Date,

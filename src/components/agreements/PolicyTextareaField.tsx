@@ -94,7 +94,7 @@ export default function PolicyTextareaField({
           }}
           
           placeholder={placeholder}
-          className="min-h-[140px] w-full resize-none rounded-2xl border border-white/10 bg-[#0f1322] px-4 py-4 pr-14 text-sm leading-relaxed text-white placeholder:text-zinc-500 outline-none transition focus:border-[#636EE1] focus:ring-2 focus:ring-[#636EE1]/30"
+          className="min-h-35 w-full rounded-2xl border border-white/10 bg-[#0f1322] px-4 py-4 pr-14 text-sm leading-normal text-white placeholder:text-zinc-500 outline-none transition focus:border-[#636EE1] focus:ring-2 focus:ring-[#636EE1]/30"
         />
 
         <div className="group absolute right-4 top-4">

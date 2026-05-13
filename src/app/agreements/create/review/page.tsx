@@ -146,7 +146,6 @@ export default async function ReviewAgreementPage() {
           </section>
         )}
 
-        {/* KEEPING YOUR DRAFT CONDITION UI EXACTLY SAME */}
         {missingCreator && (
           <section className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
             <p className="text-sm text-zinc-300">

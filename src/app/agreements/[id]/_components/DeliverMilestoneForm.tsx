@@ -11,6 +11,12 @@ export default function DeliverMilestoneForm({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  const [note, setNote] = useState("");
+
+  const [improving, setImproving] =
+    useState(false);
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -39,6 +45,44 @@ export default function DeliverMilestoneForm({
     fileInputRef.current?.click();
   }
 
+  async function improveNote() {
+    if (!note.trim()) return;
+
+    try {
+      setImproving(true);
+
+      const response = await fetch(
+        "/api/ai/improve-submission-note",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            note,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.note) {
+        setNote(data.note);
+      }
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Failed to improve note"
+      );
+    } finally {
+      setImproving(false);
+    }
+  }
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -46,17 +90,38 @@ export default function DeliverMilestoneForm({
       className="mt-4 space-y-4"
     >
       {/* DESCRIPTION CARD */}
-      <div className="bg-[#0F0F12] border border-white/5 rounded-xl p-4 space-y-3">
-        <p className="text-xs text-zinc-500 uppercase tracking-wide">
-          Description
-        </p>
+      <div className="bg-[#0F0F12] border border-white/5 rounded-xl p-4 space-y-4">
+
+        <div className="flex items-center justify-between">
+
+          <p className="text-xs text-zinc-500 uppercase tracking-wide">
+            Description
+          </p>
+
+          <button
+            type="button"
+            onClick={improveNote}
+            disabled={improving || !note.trim()}
+            className="rounded-lg border border-[#636EE1]/20 bg-[#636EE1]/10 px-3 py-1.5 text-xs text-[#A5AEFF] transition hover:bg-[#636EE1]/20 disabled:opacity-40"
+          >
+            {improving
+              ? "Improving..."
+              : "✨ Improve with AI"}
+          </button>
+
+        </div>
 
         <textarea
           name="note"
+          value={note}
+          onChange={(e) =>
+            setNote(e.target.value)
+          }
           placeholder="Explain what you delivered, context, revisions, etc."
-          rows={4}
-          className="w-full rounded-lg bg-[#161618] px-4 py-3 text-sm text-white resize-none focus:outline-none focus:ring-1 focus:ring-[#636EE1]"
+          rows={5}
+          className="w-full rounded-xl border border-white/10 bg-[#161618] px-4 py-4 text-sm leading-relaxed text-white resize-none outline-none transition focus:border-[#636EE1] focus:ring-1 focus:ring-[#636EE1]"
         />
+
       </div>
 
       {/* LINKS CARD */}

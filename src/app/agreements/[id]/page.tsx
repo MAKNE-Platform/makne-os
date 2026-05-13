@@ -11,7 +11,9 @@ import { BrandProfile } from "@/lib/db/models/BrandProfile";
 import { ArrowLeft, Download } from "lucide-react";
 import { CreatorProfile } from "@/lib/db/models/CreatorProfile";
 import AgreementToastHandler from "./_components/AgreementToastHandler";
-
+import MilestoneSubmissionReview from "@/components/agreements/MilestoneSubmissionReview";
+import RequestRevisionForm from "@/components/agreements/RequestRevisionForm";
+import FeedbackInterpreter from "@/components/agreements/FeedbackInterpreter";
 
 type CreatorProfileType = {
     displayName?: string;
@@ -515,6 +517,59 @@ export default async function AgreementDetailPage({
                                     {isCreator && agreement.status === "ACTIVE" && (
                                         <div className="space-y-4">
 
+                                            {/* REVISION FEEDBACK */}
+                                            {m.status === "REVISION" && (
+                                                <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-5 space-y-3">
+
+                                                    <div className="flex items-start gap-3">
+
+                                                        <div className="rounded-lg bg-yellow-500/10 p-2 text-yellow-300">
+                                                            ⚠️
+                                                        </div>
+
+                                                        <div className="space-y-2 flex-1">
+
+                                                            <div>
+                                                                <p className="text-xs uppercase tracking-wide text-yellow-300">
+                                                                    Revision Requested
+                                                                </p>
+
+                                                                <h3 className="mt-1 text-sm font-medium text-white">
+                                                                    Changes are required before approval
+                                                                </h3>
+                                                            </div>
+
+                                                            <div className="rounded-xl border border-white/5 bg-[#0F1016] p-4">
+
+                                                                <p className="text-sm leading-relaxed text-zinc-300">
+                                                                    {m.revisionFeedback ||
+                                                                        "No revision feedback was provided by the brand."}
+
+                                                                    <FeedbackInterpreter
+                                                                        feedback={m.revisionFeedback}
+
+                                                                        milestoneTitle={m.title}
+
+                                                                        aiExpectationSummary={
+                                                                            m.aiExpectationSummary
+                                                                        }
+
+                                                                        submissionNote={
+                                                                            m.submission?.note
+                                                                        }
+                                                                    />
+                                                                </p>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+                                            )}
+
+                                            {/* SUBMISSION VIEW */}
                                             {m.submission ? (
                                                 <div className="bg-[#0F0F12] border border-white/5 rounded-lg p-4 space-y-3">
 
@@ -525,7 +580,9 @@ export default async function AgreementDetailPage({
                                                     {m.submission?.submittedAt && (
                                                         <p className="text-xs text-zinc-500">
                                                             Submitted on{" "}
-                                                            {new Date(m.submission.submittedAt).toLocaleDateString()}
+                                                            {new Date(
+                                                                m.submission.submittedAt
+                                                            ).toLocaleDateString()}
                                                         </p>
                                                     )}
 
@@ -535,9 +592,9 @@ export default async function AgreementDetailPage({
                                                         </p>
                                                     )}
 
-                                                    {/* File Preview Here */}
-
-                                                    <SubmissionFiles files={m.submission.files} />
+                                                    <SubmissionFiles
+                                                        files={m.submission.files}
+                                                    />
 
                                                 </div>
                                             ) : (
@@ -546,9 +603,13 @@ export default async function AgreementDetailPage({
                                                 </div>
                                             )}
 
-                                            {(m.status === "PENDING" || m.status === "REVISION") && (
-                                                <DeliverMilestoneForm milestoneId={m._id.toString()} />
-                                            )}
+                                            {/* SUBMISSION FORM */}
+                                            {(m.status === "PENDING" ||
+                                                m.status === "REVISION") && (
+                                                    <DeliverMilestoneForm
+                                                        milestoneId={m._id.toString()}
+                                                    />
+                                                )}
 
                                         </div>
                                     )}
@@ -593,6 +654,32 @@ export default async function AgreementDetailPage({
                                                         </div>
                                                     )}
 
+                                                    {m.submission?.submittedAt && (
+                                                        <MilestoneSubmissionReview
+                                                            milestone={{
+                                                                title: m.title,
+
+                                                                aiExpectationSummary:
+                                                                    m.aiExpectationSummary,
+
+                                                                submission: {
+                                                                    note:
+                                                                        m.submission?.note || "",
+
+                                                                    links:
+                                                                        m.submission?.links || [],
+
+                                                                    files:
+                                                                        m.submission?.files?.map(
+                                                                            (file: any) => ({
+                                                                                name: file.name,
+                                                                                url: file.url,
+                                                                            })
+                                                                        ) || [],
+                                                                },
+                                                            }}
+                                                        />
+                                                    )}
 
                                                     {/* BRAND ACTIONS */}
                                                     {m.status === "IN_PROGRESS" && (
@@ -612,17 +699,19 @@ export default async function AgreementDetailPage({
                                                             </form>
 
                                                             {/* REQUEST REVISION */}
-                                                            <form
-                                                                action={`/milestones/${m._id}/request-changes`}
-                                                                method="POST"
-                                                            >
-                                                                <button
-                                                                    type="submit"
-                                                                    className="bg-[#161618] border border-white/10 hover:bg-[#1E1E22] px-4 py-2 rounded-lg text-sm transition"
-                                                                >
-                                                                    Request Revision
-                                                                </button>
-                                                            </form>
+                                                            <RequestRevisionForm
+                                                                milestoneId={m._id.toString()}
+
+                                                                milestoneTitle={m.title}
+
+                                                                aiExpectationSummary={
+                                                                    m.aiExpectationSummary
+                                                                }
+
+                                                                submissionNote={
+                                                                    m.submission?.note
+                                                                }
+                                                            />
 
                                                         </div>
                                                     )}

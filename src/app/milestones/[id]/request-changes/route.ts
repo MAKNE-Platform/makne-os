@@ -6,6 +6,7 @@ import { Milestone } from "@/lib/db/models/Milestone";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { logAudit } from "@/lib/audit/logAudit";
 import { User } from "@/lib/db/models/User";
+import { revalidatePath } from "next/cache";
 
 export async function POST(
   request: Request,
@@ -54,8 +55,40 @@ export async function POST(
     );
   }
 
+  const formData = await request.formData();
+
+  const revisionFeedback =
+    formData.get("revisionFeedback")?.toString().trim();
+
+  if (!revisionFeedback) {
+    return NextResponse.json(
+      {
+        error: "Revision feedback is required",
+      },
+      { status: 400 }
+    );
+  }
+
+  milestone.revisionFeedback =
+    revisionFeedback;
+
+    console.log("REVISION FEEDBACK:", revisionFeedback);
+
+console.log(
+  "MILESTONE BEFORE SAVE:",
+  milestone
+);
+
   milestone.status = "REVISION";
   await milestone.save();
+
+  const updatedMilestone =
+  await Milestone.findById(milestone._id);
+
+console.log(
+  "UPDATED MILESTONE:",
+  updatedMilestone
+);
 
   await logAudit({
     actorType: "BRAND",
@@ -75,11 +108,14 @@ export async function POST(
   await Agreement.findByIdAndUpdate(agreement._id, {
     $push: {
       activity: {
-        message: `Changes requested for milestone: ${milestone.title}`,
+        message: `Revision requested for milestone: ${milestone.title}`,
         createdAt: new Date(),
       },
     },
   });
+
+
+  revalidatePath(`/agreements/${agreement._id}`);
 
   // Force page reload
   const response = NextResponse.redirect(

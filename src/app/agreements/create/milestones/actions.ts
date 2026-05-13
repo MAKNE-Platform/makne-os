@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import { Milestone } from "@/lib/db/models/Milestone";
+import { generateMilestoneExpectation } from "@/services/ai/milestoneExpectation.service";
 
 export async function saveMilestonesAction(formData: FormData) {
   const cookieStore = await cookies();
@@ -56,11 +57,37 @@ export async function saveMilestonesAction(formData: FormData) {
     // ⛔ Do not crash draft flow — just skip invalid milestone
     if (deliverableIds.length === 0) continue;
 
+    const mappedDeliverables =
+      agreement.deliverables
+        .filter((d: any) =>
+          deliverableIds.some(
+            (id) =>
+              id.toString() === d._id.toString()
+          )
+        )
+        .map((d: any) => d.title);
+
+    const aiExpectationSummary =
+      await generateMilestoneExpectation({
+        agreementTitle:
+          (agreement as any).title || "",
+        agreementDescription:
+          (agreement as any).description || "",
+        milestoneTitle: title,
+        deliverables: mappedDeliverables,
+      });
+
     await Milestone.create({
       agreementId: new mongoose.Types.ObjectId(agreementId),
+
       title,
+
       amount,
+
       deliverableIds,
+
+      aiExpectationSummary,
+
       status: "PENDING",
     });
 
