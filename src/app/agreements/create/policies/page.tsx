@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { savePoliciesAction } from "./actions";
+import PolicyTextareaField from "@/components/agreements/PolicyTextareaField";
 
 export default async function PoliciesPage() {
   const cookieStore = await cookies();
@@ -50,45 +51,29 @@ export default async function PoliciesPage() {
 
           <form action={savePoliciesAction} className="space-y-10">
 
-            {[
-              {
-                label: "Payment Terms",
-                name: "paymentTerms",
-                placeholder:
-                  "e.g. Payment will be released within 5 working days of milestone approval.",
-              },
-              {
-                label: "Cancellation Policy",
-                name: "cancellationPolicy",
-                placeholder:
-                  "e.g. Either party may cancel with 7 days notice.",
-              },
-              {
-                label: "Revision Policy",
-                name: "revisionPolicy",
-                placeholder:
-                  "e.g. Up to 2 revisions per deliverable.",
-              },
-              {
-                label: "Usage Rights",
-                name: "usageRights",
-                placeholder:
-                  "e.g. Brand has usage rights for 12 months across social media.",
-              },
-            ].map((field) => (
-              <div key={field.name} className="space-y-3">
-                <label className="block text-sm font-medium text-zinc-300">
-                  {field.label}
-                </label>
+            <PolicyTextareaField
+              label="Payment Terms"
+              name="paymentTerms"
+              placeholder="e.g. Payment will be released within 5 working days of milestone approval."
+            />
 
-                <textarea
-                  name={field.name}
-                  rows={4}
-                  placeholder={field.placeholder}
-                  className="w-full resize-none rounded-2xl border border-white/10 bg-[#0f1322] px-4 py-4 text-sm leading-relaxed text-white placeholder:text-zinc-500 outline-none transition focus:border-[#636EE1] focus:ring-2 focus:ring-[#636EE1]/30"
-                />
-              </div>
-            ))}
+            <PolicyTextareaField
+              label="Cancellation Policy"
+              name="cancellationPolicy"
+              placeholder="e.g. Either party may cancel with 7 days notice."
+            />
+
+            <PolicyTextareaField
+              label="Revision Policy"
+              name="revisionPolicy"
+              placeholder="e.g. Up to 2 revisions per deliverable."
+            />
+
+            <PolicyTextareaField
+              label="Usage Rights"
+              name="usageRights"
+              placeholder="e.g. Brand has usage rights for 12 months across social media."
+            />
 
             {/* CTA */}
             <div className="flex justify-end pt-4">

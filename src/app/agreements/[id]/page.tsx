@@ -210,7 +210,7 @@ export default async function AgreementDetailPage({
                                         <textarea
                                             name="description"
                                             defaultValue={d.description}
-                                            className="w-full rounded-lg bg-[#0f0f12] px-4 py-2 text-sm text-white"
+                                            className="w-full min-h-35 rounded-lg bg-[#0f0f12] px-4 py-2 text-sm text-white"
                                         />
 
                                         <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
@@ -252,7 +252,7 @@ export default async function AgreementDetailPage({
                                     <textarea
                                         name="description"
                                         placeholder="Description (optional)"
-                                        className="w-full rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
+                                        className="w-full min-h-35 rounded-lg bg-[#161618] px-3 py-2 text-sm text-white"
                                     />
 
                                     <button className="rounded-lg bg-[#636EE1] px-4 py-2 text-sm text-white">
@@ -337,25 +337,25 @@ export default async function AgreementDetailPage({
                                     name="paymentTerms"
                                     defaultValue={agreement.policies?.paymentTerms}
                                     placeholder="Payment terms"
-                                    className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    className="w-full min-h-35 rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
                                 />
                                 <textarea
                                     name="cancellationPolicy"
                                     defaultValue={agreement.policies?.cancellationPolicy}
                                     placeholder="Cancellation policy"
-                                    className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    className="w-full min-h-35 rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
                                 />
                                 <textarea
                                     name="revisionPolicy"
                                     defaultValue={agreement.policies?.revisionPolicy}
                                     placeholder="Revision policy"
-                                    className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    className="w-full min-h-35 rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
                                 />
                                 <textarea
                                     name="usageRights"
                                     defaultValue={agreement.policies?.usageRights}
                                     placeholder="Usage rights"
-                                    className="w-full rounded-lg bg-[#0f0f12] px-3 py-2 text-sm text-white"
+                                    className="w-full min-h-35 rounded-lg  bg-[#0f0f12] px-3 py-2 text-sm text-white"
                                 />
 
                                 <button className="rounded-lg bg-[#636EE1] px-5 py-2 text-sm text-white">

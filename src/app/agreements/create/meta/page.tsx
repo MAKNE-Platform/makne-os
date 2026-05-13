@@ -4,8 +4,8 @@ import { createAgreementMetaAction } from "./actions";
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import mongoose from "mongoose";
+import AgreementDescriptionField from "@/components/agreements/AgreementDescriptionField";
 
-/* ✅ Minimal type for this page */
 type DraftAgreementMeta = {
   _id: mongoose.Types.ObjectId;
   title: string;
@@ -82,6 +82,12 @@ export default async function AgreementMetaPage() {
               <input
                 name="title"
                 required
+                onChange={(e) => {
+                  localStorage.setItem(
+                    "agreementTitle",
+                    e.target.value
+                  );
+                }}
                 defaultValue={agreement?.title ?? ""}
                 placeholder="e.g. Instagram Campaign – July"
                 className="w-full rounded-2xl border border-white/10 bg-[#121420] px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none transition focus:border-[#636EE1] focus:ring-2 focus:ring-[#636EE1]/30"
@@ -89,18 +95,9 @@ export default async function AgreementMetaPage() {
             </div>
 
             {/* DESCRIPTION */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-300">
-                Description
-              </label>
-              <textarea
-                name="description"
-                rows={4}
-                defaultValue={agreement?.description ?? ""}
-                placeholder="Brief overview of the collaboration"
-                className="w-full resize-none rounded-2xl border border-white/10 bg-[#121420] px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none transition focus:border-[#636EE1] focus:ring-2 focus:ring-[#636EE1]/30"
-              />
-            </div>
+            <AgreementDescriptionField
+              defaultValue={agreement?.description ?? ""}
+            />
 
             {/* CREATOR EMAIL */}
             <div className="space-y-2">

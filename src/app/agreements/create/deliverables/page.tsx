@@ -1,12 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { saveDeliverablesAction } from "./actions";
+import DeliverableDescriptionField from "@/components/agreements/DeliverableDescriptionField";
 
 export default async function DeliverablesPage() {
     const cookieStore = await cookies();
     const role = cookieStore.get("user_role")?.value;
     const agreementId = cookieStore.get("draft_agreement_id")?.value;
-    
+
 
     if (role !== "BRAND") {
         redirect("/auth/login");
@@ -76,11 +77,8 @@ export default async function DeliverablesPage() {
                                     className="w-full rounded-2xl border border-white/10 bg-[#0f1322] px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none transition focus:border-[#636EE1] focus:ring-2 focus:ring-[#636EE1]/30"
                                 />
 
-                                <textarea
-                                    name="deliverable_description"
-                                    placeholder="Description (optional)"
-                                    rows={3}
-                                    className="w-full resize-none rounded-2xl border border-white/10 bg-[#0f1322] px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none transition focus:border-[#636EE1] focus:ring-2 focus:ring-[#636EE1]/30"
+                                <DeliverableDescriptionField
+                                    deliverableIndex={index - 1}
                                 />
                             </div>
                         ))}

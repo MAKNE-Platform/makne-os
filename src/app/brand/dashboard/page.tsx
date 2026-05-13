@@ -169,7 +169,7 @@ export default async function BrandDashboard() {
   const pendingPaymentsCount = pendingPayments;
 
   return (
-    <div className="flex min-h-screen bg-black text-white">
+    <div className="flex min-h-screen bg-black text-white pb-5">
 
       {/* ================= SIDEBAR ================= */}
       {/* <aside className="hidden lg:flex h-screen sticky top-0 w-64 flex-col border-r border-white/10 bg-black px-6 py-6">
