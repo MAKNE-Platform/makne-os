@@ -13,7 +13,6 @@ export async function POST(req: NextRequest) {
         const prompt = `
 Generate a concise professional creator deliverable description.
 
-Deliverable:
 ${body.deliverableTitle}
 
 IMPORTANT:

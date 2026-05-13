@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
 import mongoose from "mongoose";
 import AgreementDescriptionField from "@/components/agreements/AgreementDescriptionField";
+import AgreementTitleSync from "@/components/agreements/AgreementTitleSync";
 
 type DraftAgreementMeta = {
   _id: mongoose.Types.ObjectId;
@@ -66,6 +67,8 @@ export default async function AgreementMetaPage() {
           </div>
         </div>
 
+        <AgreementTitleSync />
+
         {/* FORM CARD */}
         <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
 
@@ -82,12 +85,7 @@ export default async function AgreementMetaPage() {
               <input
                 name="title"
                 required
-                onChange={(e) => {
-                  localStorage.setItem(
-                    "agreementTitle",
-                    e.target.value
-                  );
-                }}
+                
                 defaultValue={agreement?.title ?? ""}
                 placeholder="e.g. Instagram Campaign – July"
                 className="w-full rounded-2xl border border-white/10 bg-[#121420] px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none transition focus:border-[#636EE1] focus:ring-2 focus:ring-[#636EE1]/30"
