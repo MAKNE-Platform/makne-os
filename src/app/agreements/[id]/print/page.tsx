@@ -264,14 +264,13 @@ export default async function AgreementPrintPage({
 
                                 <div style={{ paddingLeft: "12px" }}>
 
-                                    {agreement.deliverables
-                                        ?.filter((d: any) =>
-                                            m.deliverableIds.some(
-                                                (id: any) =>
-                                                    id.toString() ===
-                                                    d._id.toString()
-                                            )
+                                    {(agreement.deliverables as unknown as any[])?.filter((d: any) =>
+                                        m.deliverableIds.some(
+                                            (id: any) =>
+                                                id.toString() ===
+                                                d._id.toString()
                                         )
+                                    )
                                         .map((d: any) => (
                                             <p key={d._id.toString()}>
                                                 • {d.title}
