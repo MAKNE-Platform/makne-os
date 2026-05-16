@@ -7,6 +7,8 @@ import { Agreement } from "@/lib/db/models/Agreement";
 import { User } from "@/lib/db/models/User";
 import { Payment } from "@/lib/db/models/Payment";
 import { logAudit } from "@/lib/audit/logAudit";
+import { generatePortfolioSummary } from "@/services/ai/portfolio-summary.service";
+import { syncMilestoneTask } from "@/lib/tasks/syncMilestoneTask";
 
 export async function POST(
   request: Request,
@@ -98,7 +100,64 @@ export async function POST(
     milestone.approvedAt = undefined;
   }
 
+
+
+  if (action === "APPROVE") {
+
+    await syncMilestoneTask({
+      agreementId:
+        agreement._id.toString(),
+
+      milestoneId:
+        milestone._id.toString(),
+
+      completed: true,
+    });
+  }
+
   await milestone.save();
+
+  if (action === "APPROVE") {
+
+    const remainingMilestones =
+      await Milestone.countDocuments({
+        agreementId: agreement._id,
+
+        status: {
+          $nin: ["COMPLETED", "PAID"],
+        },
+      });
+
+    // ALL milestones completed
+    if (remainingMilestones === 0) {
+
+      agreement.status = "COMPLETED";
+
+      // Generate creator portfolio summary
+      const portfolioSummary =
+        await generatePortfolioSummary({
+          agreementTitle: agreement.title,
+
+          agreementDescription:
+            agreement.description,
+
+          deliverables:
+            agreement.deliverables || [],
+        });
+
+      agreement.portfolioSummary =
+        portfolioSummary;
+
+      agreement.activity.push({
+        message:
+          "Agreement completed successfully",
+
+        createdAt: new Date(),
+      });
+
+      await agreement.save();
+    }
+  }
 
   //  AUDIT LOG (MINIMAL & CORRECT)
   await logAudit({
@@ -135,8 +194,8 @@ export async function POST(
 
   const response = NextResponse.redirect(
     new URL(`/agreements/${agreement._id}?status=${action === "APPROVE"
-        ? "MILESTONE_APPROVED"
-        : "MILESTONE_REVISION"
+      ? "MILESTONE_APPROVED"
+      : "MILESTONE_REVISION"
       }`, request.url)
   );
 

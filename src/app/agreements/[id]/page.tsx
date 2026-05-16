@@ -14,6 +14,8 @@ import AgreementToastHandler from "./_components/AgreementToastHandler";
 import MilestoneSubmissionReview from "@/components/agreements/MilestoneSubmissionReview";
 import RequestRevisionForm from "@/components/agreements/RequestRevisionForm";
 import FeedbackInterpreter from "@/components/agreements/FeedbackInterpreter";
+import AgreementAiBreakdown from "@/components/agreements/AgreementAiBreakdown";
+import CampaignAssistantWidget from "@/components/agreements/CampaignAssistantWidget";
 
 type CreatorProfileType = {
     displayName?: string;
@@ -161,7 +163,6 @@ export default async function AgreementDetailPage({
                                         Accept Agreement
                                     </button>
                                 </form>
-
                             </div>
                         )}
 
@@ -470,9 +471,67 @@ export default async function AgreementDetailPage({
 
                 {/* MILESTONES */}
                 <section className="space-y-6">
-                    <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
+                    <h2 className="text-md font-semibold uppercase tracking-wide text-zinc-400">
                         Milestones
                     </h2>
+
+                    {isCreator && (
+                        <AgreementAiBreakdown
+                            agreementId={agreement._id.toString()}
+                        />
+                    )}
+
+                    {/* ================= DELIVERABLES ================= */}
+                    <div className="space-y-6">
+
+                        <h3 className="text-sm font-semibold text-zinc-400 uppercase">
+                            Deliverables
+                        </h3>
+
+                        {deliverables.length === 0 ? (
+                            <p className="text-sm text-zinc-400">
+                                No deliverables added yet.
+                            </p>
+                        ) : (
+                            <div className="space-y-4">
+
+                                {deliverables.map((d: any) => (
+                                    <div
+                                        key={d._id}
+                                        className="rounded-xl border border-white/10 bg-[#161618] p-5"
+                                    >
+
+                                        <div className="space-y-2">
+
+                                            <div className="flex items-start gap-3">
+
+                                                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#636EE1]" />
+
+                                                <div className="space-y-2">
+
+                                                    <h4 className="text-sm font-medium text-white">
+                                                        {d.title}
+                                                    </h4>
+
+                                                    {d.description && (
+                                                        <p className="text-sm leading-relaxed text-zinc-400">
+                                                            {d.description}
+                                                        </p>
+                                                    )}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                ))}
+
+                            </div>
+                        )}
+
+                    </div>
 
                     <div className="space-y-6">
                         {milestones.map((m: any) => {
@@ -510,6 +569,73 @@ export default async function AgreementDetailPage({
                                                 Milestone payout amount
                                             </p>
                                         </div>
+                                    </div>
+
+                                    {/* MILESTONE DETAILS */}
+                                    <div className="space-y-4 rounded-2xl border border-white/5 bg-[#0F1016] p-5">
+
+                                        {/* DESCRIPTION */}
+                                        {m.description && (
+                                            <div className="space-y-2">
+
+                                                <p className="text-xs uppercase tracking-wide text-zinc-500">
+                                                    Milestone Scope
+                                                </p>
+
+                                                <p className="text-sm leading-relaxed text-zinc-300">
+                                                    {m.description}
+                                                </p>
+
+                                            </div>
+                                        )}
+
+                                        {/* DUE DATE */}
+                                        {m.dueDate && (
+                                            <div className="space-y-1">
+
+                                                <p className="text-xs uppercase tracking-wide text-zinc-500">
+                                                    Due Date
+                                                </p>
+
+                                                <p className="text-sm text-zinc-300">
+                                                    {new Date(m.dueDate).toLocaleDateString()}
+                                                </p>
+
+                                            </div>
+                                        )}
+
+                                        {/* LINKED DELIVERABLES */}
+                                        {m.deliverableIds?.length > 0 && (
+                                            <div className="space-y-2">
+
+                                                <p className="text-xs uppercase tracking-wide text-zinc-500">
+                                                    Linked Deliverables
+                                                </p>
+
+                                                <div className="flex flex-wrap gap-2">
+
+                                                    {deliverables
+                                                        .filter((d: any) =>
+                                                            m.deliverableIds.some(
+                                                                (id: any) =>
+                                                                    id.toString() ===
+                                                                    d._id.toString()
+                                                            )
+                                                        )
+                                                        .map((d: any) => (
+                                                            <div
+                                                                key={d._id}
+                                                                className="rounded-full border border-[#636EE1]/20 bg-[#636EE1]/10 px-3 py-1 text-xs text-[#A5AEFF]"
+                                                            >
+                                                                {d.title}
+                                                            </div>
+                                                        ))}
+
+                                                </div>
+
+                                            </div>
+                                        )}
+
                                     </div>
 
                                     {/* ================= CREATOR VIEW ================= */}
@@ -781,7 +907,33 @@ export default async function AgreementDetailPage({
                     </a>
                 </section>
             </div>
+
+            {isCreator &&
+                agreement.creatorTasks?.length > 0 && (
+
+                    <CampaignAssistantWidget
+                        tasks={
+                            agreement.creatorTasks.map(
+                                (task: any) => ({
+                                    title: task.title,
+
+                                    type: task.type,
+
+                                    completed: task.completed,
+
+                                    autoTrack: task.autoTrack,
+
+                                    sourceType: task.sourceType,
+
+                                    sourceId:
+                                        task.sourceId?.toString(),
+                                })
+                            )
+                        }
+                    />
+                )}
         </div>
+
     );
 }
 

@@ -25,6 +25,47 @@ export default async function CreatorLayout({
 
     await connectDB();
 
+    const agreements = await Agreement.find({
+        creatorId: new mongoose.Types.ObjectId(userId),
+        status: "ACTIVE",
+        creatorTasks: {
+            $exists: true,
+            $ne: [],
+        },
+    })
+
+    const allTasks = agreements.flatMap(
+        (agreement) =>
+            agreement.creatorTasks.map(
+                (task: any) => ({
+                    ...task,
+
+                    agreementTitle:
+                        agreement.title,
+
+                    agreementId:
+                        agreement._id.toString(),
+                })
+            )
+    );
+
+    const activeAgreement = await Agreement.findOne({
+        creatorId: new mongoose.Types.ObjectId(userId),
+
+        status: "ACTIVE",
+
+        creatorTasks: {
+            $exists: true,
+            $ne: [],
+        },
+    }).lean<{
+        creatorTasks?: {
+            title: string;
+            completed?: boolean;
+            type?: string;
+        }[];
+    }>();
+
     const creatorObjectId = new mongoose.Types.ObjectId(userId);
 
     const user = await User

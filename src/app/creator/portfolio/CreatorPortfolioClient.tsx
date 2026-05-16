@@ -45,7 +45,7 @@ type Props = {
 /* ================= COMPONENT ================= */
 
 export default function CreatorPortfolioClient({ profile }: Props) {
-    
+
 
     const [showAllProjects, setShowAllProjects] = useState(false);
 
@@ -345,17 +345,32 @@ export default function CreatorPortfolioClient({ profile }: Props) {
 
             {/* ===== FEATURED PROJECTS ===== */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium">Featured Projects</h2>
+                <div className="flex items-center justify-between gap-4">
 
-                    {profile.portfolio.length > 0 && (
+                    <h2 className="text-lg font-medium">
+                        Featured Projects
+                    </h2>
+
+                    <div className="flex items-center gap-3">
+
                         <Link
-                            href="/creator/portfolio/manage"
-                            className="text-sm text-[#636EE1] hover:underline"
+                            href="/creator/portfolio/import"
+                            className="rounded-xl border border-[#636EE1]/20 bg-[#636EE1]/10 px-4 py-2 text-xs text-[#A5AEFF] transition hover:bg-[#636EE1]/20"
                         >
-                            Manage
+                            ✨ Import Campaign
                         </Link>
-                    )}
+
+                        {profile.portfolio.length > 0 && (
+                            <Link
+                                href="/creator/portfolio/manage"
+                                className="text-sm text-[#636EE1] hover:underline"
+                            >
+                                Manage
+                            </Link>
+                        )}
+
+                    </div>
+
                 </div>
 
                 {allProjects.length === 0 ? (
@@ -416,95 +431,95 @@ function PerfCard({ label, value }: { label: string; value: string | number }) {
 
 function FeaturedProjectCard({ item }: { item: PortfolioItem }) {
 
-  // Normalize deliverables (support legacy + new schema)
-  const normalizedDeliverables = (item.deliverables || []).map((d: any) => {
-    if (typeof d === "string") {
-      return { title: d };
-    }
-    return d;
-  });
+    // Normalize deliverables (support legacy + new schema)
+    const normalizedDeliverables = (item.deliverables || []).map((d: any) => {
+        if (typeof d === "string") {
+            return { title: d };
+        }
+        return d;
+    });
 
-  return (
-    <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff05] transition hover:border-[#636EE1]/40">
+    return (
+        <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff05] transition hover:border-[#636EE1]/40">
 
-      {/* Featured Badge */}
-      {item.meta?.featured && (
-        <div className="absolute top-3 right-3 z-10 rounded-full border bg-[#0000005f] border-[#636EE1] px-3 py-1 text-[10px] font-medium text-white shadow-md">
-          Featured
-        </div>
-      )}
+            {/* Featured Badge */}
+            {item.meta?.featured && (
+                <div className="absolute top-3 right-3 z-10 rounded-full border bg-[#0000005f] border-[#636EE1] px-3 py-1 text-[10px] font-medium text-white shadow-md">
+                    Featured
+                </div>
+            )}
 
-      {/* Thumbnail */}
-      <div className="aspect-[16/9] bg-black/30 relative overflow-hidden">
-        {item.thumbnail ? (
-          <img
-            src={item.thumbnail}
-            alt={item.title}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs opacity-50">
-            No thumbnail
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-4 space-y-3">
-
-        {/* Title */}
-        <div className="text-sm font-medium">
-          {item.title}
-        </div>
-
-        {/* Brand + Campaign */}
-        <div className="text-xs opacity-70">
-          {item.brandName || "Brand collaboration"}
-          {item.campaignType && ` • ${item.campaignType}`}
-        </div>
-
-        {/* Duration */}
-        {item.duration?.start && (
-          <div className="text-xs opacity-60">
-            {item.duration.start}
-            {item.duration.end && ` – ${item.duration.end}`}
-          </div>
-        )}
-
-        {/* Deliverables Preview (NEW) */}
-        {normalizedDeliverables.length > 0 && (
-          <div className="space-y-2">
-
-            <div className="flex flex-wrap gap-2">
-              {normalizedDeliverables.slice(0, 2).map((d: any, i: number) => (
-                <span
-                  key={i}
-                  className="text-[10px] px-2 py-1 rounded-full border border-white/15 bg-black/40"
-                >
-                  {d.title}
-                </span>
-              ))}
-
-              {normalizedDeliverables.length > 2 && (
-                <span className="text-[10px] px-2 py-1 rounded-full border border-white/10 opacity-50">
-                  +{normalizedDeliverables.length - 2} more
-                </span>
-              )}
+            {/* Thumbnail */}
+            <div className="aspect-[16/9] bg-black/30 relative overflow-hidden">
+                {item.thumbnail ? (
+                    <img
+                        src={item.thumbnail}
+                        alt={item.title}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                ) : (
+                    <div className="flex h-full w-full items-center justify-center text-xs opacity-50">
+                        No thumbnail
+                    </div>
+                )}
             </div>
 
-          </div>
-        )}
+            {/* Content */}
+            <div className="p-4 space-y-3">
 
-        {/* Outcome Summary */}
-        {item.outcome?.summary && (
-          <div className="pt-1 text-xs text-[#636EE1] font-medium line-clamp-2">
-            {item.outcome.summary}
-          </div>
-        )}
+                {/* Title */}
+                <div className="text-sm font-medium">
+                    {item.title}
+                </div>
 
-      </div>
-    </div>
-  );
+                {/* Brand + Campaign */}
+                <div className="text-xs opacity-70">
+                    {item.brandName || "Brand collaboration"}
+                    {item.campaignType && ` • ${item.campaignType}`}
+                </div>
+
+                {/* Duration */}
+                {item.duration?.start && (
+                    <div className="text-xs opacity-60">
+                        {item.duration.start}
+                        {item.duration.end && ` – ${item.duration.end}`}
+                    </div>
+                )}
+
+                {/* Deliverables Preview (NEW) */}
+                {normalizedDeliverables.length > 0 && (
+                    <div className="space-y-2">
+
+                        <div className="flex flex-wrap gap-2">
+                            {normalizedDeliverables.slice(0, 2).map((d: any, i: number) => (
+                                <span
+                                    key={i}
+                                    className="text-[10px] px-2 py-1 rounded-full border border-white/15 bg-black/40"
+                                >
+                                    {d.title}
+                                </span>
+                            ))}
+
+                            {normalizedDeliverables.length > 2 && (
+                                <span className="text-[10px] px-2 py-1 rounded-full border border-white/10 opacity-50">
+                                    +{normalizedDeliverables.length - 2} more
+                                </span>
+                            )}
+                        </div>
+
+                    </div>
+                )}
+
+                {/* Outcome Summary */}
+                {item.outcome?.summary && (
+                    <div className="pt-1 text-xs text-[#636EE1] font-medium line-clamp-2">
+                        {item.outcome.summary}
+                    </div>
+                )}
+
+            </div>
+        </div>
+    );
 }
 
 

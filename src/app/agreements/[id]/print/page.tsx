@@ -172,9 +172,33 @@ export default async function AgreementPrintPage({
                     <h2>Deliverables</h2>
 
                     {agreement.deliverables.map((d: any) => (
-                        <p key={d._id.toString()}>
-                            • {d.title}
-                        </p>
+                        <div
+                            key={d._id.toString()}
+                            style={{
+                                marginBottom: "14px",
+                                paddingBottom: "10px",
+                                borderBottom: "1px solid #e5e5e5",
+                            }}
+                        >
+
+                            <p>
+                                <b>• {d.title}</b>
+                            </p>
+
+                            {d.description && (
+                                <p
+                                    style={{
+                                        marginTop: "6px",
+                                        marginLeft: "14px",
+                                        color: "#444",
+                                        lineHeight: 1.6,
+                                    }}
+                                >
+                                    {d.description}
+                                </p>
+                            )}
+
+                        </div>
                     ))}
                 </div>
             )}
@@ -183,11 +207,82 @@ export default async function AgreementPrintPage({
             <div className="section">
                 <h2>Milestones</h2>
                 {milestones.map((m: any) => (
-                    <div key={m._id} className="milestone">
+
+                    <div
+                        key={m._id.toString()}
+                        style={{
+                            marginBottom: "18px",
+                            paddingBottom: "14px",
+                            borderBottom: "1px solid #e5e5e5",
+                        }}
+                    >
+
+                        {/* TITLE + AMOUNT */}
                         <p>
-                            <b>{m.title}</b> — ₹{m.amount} 
+                            <b>{m.title}</b> — ₹{m.amount}
                         </p>
-                        {m.description && <p>{m.description}</p>}
+
+                        {/* DESCRIPTION */}
+                        {m.description && (
+                            <p
+                                style={{
+                                    marginTop: "6px",
+                                    color: "#444",
+                                    lineHeight: 1.6,
+                                }}
+                            >
+                                {m.description}
+                            </p>
+                        )}
+
+                        {/* DUE DATE */}
+                        {m.dueDate && (
+                            <p
+                                style={{
+                                    marginTop: "6px",
+                                    fontSize: "12px",
+                                    color: "#666",
+                                }}
+                            >
+                                Due:{" "}
+                                {new Date(m.dueDate).toLocaleDateString()}
+                            </p>
+                        )}
+
+                        {/* LINKED DELIVERABLES */}
+                        {m.deliverableIds?.length > 0 && (
+                            <div style={{ marginTop: "10px" }}>
+
+                                <p
+                                    style={{
+                                        fontWeight: 600,
+                                        marginBottom: "6px",
+                                    }}
+                                >
+                                    Linked Deliverables
+                                </p>
+
+                                <div style={{ paddingLeft: "12px" }}>
+
+                                    {agreement.deliverables
+                                        ?.filter((d: any) =>
+                                            m.deliverableIds.some(
+                                                (id: any) =>
+                                                    id.toString() ===
+                                                    d._id.toString()
+                                            )
+                                        )
+                                        .map((d: any) => (
+                                            <p key={d._id.toString()}>
+                                                • {d.title}
+                                            </p>
+                                        ))}
+
+                                </div>
+
+                            </div>
+                        )}
+
                     </div>
                 ))}
             </div>

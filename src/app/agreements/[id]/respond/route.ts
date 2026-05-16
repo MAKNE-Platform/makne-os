@@ -5,6 +5,7 @@ import { Agreement } from "@/lib/db/models/Agreement";
 import mongoose from "mongoose";
 import { logAudit } from "@/lib/audit/logAudit";
 import { User } from "@/lib/db/models/User";
+import { generateCreatorAgreementSummary } from "@/services/ai/creator-agreement-summary.service";
 
 
 export async function POST(
@@ -48,14 +49,21 @@ export async function POST(
 
   // 🔁 STATE MUTATION
   if (action === "ACCEPT") {
+
     agreement.status = "ACTIVE";
+
     agreement.activity.push({
-      message: "Agreement accepted by creator",
+      message:
+        "Agreement accepted by creator",
     });
+
   } else {
+
     agreement.status = "REJECTED";
+
     agreement.activity.push({
-      message: "Agreement rejected by creator",
+      message:
+        "Agreement rejected by creator",
     });
   }
 

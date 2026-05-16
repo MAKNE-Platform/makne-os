@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { cookies } from "next/headers";
 import { connectDB } from "@/lib/db/connect";
 import { Agreement } from "@/lib/db/models/Agreement";
+import { generateCreatorAgreementSummary } from "@/services/ai/creator-agreement-summary.service";
 
 export async function POST(
   request: Request,
@@ -34,8 +35,30 @@ export async function POST(
   }
 
   if (action === "ACCEPT") {
+
+    const creatorAiSummary =
+      await generateCreatorAgreementSummary({
+        title: agreement.title,
+
+        description:
+          agreement.description,
+
+        deliverables:
+          agreement.deliverables || [],
+
+        policies:
+          agreement.policies || {},
+      });
+
     agreement.status = "ACTIVE";
-    agreement.activity.push({ message: "Agreement accepted by creator" });
+
+    agreement.creatorAiSummary =
+      creatorAiSummary;
+
+    agreement.activity.push({
+      message:
+        "Agreement accepted by creator",
+    });
   } else {
     agreement.status = "REJECTED";
     agreement.activity.push({ message: "Agreement rejected by creator" });

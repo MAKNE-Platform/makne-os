@@ -109,9 +109,12 @@ export default async function ReviewAgreementPage() {
           <h2 className="text-sm font-medium text-white">Deliverables</h2>
           <ul className="mt-3 space-y-2 text-sm text-zinc-300">
             {agreement.deliverables?.map((d: any) => (
-              <li key={d._id} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#636EE1]" />
-                {d.title}
+              <li key={d._id} className="flex items-baseline gap-2">
+                <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-[#636EE1]" />
+                <div>
+                  <h3>{d.title}</h3>
+                  <p>{d.description}</p>
+                </div>
               </li>
             ))}
           </ul>

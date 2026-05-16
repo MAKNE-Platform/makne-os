@@ -63,6 +63,7 @@ const AgreementSchema = new mongoose.Schema(
             ],
             default: [],
         },
+
         policies: {
             paymentTerms: {
                 type: String,
@@ -77,6 +78,46 @@ const AgreementSchema = new mongoose.Schema(
                 type: String,
             },
         },
+
+        portfolioSummary: {
+            type: String,
+        },
+
+        creatorAiSummary: {
+            type: String,
+        },
+
+        creatorTasks: [
+            {
+                title: String,
+
+                type: {
+                    type: String,
+                    default: "GENERAL",
+                },
+
+                completed: {
+                    type: Boolean,
+                    default: false,
+                },
+
+                autoTrack: {
+                    type: Boolean,
+                    default: true,
+                },
+
+                sourceType: String,
+
+                sourceId: String,
+            },
+        ],
+
+        creatorAiTasks: [
+            {
+                title: String,
+                type: String,
+            },
+        ],
 
 
     },

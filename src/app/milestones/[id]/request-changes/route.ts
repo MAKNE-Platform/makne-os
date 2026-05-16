@@ -7,6 +7,7 @@ import { Agreement } from "@/lib/db/models/Agreement";
 import { logAudit } from "@/lib/audit/logAudit";
 import { User } from "@/lib/db/models/User";
 import { revalidatePath } from "next/cache";
+import { syncMilestoneTask } from "@/lib/tasks/syncMilestoneTask";
 
 export async function POST(
   request: Request,
@@ -72,23 +73,33 @@ export async function POST(
   milestone.revisionFeedback =
     revisionFeedback;
 
-    console.log("REVISION FEEDBACK:", revisionFeedback);
+  console.log("REVISION FEEDBACK:", revisionFeedback);
 
-console.log(
-  "MILESTONE BEFORE SAVE:",
-  milestone
-);
+  console.log(
+    "MILESTONE BEFORE SAVE:",
+    milestone
+  );
 
   milestone.status = "REVISION";
   await milestone.save();
 
-  const updatedMilestone =
-  await Milestone.findById(milestone._id);
+  await syncMilestoneTask({
+    agreementId:
+      agreement._id.toString(),
 
-console.log(
-  "UPDATED MILESTONE:",
-  updatedMilestone
-);
+    milestoneId:
+      milestone._id.toString(),
+
+    completed: false,
+  });
+
+  const updatedMilestone =
+    await Milestone.findById(milestone._id);
+
+  console.log(
+    "UPDATED MILESTONE:",
+    updatedMilestone
+  );
 
   await logAudit({
     actorType: "BRAND",
