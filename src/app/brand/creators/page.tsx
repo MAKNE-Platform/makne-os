@@ -16,6 +16,7 @@ import { BrandProfile } from "@/lib/db/models/BrandProfile";
 import { Notification } from "@/lib/db/models/Notification";
 import { ArrowLeft } from "lucide-react";
 import { scoreCreator } from "@/lib/recommendation/scoreCreator";
+import { getCreatorPerformanceMetrics } from "@/lib/recommendation/getCreatorPerformanceMetrics";
 
 type BrandProfileType = {
     brandName: string;
@@ -48,88 +49,106 @@ export default async function BrandCreatorsPage() {
     const brandObjectId = new mongoose.Types.ObjectId(userId);
 
 
-    const safeCreators = creators
-        .map((c: any) => {
+    const safeCreators =
+        await Promise.all(
 
-            const recommendation =
-                scoreCreator({
+            creators.map(
+                async (c: any) => {
 
-                    creator: {
-                        niche: c.niche,
+                    const metrics =
+                        await getCreatorPerformanceMetrics(
+                            c.userId._id.toString()
+                        );
 
-                        platforms: c.platforms,
+                    const recommendation =
+                        scoreCreator({
 
-                        completionRate:
-                            c.performance?.completionRate || 0,
+                            creator: {
 
-                        avgRevisions:
-                            c.overview?.avgRevisions || 0,
+                                niche:
+                                    c.niche,
 
-                        repeatBrandsPercent:
-                            c.overview?.repeatBrandsPercent || 0,
+                                platforms:
+                                    c.platforms,
 
-                        profileCompletion:
-                            c.profileCompletion || 0,
+                                completionRate:
+                                    metrics.completionRate,
+
+                                avgRevisions:
+                                    metrics.avgRevisions,
+
+                                repeatBrandsPercent:
+                                    metrics.repeatBrandsPercent,
+
+                                profileCompletion:
+                                    c.profileCompletion || 0,
+
+                                portfolioCount:
+                                    c.portfolio?.length || 0,
+                            },
+
+                            campaign: {
+
+                                niche:
+                                    brandProfile.industry,
+
+                                platform:
+                                    c.platforms
+                                        ?.split(",")[0] || "",
+                            },
+                        });
+
+                    return {
+
+                        _id:
+                            c._id.toString(),
+
+                        username:
+                            c.displayName ||
+                            c.username ||
+                            "Creator",
+
+                        niche:
+                            c.niche || "General",
+
+                        platforms:
+                            c.platforms || "",
+
+                        location:
+                            c.location || "",
+
+                        profileImage:
+                            c.profileImage || "",
+
+                        bio:
+                            c.bio || "",
+
+                        contentFormats:
+                            c.skills?.contentFormats || [],
 
                         portfolioCount:
                             c.portfolio?.length || 0,
-                    },
 
-                    campaign: {
-                        niche:
-                            brandProfile.industry,
+                        email:
+                            c.userId?.email || "",
 
-                        platform:
-                            c.platforms?.split(",")[0] || "",
-                    },
-                });
+                        recommendationScore:
+                            recommendation.score,
 
-            return {
+                        recommendationReasons:
+                            recommendation.reasons,
 
-                _id: c._id.toString(),
-
-                username:
-                    c.displayName ||
-                    c.username ||
-                    "Creator",
-
-                niche:
-                    c.niche || "General",
-
-                platforms:
-                    c.platforms || "",
-
-                location:
-                    c.location || "",
-
-                profileImage:
-                    c.profileImage || "",
-
-                bio:
-                    c.bio || "",
-
-                contentFormats:
-                    c.skills?.contentFormats || [],
-
-                portfolioCount:
-                    c.portfolio?.length || 0,
-
-                email:
-                    c.userId?.email || "",
-
-                recommendationScore:
-                    recommendation.score,
-
-                recommendationReasons:
-                    recommendation.reasons,
-            };
-        })
-
-        .sort(
-            (a, b) =>
-                b.recommendationScore -
-                a.recommendationScore
+                        performance: metrics,
+                    };
+                }
+            )
         );
+
+    safeCreators.sort(
+        (a, b) =>
+            b.recommendationScore -
+            a.recommendationScore
+    );
 
     // Inbox = unread notifications + submitted deliverables
     const unreadNotificationsCount = await Notification.countDocuments({

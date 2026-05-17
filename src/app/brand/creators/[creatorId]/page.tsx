@@ -8,12 +8,19 @@ import CreatorProfileView from "@/components/brand/CreatorProfileView";
 import type { InferSchemaType } from "mongoose";
 import { SavedCreator } from "@/lib/db/models/SavedCreator";
 import { User } from "@/lib/db/models/User";
+import { generateRecommendationInsight }
+    from "@/lib/recommendation/generateRecommendationInsight";
+import { scoreCreator }
+    from "@/lib/recommendation/scoreCreator";
+import { getCreatorPerformanceMetrics }
+    from "@/lib/recommendation/getCreatorPerformanceMetrics";
+import { generateAiRecommendationAnalysis } from "@/lib/recommendation/generateAiRecommendationAnalysis";
 
 type CreatorType = InferSchemaType<typeof CreatorProfile.schema>;
 
 type UserLean = {
-  _id: any;
-  email: string;
+    _id: any;
+    email: string;
 };
 
 type CreatorLean = {
@@ -74,6 +81,74 @@ export default async function BrandViewCreatorPage({
 
     const c = creator;
 
+    const metrics =
+        await getCreatorPerformanceMetrics(
+            c.userId.toString()
+        );
+
+    const recommendation =
+        scoreCreator({
+
+            creator: {
+
+                niche:
+                    c.niche,
+
+                platforms:
+                    c.platforms,
+
+                completionRate:
+                    metrics.completionRate,
+
+                avgRevisions:
+                    metrics.avgRevisions,
+
+                repeatBrandsPercent:
+                    metrics.repeatBrandsPercent,
+
+                profileCompletion: 100,
+
+                portfolioCount:
+                    c.portfolio?.length || 0,
+            },
+
+            campaign: {
+
+                niche:
+                    c.niche,
+
+                platform:
+                    c.platforms
+                        ?.split(",")[0] || "",
+            },
+        });
+
+    const recommendationInsight =
+        await generateAiRecommendationAnalysis({
+
+            creatorName:
+                c.displayName ||
+                "This creator",
+
+            niche:
+                c.niche,
+
+            platforms:
+                c.platforms,
+
+            completionRate:
+                metrics.completionRate,
+
+            avgRevisions:
+                metrics.avgRevisions,
+
+            repeatBrandsPercent:
+                metrics.repeatBrandsPercent,
+
+            recommendationReasons:
+                recommendation.reasons,
+        });
+
     const alreadySaved = await SavedCreator.findOne({
         brandId: new mongoose.Types.ObjectId(userId),
         creatorId: new mongoose.Types.ObjectId(creatorId),
@@ -88,7 +163,7 @@ export default async function BrandViewCreatorPage({
     const creatorUser = await User.findById(c.userId).lean<UserLean>().exec();
 
     if (!creatorUser) redirect("/brand/creators");
-    
+
     const safeCreator = {
         _id: c._id.toString(),
         displayName: c.displayName || c.username || "Creator",
@@ -118,13 +193,25 @@ export default async function BrandViewCreatorPage({
         title: a.title,
     }));
 
-    console.log("Creator ID:", creatorId);
 
     return (
         <CreatorProfileView
             creator={safeCreator}
             draftAgreements={safeDrafts}
             alreadySaved={!!alreadySaved}
+
+            recommendation={{
+                score:
+                    recommendation.score,
+
+                insight:
+                    recommendationInsight,
+
+                reasons:
+                    recommendation.reasons,
+
+                metrics,
+            }}
         />
     );
 }
