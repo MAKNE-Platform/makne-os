@@ -5,8 +5,12 @@ import Link from "next/link";
 
 export default function BrandCreatorsGrid({
     creators,
+    recommendationScore,
+    recommendationReasons,
 }: {
     creators: any[];
+    recommendationScore?: number;
+    recommendationReasons?: string[];
 }) {
     const [search, setSearch] = useState("");
     const [platformFilter, setPlatformFilter] = useState("All");
@@ -112,6 +116,7 @@ export default function BrandCreatorsGrid({
 
             </div>
 
+
             {/* ================= GRID ================= */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
 
@@ -185,6 +190,41 @@ export default function BrandCreatorsGrid({
                                 {creator.bio || "No bio provided."}
                             </p>
                         </div>
+
+                        {/* Recommendation Insights */}
+                        {creator.recommendationScore !== undefined && (
+
+                            <div className="mt-4 space-y-3">
+
+                                {/* Match Score */}
+                                <div className="flex items-center justify-between">
+
+                                    <div className="rounded-full bg-[#636EE1]/15 border border-[#636EE1]/20 px-3 py-1 text-xs font-medium text-[#A5AEFF]">
+                                        {creator.recommendationScore}% Match
+                                    </div>
+
+                                </div>
+
+                                {/* Recommendation Reasons */}
+                                {creator.recommendationReasons?.length > 0 && (
+
+                                    <div className="flex flex-wrap gap-2">
+
+                                        {creator.recommendationReasons
+                                            .slice(0, 2)
+                                            .map((reason: string) => (
+
+                                                <div
+                                                    key={reason}
+                                                    className="rounded-full border border-white/10 bg-[#11131A] px-3 py-1 text-[11px] text-zinc-300"
+                                                >
+                                                    {reason}
+                                                </div>
+                                            ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Footer */}
                         <div className="mt-6 flex items-center justify-between">

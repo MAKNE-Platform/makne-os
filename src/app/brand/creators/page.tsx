@@ -15,6 +15,7 @@ import { Payment } from "@/lib/db/models/Payment";
 import { BrandProfile } from "@/lib/db/models/BrandProfile";
 import { Notification } from "@/lib/db/models/Notification";
 import { ArrowLeft } from "lucide-react";
+import { scoreCreator } from "@/lib/recommendation/scoreCreator";
 
 type BrandProfileType = {
     brandName: string;
@@ -33,6 +34,7 @@ export default async function BrandCreatorsPage() {
 
     await connectDB();
 
+
     const creators = await CreatorProfile.find()
         .populate("userId", "email name")
         .lean();
@@ -46,18 +48,88 @@ export default async function BrandCreatorsPage() {
     const brandObjectId = new mongoose.Types.ObjectId(userId);
 
 
-    const safeCreators = creators.map((c: any) => ({
-        _id: c._id.toString(),
-        username: c.displayName || c.username || "Creator",
-        niche: c.niche || "General",
-        platforms: c.platforms || "",
-        location: c.location || "",
-        profileImage: c.profileImage || "",
-        bio: c.bio || "",
-        contentFormats: c.skills?.contentFormats || [],
-        portfolioCount: c.portfolio?.length || 0,
-        email: c.userId?.email || "",
-    }));
+    const safeCreators = creators
+        .map((c: any) => {
+
+            const recommendation =
+                scoreCreator({
+
+                    creator: {
+                        niche: c.niche,
+
+                        platforms: c.platforms,
+
+                        completionRate:
+                            c.performance?.completionRate || 0,
+
+                        avgRevisions:
+                            c.overview?.avgRevisions || 0,
+
+                        repeatBrandsPercent:
+                            c.overview?.repeatBrandsPercent || 0,
+
+                        profileCompletion:
+                            c.profileCompletion || 0,
+
+                        portfolioCount:
+                            c.portfolio?.length || 0,
+                    },
+
+                    campaign: {
+                        niche:
+                            brandProfile.industry,
+
+                        platform:
+                            c.platforms?.split(",")[0] || "",
+                    },
+                });
+
+            return {
+
+                _id: c._id.toString(),
+
+                username:
+                    c.displayName ||
+                    c.username ||
+                    "Creator",
+
+                niche:
+                    c.niche || "General",
+
+                platforms:
+                    c.platforms || "",
+
+                location:
+                    c.location || "",
+
+                profileImage:
+                    c.profileImage || "",
+
+                bio:
+                    c.bio || "",
+
+                contentFormats:
+                    c.skills?.contentFormats || [],
+
+                portfolioCount:
+                    c.portfolio?.length || 0,
+
+                email:
+                    c.userId?.email || "",
+
+                recommendationScore:
+                    recommendation.score,
+
+                recommendationReasons:
+                    recommendation.reasons,
+            };
+        })
+
+        .sort(
+            (a, b) =>
+                b.recommendationScore -
+                a.recommendationScore
+        );
 
     // Inbox = unread notifications + submitted deliverables
     const unreadNotificationsCount = await Notification.countDocuments({
@@ -100,7 +172,7 @@ export default async function BrandCreatorsPage() {
                 <main className="flex-1 px-6 py-8 space-y-10">
                     {/* BACK BUTTON */}
                     <div className="border-b border-white/5">
-                        <a 
+                        <a
                             href="/brand/dashboard"
                             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/5 bg-[#121214] hover:border-[#636EE1] hover:text-white text-sm text-zinc-400 transition"
                         >
