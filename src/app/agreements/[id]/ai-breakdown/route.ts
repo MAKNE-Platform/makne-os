@@ -100,7 +100,15 @@ export async function POST(
   agreement.creatorAiTasks =
     aiData.tasks;
 
-  await agreement.save();
+  try {
+    await agreement.save();
+  } catch (error: any) {
+    console.error("Agreement save failed:", error);
+    return NextResponse.json(
+      { error: "Failed to save agreement AI breakdown" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({
     summary: aiData.summary,

@@ -36,7 +36,6 @@ const AgreementSchema = new mongoose.Schema(
             },
         ],
 
-
         amount: {
             type: Number,
         },
@@ -51,18 +50,15 @@ const AgreementSchema = new mongoose.Schema(
             type: String,
         },
 
-        activity: {
-            type: [
-                {
-                    message: String,
-                    createdAt: {
-                        type: Date,
-                        default: Date.now,
-                    },
+        activity: [
+            {
+                message: { type: String },
+                createdAt: {
+                    type: Date,
+                    default: Date.now,
                 },
-            ],
-            default: [],
-        },
+            },
+        ],
 
         policies: {
             paymentTerms: {
@@ -89,37 +85,37 @@ const AgreementSchema = new mongoose.Schema(
 
         creatorTasks: [
             {
-                title: String,
-
+                title: { type: String },
                 type: {
                     type: String,
                     default: "GENERAL",
                 },
-
                 completed: {
                     type: Boolean,
                     default: false,
                 },
-
                 autoTrack: {
                     type: Boolean,
                     default: true,
                 },
-
-                sourceType: String,
-
-                sourceId: String,
+                sourceType: { type: String },
+                sourceId: { type: String },
             },
         ],
 
         creatorAiTasks: [
             {
-                title: String,
-                type: String,
+                title: { type: String },
+                type: {
+                    type: String,
+                    default: "GENERAL",
+                },
+                completed: {
+                    type: Boolean,
+                    default: false,
+                },
             },
         ],
-
-
     },
     { timestamps: true }
 );
